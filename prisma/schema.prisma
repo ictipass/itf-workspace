@@ -1,0 +1,227 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+enum WorkspaceRole {
+  STAFF
+  APP_ADMIN
+  SYSTEM_ADMIN
+}
+
+enum AppStatus {
+  ACTIVE
+  INACTIVE
+  MAINTENANCE
+}
+
+enum AppEnvironment {
+  PRODUCTION
+  STAGING
+  DEVELOPMENT
+}
+
+enum AppCategory {
+  WORKFLOW
+  TRAINING
+  FINANCE
+  HR
+  PROCUREMENT
+  COMPLIANCE
+  REPORTING
+  ADMINISTRATION
+  OTHER
+}
+
+enum AppAccessStatus {
+  ACTIVE
+  REVOKED
+  PENDING
+}
+
+enum AuditAction {
+  LOGIN
+  LOGOUT
+  APP_OPENED
+  APP_CREATED
+  APP_UPDATED
+  ACCESS_GRANTED
+  ACCESS_REVOKED
+  USER_CREATED
+  USER_UPDATED
+}
+
+model User {
+  id                  String @id @default(cuid())
+  staffNumber         String? @unique
+  fullName            String
+  email               String @unique
+  passwordHash        String?
+  isTemporaryPassword Boolean @default(true)
+
+  workspaceRole       WorkspaceRole @default(STAFF)
+  status              UserStatus @default(ACTIVE)
+
+  officeId            String?
+  office              Office? @relation(fields: [officeId], references: [id])
+
+  departmentId        String?
+  department          Department? @relation(fields: [departmentId], references: [id])
+
+  divisionId          String?
+  division            Division? @relation(fields: [divisionId], references: [id])
+
+  unitId              String?
+  unit                Unit? @relation(fields: [unitId], references: [id])
+
+  positionId          String?
+  position            Position? @relation(fields: [positionId], references: [id])
+
+  appAccesses         AppAccess[]
+  auditLogs           AuditLog[]
+
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+}
+
+model Office {
+  id        String @id @default(cuid())
+  name      String
+  code      String @unique
+  type      String
+
+  users     User[]
+  departments Department[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Department {
+  id        String @id @default(cuid())
+  name      String
+  code      String
+
+  officeId  String?
+  office    Office? @relation(fields: [officeId], references: [id])
+
+  users     User[]
+  divisions Division[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([code, officeId])
+}
+
+model Division {
+  id           String @id @default(cuid())
+  name         String
+  code         String
+
+  departmentId String
+  department   Department @relation(fields: [departmentId], references: [id])
+
+  users        User[]
+  units        Unit[]
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([code, departmentId])
+}
+
+model Unit {
+  id          String @id @default(cuid())
+  name        String
+  code        String
+
+  divisionId  String?
+  division    Division? @relation(fields: [divisionId], references: [id])
+
+  users       User[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Position {
+  id        String @id @default(cuid())
+  title     String
+  code      String @unique
+
+  users     User[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model App {
+  id          String @id @default(cuid())
+  name        String
+  slug        String @unique
+  description String?
+  url         String
+  icon        String?
+
+  category    AppCategory
+  environment AppEnvironment @default(PRODUCTION)
+  status      AppStatus @default(ACTIVE)
+
+  accessRules AppAccess[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model AppAccess {
+  id        String @id @default(cuid())
+
+  userId    String
+  user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  appId     String
+  app       App @relation(fields: [appId], references: [id], onDelete: Cascade)
+
+  appRole   String?
+  status    AppAccessStatus @default(ACTIVE)
+
+  grantedById String?
+  grantedAt   DateTime @default(now())
+  revokedAt   DateTime?
+
+  @@unique([userId, appId])
+  @@index([userId])
+  @@index([appId])
+}
+
+model AuditLog {
+  id        String @id @default(cuid())
+
+  actorId   String?
+  actor     User? @relation(fields: [actorId], references: [id])
+
+  action    AuditAction
+  metadata  Json?
+
+  createdAt DateTime @default(now())
+
+  @@index([actorId])
+  @@index([action])
+}
