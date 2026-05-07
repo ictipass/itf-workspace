@@ -1,8 +1,9 @@
 "use client";
 
 import { useActionState } from "react";
-import { App, User } from "@/lib/generated/prisma/client";
-import { grantAppAccessAction, AccessActionState } from "./actions";
+import { grantAppAccessAction } from "./actions";
+import type { AccessActionState } from "./actions";
+import type { App, User } from "@/lib/generated/prisma/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
