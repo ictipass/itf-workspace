@@ -38,11 +38,11 @@ export default async function DashboardLayout({
 
   return (
     <div className="min-h-screen bg-muted/30">
-      <aside className="fixed inset-y-0 left-0 hidden w-72 border-r bg-background lg:flex lg:flex-col">
+      <aside className="fixed inset-y-0 left-0 hidden w-72 border-r border-sidebar-border bg-sidebar text-sidebar-foreground lg:flex lg:flex-col">
         <div className="flex h-20 items-center px-6">
           <div>
             <h1 className="text-lg font-bold tracking-tight">ITF Workspace</h1>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-sidebar-foreground/70">
               Unified Digital Access Portal
             </p>
           </div>
@@ -61,6 +61,10 @@ export default async function DashboardLayout({
 
           {isSystemAdmin ? (
             <>
+              <NavItem href="/dashboard/admin/setup" icon={<Settings className="h-4 w-4" />}>
+                Organization Setup
+              </NavItem>
+
               <NavItem href="/dashboard/admin/apps" icon={<Settings className="h-4 w-4" />}>
                 Manage Apps
               </NavItem>
@@ -79,14 +83,14 @@ export default async function DashboardLayout({
         <Separator />
 
         <div className="p-4">
-          <div className="flex items-center gap-3 rounded-xl border bg-muted/40 p-3">
+          <div className="flex items-center gap-3 rounded-xl border border-sidebar-border bg-sidebar-accent p-3">
             <Avatar>
               <AvatarFallback>{initials}</AvatarFallback>
             </Avatar>
 
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-medium">{session.user.name}</p>
-              <p className="truncate text-xs text-muted-foreground">
+              <p className="truncate text-xs text-sidebar-foreground/70">
                 {session.user.workspaceRole}
               </p>
             </div>
@@ -99,7 +103,11 @@ export default async function DashboardLayout({
               await signOut({ redirectTo: "/login" });
             }}
           >
-            <Button type="submit" variant="outline" className="w-full justify-start">
+            <Button
+              type="submit"
+              variant="secondary"
+              className="w-full justify-start bg-white/10 text-white hover:bg-white/15"
+            >
               <LogOut className="mr-2 h-4 w-4" />
               Sign out
             </Button>
@@ -135,7 +143,7 @@ function NavItem({
   return (
     <Link
       href={href}
-      className="flex items-center rounded-xl px-3 py-2 text-sm font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground"
+      className="flex items-center rounded-xl px-3 py-2 text-sm font-medium text-sidebar-foreground/75 transition hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
     >
       <span className="mr-3">{icon}</span>
       {children}
