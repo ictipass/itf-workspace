@@ -12,11 +12,19 @@ datasource db {
   provider = "postgresql"
 }
 
-
 enum UserStatus {
   ACTIVE
   INACTIVE
   SUSPENDED
+}
+
+enum OfficeType {
+  HEADQUARTERS
+  ZONAL_OFFICE
+  CORPORATE_OFFICE
+  SKILLS_CENTRE
+  AREA_OFFICE
+  STAFF_SCHOOL
 }
 
 enum WorkspaceRole {
@@ -68,45 +76,45 @@ enum AuditAction {
 }
 
 model User {
-  id                  String @id @default(cuid())
+  id                  String  @id @default(cuid())
   staffNumber         String? @unique
   fullName            String
-  email               String @unique
+  email               String  @unique
   passwordHash        String?
   isTemporaryPassword Boolean @default(true)
 
-  workspaceRole       WorkspaceRole @default(STAFF)
-  status              UserStatus @default(ACTIVE)
+  workspaceRole WorkspaceRole @default(STAFF)
+  status        UserStatus    @default(ACTIVE)
 
-  officeId            String?
-  office              Office? @relation(fields: [officeId], references: [id])
+  officeId String?
+  office   Office? @relation(fields: [officeId], references: [id])
 
-  departmentId        String?
-  department          Department? @relation(fields: [departmentId], references: [id])
+  departmentId String?
+  department   Department? @relation(fields: [departmentId], references: [id])
 
-  divisionId          String?
-  division            Division? @relation(fields: [divisionId], references: [id])
+  divisionId String?
+  division   Division? @relation(fields: [divisionId], references: [id])
 
-  unitId              String?
-  unit                Unit? @relation(fields: [unitId], references: [id])
+  unitId String?
+  unit   Unit?   @relation(fields: [unitId], references: [id])
 
-  positionId          String?
-  position            Position? @relation(fields: [positionId], references: [id])
+  positionId String?
+  position   Position? @relation(fields: [positionId], references: [id])
 
-  appAccesses         AppAccess[]
-  auditLogs           AuditLog[]
+  appAccesses AppAccess[]
+  auditLogs   AuditLog[]
 
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Office {
-  id        String @id @default(cuid())
-  name      String
-  code      String @unique
-  type      String
+  id   String     @id @default(cuid())
+  name String
+  code String     @unique
+  type OfficeType
 
-  users     User[]
+  users       User[]
   departments Department[]
 
   createdAt DateTime @default(now())
@@ -114,12 +122,12 @@ model Office {
 }
 
 model Department {
-  id        String @id @default(cuid())
-  name      String
-  code      String
+  id   String @id @default(cuid())
+  name String
+  code String
 
-  officeId  String?
-  office    Office? @relation(fields: [officeId], references: [id])
+  officeId String?
+  office   Office? @relation(fields: [officeId], references: [id])
 
   users     User[]
   divisions Division[]
@@ -131,79 +139,79 @@ model Department {
 }
 
 model Division {
-  id           String @id @default(cuid())
-  name         String
-  code         String
+  id   String @id @default(cuid())
+  name String
+  code String
 
   departmentId String
   department   Department @relation(fields: [departmentId], references: [id])
 
-  users        User[]
-  units        Unit[]
+  users User[]
+  units Unit[]
 
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([code, departmentId])
 }
 
 model Unit {
-  id          String @id @default(cuid())
-  name        String
-  code        String
+  id   String @id @default(cuid())
+  name String
+  code String
 
-  divisionId  String?
-  division    Division? @relation(fields: [divisionId], references: [id])
+  divisionId String?
+  division   Division? @relation(fields: [divisionId], references: [id])
 
-  users       User[]
+  users User[]
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Position {
-  id        String @id @default(cuid())
-  title     String
-  code      String @unique
+  id    String @id @default(cuid())
+  title String
+  code  String @unique
 
-  users     User[]
+  users User[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model App {
-  id          String @id @default(cuid())
+  id          String  @id @default(cuid())
   name        String
-  slug        String @unique
+  slug        String  @unique
   description String?
   url         String
   icon        String?
 
   category    AppCategory
   environment AppEnvironment @default(PRODUCTION)
-  status      AppStatus @default(ACTIVE)
+  status      AppStatus      @default(ACTIVE)
 
   accessRules AppAccess[]
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model AppAccess {
-  id        String @id @default(cuid())
+  id String @id @default(cuid())
 
-  userId    String
-  user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  appId     String
-  app       App @relation(fields: [appId], references: [id], onDelete: Cascade)
+  appId String
+  app   App    @relation(fields: [appId], references: [id], onDelete: Cascade)
 
-  appRole   String?
-  status    AppAccessStatus @default(ACTIVE)
+  appRole String?
+  status  AppAccessStatus @default(ACTIVE)
 
   grantedById String?
-  grantedAt   DateTime @default(now())
+  grantedAt   DateTime  @default(now())
   revokedAt   DateTime?
 
   @@unique([userId, appId])
@@ -212,13 +220,13 @@ model AppAccess {
 }
 
 model AuditLog {
-  id        String @id @default(cuid())
+  id String @id @default(cuid())
 
-  actorId   String?
-  actor     User? @relation(fields: [actorId], references: [id])
+  actorId String?
+  actor   User?   @relation(fields: [actorId], references: [id])
 
-  action    AuditAction
-  metadata  Json?
+  action   AuditAction
+  metadata Json?
 
   createdAt DateTime @default(now())
 
