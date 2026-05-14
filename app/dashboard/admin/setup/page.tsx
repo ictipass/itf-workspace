@@ -1,3 +1,5 @@
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 import { redirect } from "next/navigation";
 import { WorkspaceRole } from "@/lib/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
@@ -25,6 +27,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import SetupRecordStatusButton from "./setup-record-status-button";
 
 export default async function OrganizationSetupPage() {
   const user = await requireCurrentUser();
@@ -62,8 +65,13 @@ export default async function OrganizationSetupPage() {
     code,
   }));
 
+  const activeOffices = offices.filter((item) => item.isActive);
+  const activeDepartments = departments.filter((item) => item.isActive);
+  const activeDivisions = divisions.filter((item) => item.isActive);
+
   return (
-    <div className="space-y-6">
+    <>
+    <div className="flex flex-col justify-between gap-4 md:flex-row md:items-start">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">
           Organization Setup
@@ -73,6 +81,14 @@ export default async function OrganizationSetupPage() {
         </p>
       </div>
 
+      <Button asChild variant="outline">
+        <Link href="/api/admin/setup/reference-codes">
+          Download Reference Codes
+        </Link>
+      </Button>
+    </div>
+
+    <div>
       <Tabs defaultValue="offices">
         <TabsList className="flex flex-wrap">
           <TabsTrigger value="offices">Offices</TabsTrigger>
@@ -95,6 +111,8 @@ export default async function OrganizationSetupPage() {
                     <TableHead>Name</TableHead>
                     <TableHead>Code</TableHead>
                     <TableHead>Type</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -105,6 +123,19 @@ export default async function OrganizationSetupPage() {
                         <Badge variant="outline">{office.code}</Badge>
                       </TableCell>
                       <TableCell>{office.type}</TableCell>
+                      <TableCell>
+                        <Badge variant={office.isActive ? "default" : "secondary"}>
+                          {office.isActive ? "ACTIVE" : "INACTIVE"}
+                        </Badge>
+                      </TableCell>
+
+                      <TableCell className="text-right">
+                        <SetupRecordStatusButton
+                          id={office.id}
+                          entity="office"
+                          isActive={office.isActive}
+                        />
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -116,7 +147,7 @@ export default async function OrganizationSetupPage() {
         <TabsContent value="departments" className="mt-6">
           <Grid>
             <SetupCard title="Create Department">
-              <DepartmentForm offices={officeOptions} />
+              <DepartmentForm offices={activeOffices} />
             </SetupCard>
 
             <SetupCard title="Departments">
@@ -126,6 +157,8 @@ export default async function OrganizationSetupPage() {
                     <TableHead>Name</TableHead>
                     <TableHead>Code</TableHead>
                     <TableHead>Office</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -136,6 +169,19 @@ export default async function OrganizationSetupPage() {
                         <Badge variant="outline">{department.code}</Badge>
                       </TableCell>
                       <TableCell>{department.office?.name ?? "N/A"}</TableCell>
+                      <TableCell>
+                        <Badge variant={department.isActive ? "default" : "secondary"}>
+                          {department.isActive ? "ACTIVE" : "INACTIVE"}
+                        </Badge>
+                      </TableCell>
+
+                      <TableCell className="text-right">
+                        <SetupRecordStatusButton
+                          id={department.id}
+                          entity="department"
+                          isActive={department.isActive}
+                        />
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -147,7 +193,7 @@ export default async function OrganizationSetupPage() {
         <TabsContent value="divisions" className="mt-6">
           <Grid>
             <SetupCard title="Create Division">
-              <DivisionForm departments={departmentOptions} />
+              <DivisionForm departments={activeDepartments} />
             </SetupCard>
 
             <SetupCard title="Divisions">
@@ -157,6 +203,8 @@ export default async function OrganizationSetupPage() {
                     <TableHead>Name</TableHead>
                     <TableHead>Code</TableHead>
                     <TableHead>Department</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -167,6 +215,19 @@ export default async function OrganizationSetupPage() {
                         <Badge variant="outline">{division.code}</Badge>
                       </TableCell>
                       <TableCell>{division.department.name}</TableCell>
+                      <TableCell>
+                        <Badge variant={division.isActive ? "default" : "secondary"}>
+                          {division.isActive ? "ACTIVE" : "INACTIVE"}
+                        </Badge>
+                      </TableCell>
+
+                      <TableCell className="text-right">
+                        <SetupRecordStatusButton
+                          id={division.id}
+                          entity="division"
+                          isActive={division.isActive}
+                        />
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -178,7 +239,7 @@ export default async function OrganizationSetupPage() {
         <TabsContent value="units" className="mt-6">
           <Grid>
             <SetupCard title="Create Unit">
-              <UnitForm divisions={divisionOptions} />
+              <UnitForm divisions={activeDivisions} />
             </SetupCard>
 
             <SetupCard title="Units">
@@ -188,6 +249,8 @@ export default async function OrganizationSetupPage() {
                     <TableHead>Name</TableHead>
                     <TableHead>Code</TableHead>
                     <TableHead>Division</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -198,6 +261,19 @@ export default async function OrganizationSetupPage() {
                         <Badge variant="outline">{unit.code}</Badge>
                       </TableCell>
                       <TableCell>{unit.division?.name ?? "N/A"}</TableCell>
+                      <TableCell>
+                        <Badge variant={unit.isActive ? "default" : "secondary"}>
+                          {unit.isActive ? "ACTIVE" : "INACTIVE"}
+                        </Badge>
+                      </TableCell>
+
+                      <TableCell className="text-right">
+                        <SetupRecordStatusButton
+                          id={unit.id}
+                          entity="unit"
+                          isActive={unit.isActive}
+                        />
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -218,6 +294,8 @@ export default async function OrganizationSetupPage() {
                   <TableRow>
                     <TableHead>Title</TableHead>
                     <TableHead>Code</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -226,6 +304,19 @@ export default async function OrganizationSetupPage() {
                       <TableCell>{position.title}</TableCell>
                       <TableCell>
                         <Badge variant="outline">{position.code}</Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={position.isActive ? "default" : "secondary"}>
+                          {position.isActive ? "ACTIVE" : "INACTIVE"}
+                        </Badge>
+                      </TableCell>
+
+                      <TableCell className="text-right">
+                        <SetupRecordStatusButton
+                          id={position.id}
+                          entity="position"
+                          isActive={position.isActive}
+                        />
                       </TableCell>
                     </TableRow>
                   ))}
@@ -236,8 +327,13 @@ export default async function OrganizationSetupPage() {
         </TabsContent>
       </Tabs>
     </div>
+    </>
   );
 }
+
+
+
+
 
 function Grid({ children }: { children: React.ReactNode }) {
   return <div className="grid gap-6 xl:grid-cols-[420px_1fr]">{children}</div>;

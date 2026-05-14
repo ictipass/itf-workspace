@@ -24,6 +24,12 @@ export default async function ImportUsersPage() {
         </div>
 
         <Button asChild variant="outline">
+          <Link href="/api/admin/setup/reference-codes">
+            Download Reference Codes
+          </Link>
+        </Button>
+
+        <Button asChild variant="outline">
           <Link href="/api/admin/users/import-template">Download CSV Template</Link>
         </Button>
       </div>

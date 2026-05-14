@@ -167,11 +167,11 @@ export async function importWorkspaceUsersFromCsv(params: {
       where: { staffNumber: { in: rows.map((r) => r.staffNumber) } },
       select: { staffNumber: true },
     }),
-    prisma.office.findMany(),
-    prisma.department.findMany(),
-    prisma.division.findMany(),
-    prisma.unit.findMany(),
-    prisma.position.findMany(),
+    prisma.office.findMany({ where: { isActive: true } }),
+    prisma.department.findMany({ where: { isActive: true } }),
+    prisma.division.findMany({ where: { isActive: true } }),
+    prisma.unit.findMany({ where: { isActive: true } }),
+    prisma.position.findMany({ where: { isActive: true } })
   ]);
 
   const existingEmails = new Set(existingByEmail.map((u) => u.email));

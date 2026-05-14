@@ -5,6 +5,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requireCurrentUser } from "@/lib/auth/current-user";
 import { signOut } from "@/auth";
+import { AuditAction } from "@/lib/generated/prisma/client";
 
 const schema = z
   .object({
@@ -90,6 +91,16 @@ export async function changePasswordAction(
     data: {
       passwordHash,
       isTemporaryPassword: false,
+    },
+  });
+
+  await prisma.auditLog.create({
+    data: {
+      actorId: user.id,
+      action: AuditAction.USER_UPDATED,
+      metadata: {
+        type: "PASSWORD_CHANGED",
+      },
     },
   });
 

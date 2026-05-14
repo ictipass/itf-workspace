@@ -3,7 +3,7 @@ import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { UserStatus } from "@/lib/generated/prisma/client";
+import { UserStatus, AuditAction } from "@/lib/generated/prisma/client";
 
 const loginSchema = z.object({
   email: z.string().email(),
@@ -57,6 +57,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const validPassword = await bcrypt.compare(password, user.passwordHash);
 
         if (!validPassword) return null;
+
+        await prisma.auditLog.create({
+          data: {
+            actorId: user.id,
+            action: AuditAction.LOGIN,
+            metadata: {
+              email: user.email,
+              workspaceRole: user.workspaceRole,
+            },
+          },
+        });
 
         return {
           id: user.id,

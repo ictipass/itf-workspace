@@ -19,6 +19,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { activateUserAction, deactivateUserAction } from "./actions";
 
 export default async function UsersPage() {
   const user = await requireCurrentUser();
@@ -76,6 +77,7 @@ export default async function UsersPage() {
                 <TableHead>Status</TableHead>
                 <TableHead>Temp Password</TableHead>
                 <TableHead>Apps</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
 
@@ -126,6 +128,24 @@ export default async function UsersPage() {
                     </TableCell>
 
                     <TableCell>{item._count.appAccesses}</TableCell>
+
+                    <TableCell className="text-right">
+                      {item.status === UserStatus.ACTIVE ? (
+                        <form action={deactivateUserAction}>
+                          <input type="hidden" name="id" value={item.id} />
+                          <Button type="submit" size="sm" variant="destructive">
+                            Deactivate
+                          </Button>
+                        </form>
+                      ) : (
+                        <form action={activateUserAction}>
+                          <input type="hidden" name="id" value={item.id} />
+                          <Button type="submit" size="sm" variant="outline">
+                            Activate
+                          </Button>
+                        </form>
+                      )}
+                    </TableCell>
                   </TableRow>
                 ))
               )}

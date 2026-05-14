@@ -8,11 +8,14 @@ import {
   Settings,
   ShieldCheck,
   Users,
+  ClipboardList
 } from "lucide-react";
 import { WorkspaceRole } from "@/lib/generated/prisma/client";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
+import { prisma } from "@/lib/prisma";
+import { AuditAction } from "@/lib/generated/prisma/client";
 
 export default async function DashboardLayout({
   children,
@@ -76,6 +79,13 @@ export default async function DashboardLayout({
               <NavItem href="/dashboard/admin/access" icon={<ShieldCheck className="h-4 w-4" />}>
                 App Access
               </NavItem>
+
+              <NavItem
+                href="/dashboard/admin/audit-logs"
+                icon={<ClipboardList className="h-4 w-4" />}
+              >
+                Audit Logs
+              </NavItem>
             </>
           ) : null}
         </nav>
@@ -100,6 +110,19 @@ export default async function DashboardLayout({
             className="mt-3"
             action={async () => {
               "use server";
+
+
+              const session = await auth();
+
+              if (session?.user?.id) {
+                await prisma.auditLog.create({
+                  data: {
+                    actorId: session.user.id,
+                    action: AuditAction.LOGOUT,
+                  },
+                });
+              }
+
               await signOut({ redirectTo: "/login" });
             }}
           >

@@ -109,10 +109,11 @@ model User {
 }
 
 model Office {
-  id   String     @id @default(cuid())
-  name String
-  code String     @unique
-  type OfficeType
+  id       String     @id @default(cuid())
+  name     String
+  code     String     @unique
+  type     OfficeType
+  isActive Boolean    @default(true)
 
   users       User[]
   departments Department[]
@@ -122,9 +123,10 @@ model Office {
 }
 
 model Department {
-  id   String @id @default(cuid())
-  name String
-  code String
+  id       String  @id @default(cuid())
+  name     String
+  code     String
+  isActive Boolean @default(true)
 
   officeId String?
   office   Office? @relation(fields: [officeId], references: [id])
@@ -139,9 +141,10 @@ model Department {
 }
 
 model Division {
-  id   String @id @default(cuid())
-  name String
-  code String
+  id       String  @id @default(cuid())
+  name     String
+  code     String
+  isActive Boolean @default(true)
 
   departmentId String
   department   Department @relation(fields: [departmentId], references: [id])
@@ -156,9 +159,10 @@ model Division {
 }
 
 model Unit {
-  id   String @id @default(cuid())
-  name String
-  code String
+  id       String  @id @default(cuid())
+  name     String
+  code     String
+  isActive Boolean @default(true)
 
   divisionId String?
   division   Division? @relation(fields: [divisionId], references: [id])
@@ -170,9 +174,10 @@ model Unit {
 }
 
 model Position {
-  id    String @id @default(cuid())
-  title String
-  code  String @unique
+  id       String  @id @default(cuid())
+  title    String
+  code     String  @unique
+  isActive Boolean @default(true)
 
   users User[]
 

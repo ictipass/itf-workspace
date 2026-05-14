@@ -18,6 +18,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import Link from "next/link";
+import { deactivateAppAction } from "./actions";
+import { Button } from "@/components/ui/button";
 
 export default async function AdminAppsPage() {
   const user = await requireCurrentUser();
@@ -55,6 +58,7 @@ export default async function AdminAppsPage() {
                 <TableHead>Environment</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>URL</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
 
@@ -82,6 +86,22 @@ export default async function AdminAppsPage() {
                       </Badge>
                     </TableCell>
                     <TableCell className="max-w-xs truncate">{app.url}</TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-2">
+                        <Button asChild size="sm" variant="outline">
+                          <Link href={`/dashboard/admin/apps/${app.id}/edit`}>Edit</Link>
+                        </Button>
+
+                        {app.status !== "INACTIVE" ? (
+                          <form action={deactivateAppAction}>
+                            <input type="hidden" name="id" value={app.id} />
+                            <Button type="submit" size="sm" variant="destructive">
+                              Deactivate
+                            </Button>
+                          </form>
+                        ) : null}
+                      </div>
+                    </TableCell>
                   </TableRow>
                 ))
               )}
