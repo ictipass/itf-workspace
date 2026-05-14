@@ -20,15 +20,68 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { activateUserAction, deactivateUserAction } from "./actions";
+import { Input } from "@/components/ui/input";
+import {
+  NativeSelect,
+  NativeSelectOption,
+} from "@/components/ui/native-select";
 
-export default async function UsersPage() {
+type UsersPageProps = {
+  searchParams: Promise<{
+    q?: string | string[];
+    status?: string | string[];
+    role?: string | string[];
+    temporaryPassword?: string | string[];
+  }>;
+};
+
+function firstQueryValue(value: string | string[] | undefined) {
+  return Array.isArray(value) ? value[0] : value;
+}
+
+export default async function UsersPage({ searchParams }: UsersPageProps) {
   const user = await requireCurrentUser();
 
   if (user.workspaceRole !== WorkspaceRole.SYSTEM_ADMIN) {
     redirect("/dashboard");
   }
 
+  const params = await searchParams;
+  const query = firstQueryValue(params.q)?.trim() ?? "";
+  const status = firstQueryValue(params.status) ?? "ALL";
+  const role = firstQueryValue(params.role) ?? "ALL";
+  const temporaryPassword = firstQueryValue(params.temporaryPassword) ?? "ALL";
+
+  const statusFilter = Object.values(UserStatus).includes(status as UserStatus)
+    ? (status as UserStatus)
+    : undefined;
+  const roleFilter = Object.values(WorkspaceRole).includes(role as WorkspaceRole)
+    ? (role as WorkspaceRole)
+    : undefined;
+  const temporaryPasswordFilter =
+    temporaryPassword === "YES"
+      ? true
+      : temporaryPassword === "NO"
+        ? false
+        : undefined;
+
   const users = await prisma.user.findMany({
+    where: {
+      ...(query
+        ? {
+            OR: [
+              { fullName: { contains: query, mode: "insensitive" } },
+              { email: { contains: query, mode: "insensitive" } },
+              { staffNumber: { contains: query, mode: "insensitive" } },
+            ],
+          }
+        : {}),
+      ...(statusFilter ? { status: statusFilter } : {}),
+      ...(roleFilter ? { workspaceRole: roleFilter } : {}),
+      ...(temporaryPasswordFilter === undefined
+        ? {}
+        : { isTemporaryPassword: temporaryPasswordFilter }),
+    },
     include: {
       office: true,
       department: true,
@@ -63,10 +116,57 @@ export default async function UsersPage() {
 
       <Card className="rounded-2xl">
         <CardHeader>
-          <CardTitle>Users</CardTitle>
+          <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
+            <div>
+              <CardTitle>Users</CardTitle>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {users.length} user{users.length === 1 ? "" : "s"} found
+              </p>
+            </div>
+
+            <form className="flex flex-col gap-2 md:flex-row md:items-center">
+              <Input
+                className="md:w-72"
+                name="q"
+                placeholder="Search name, email, staff no."
+                defaultValue={query}
+              />
+              <NativeSelect name="status" defaultValue={status}>
+                <NativeSelectOption value="ALL">All statuses</NativeSelectOption>
+                {Object.values(UserStatus).map((item) => (
+                  <NativeSelectOption key={item} value={item}>
+                    {item}
+                  </NativeSelectOption>
+                ))}
+              </NativeSelect>
+              <NativeSelect name="role" defaultValue={role}>
+                <NativeSelectOption value="ALL">All roles</NativeSelectOption>
+                {Object.values(WorkspaceRole).map((item) => (
+                  <NativeSelectOption key={item} value={item}>
+                    {item}
+                  </NativeSelectOption>
+                ))}
+              </NativeSelect>
+              <NativeSelect
+                name="temporaryPassword"
+                defaultValue={temporaryPassword}
+              >
+                <NativeSelectOption value="ALL">Any password state</NativeSelectOption>
+                <NativeSelectOption value="YES">Temporary password</NativeSelectOption>
+                <NativeSelectOption value="NO">Password changed</NativeSelectOption>
+              </NativeSelect>
+              <Button type="submit" variant="outline">
+                Apply
+              </Button>
+              <Button asChild type="button" variant="ghost">
+                <Link href="/dashboard/admin/users">Reset</Link>
+              </Button>
+            </form>
+          </div>
         </CardHeader>
 
         <CardContent>
+          <div className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
@@ -84,7 +184,7 @@ export default async function UsersPage() {
             <TableBody>
               {users.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="h-24 text-center">
+                  <TableCell colSpan={8} className="h-24 text-center">
                     No users found.
                   </TableCell>
                 </TableRow>
@@ -151,6 +251,7 @@ export default async function UsersPage() {
               )}
             </TableBody>
           </Table>
+          </div>
         </CardContent>
       </Card>
     </div>

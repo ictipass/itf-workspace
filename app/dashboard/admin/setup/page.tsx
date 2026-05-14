@@ -28,6 +28,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import SetupRecordStatusButton from "./setup-record-status-button";
+import SetupRecordEditDialog from "./setup-record-edit-dialog";
 
 export default async function OrganizationSetupPage() {
   const user = await requireCurrentUser();
@@ -105,6 +106,7 @@ export default async function OrganizationSetupPage() {
             </SetupCard>
 
             <SetupCard title="Offices">
+              <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -130,16 +132,25 @@ export default async function OrganizationSetupPage() {
                       </TableCell>
 
                       <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                        <SetupRecordEditDialog
+                          id={office.id}
+                          entity="office"
+                          code={office.code}
+                          displayName={office.name}
+                        />
                         <SetupRecordStatusButton
                           id={office.id}
                           entity="office"
                           isActive={office.isActive}
                         />
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
+              </div>
             </SetupCard>
           </Grid>
         </TabsContent>
@@ -151,6 +162,7 @@ export default async function OrganizationSetupPage() {
             </SetupCard>
 
             <SetupCard title="Departments">
+              <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -176,16 +188,25 @@ export default async function OrganizationSetupPage() {
                       </TableCell>
 
                       <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                        <SetupRecordEditDialog
+                          id={department.id}
+                          entity="department"
+                          code={department.code}
+                          displayName={department.name}
+                        />
                         <SetupRecordStatusButton
                           id={department.id}
                           entity="department"
                           isActive={department.isActive}
                         />
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
+              </div>
             </SetupCard>
           </Grid>
         </TabsContent>
@@ -197,6 +218,7 @@ export default async function OrganizationSetupPage() {
             </SetupCard>
 
             <SetupCard title="Divisions">
+              <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -222,16 +244,25 @@ export default async function OrganizationSetupPage() {
                       </TableCell>
 
                       <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                        <SetupRecordEditDialog
+                          id={division.id}
+                          entity="division"
+                          code={division.code}
+                          displayName={division.name}
+                        />
                         <SetupRecordStatusButton
                           id={division.id}
                           entity="division"
                           isActive={division.isActive}
                         />
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
+              </div>
             </SetupCard>
           </Grid>
         </TabsContent>
@@ -243,6 +274,7 @@ export default async function OrganizationSetupPage() {
             </SetupCard>
 
             <SetupCard title="Units">
+              <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -268,16 +300,25 @@ export default async function OrganizationSetupPage() {
                       </TableCell>
 
                       <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                        <SetupRecordEditDialog
+                          id={unit.id}
+                          entity="unit"
+                          code={unit.code}
+                          displayName={unit.name}
+                        />
                         <SetupRecordStatusButton
                           id={unit.id}
                           entity="unit"
                           isActive={unit.isActive}
                         />
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
+              </div>
             </SetupCard>
           </Grid>
         </TabsContent>
@@ -289,6 +330,7 @@ export default async function OrganizationSetupPage() {
             </SetupCard>
 
             <SetupCard title="Positions">
+              <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -312,16 +354,25 @@ export default async function OrganizationSetupPage() {
                       </TableCell>
 
                       <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                        <SetupRecordEditDialog
+                          id={position.id}
+                          entity="position"
+                          code={position.code}
+                          displayName={position.title}
+                        />
                         <SetupRecordStatusButton
                           id={position.id}
                           entity="position"
                           isActive={position.isActive}
                         />
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
+              </div>
             </SetupCard>
           </Grid>
         </TabsContent>
