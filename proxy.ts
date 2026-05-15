@@ -1,14 +1,14 @@
 import { auth } from "@/auth";
 import { NextResponse } from "next/server";
 
-const publicRoutes = ["/login", "/api/auth"];
+const publicRoutes = ["/", "/login", "/api/auth"];
 const passwordRoutes = ["/change-password"];
 
 export default auth((req) => {
   const { nextUrl } = req;
 
   const isPublicRoute = publicRoutes.some((route) =>
-    nextUrl.pathname.startsWith(route)
+    route === "/" ? nextUrl.pathname === "/" : nextUrl.pathname.startsWith(route)
   );
 
   const isPasswordRoute = passwordRoutes.some((route) =>
