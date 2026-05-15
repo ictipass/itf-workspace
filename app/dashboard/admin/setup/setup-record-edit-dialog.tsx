@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useState } from "react";
 import { Pencil } from "lucide-react";
 import { updateSetupDisplayNameAction } from "./actions";
 import type { SetupActionState } from "./actions";
@@ -42,12 +42,6 @@ export default function SetupRecordEditDialog({
     initialState
   );
 
-  useEffect(() => {
-    if (state.success) {
-      setOpen(false);
-    }
-  }, [state.success]);
-
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -68,8 +62,8 @@ export default function SetupRecordEditDialog({
           <input type="hidden" name="id" value={id} />
           <input type="hidden" name="entity" value={entity} />
 
-          {state.message && !state.success ? (
-            <Alert variant="destructive">
+          {state.message ? (
+            <Alert variant={state.success ? "default" : "destructive"}>
               <AlertDescription>{state.message}</AlertDescription>
             </Alert>
           ) : null}

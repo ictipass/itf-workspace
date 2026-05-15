@@ -54,18 +54,6 @@ export default async function OrganizationSetupPage() {
     prisma.position.findMany({ orderBy: { title: "asc" } }),
   ]);
 
-  const officeOptions = offices.map(({ id, name, code }) => ({ id, name, code }));
-  const departmentOptions = departments.map(({ id, name, code }) => ({
-    id,
-    name,
-    code,
-  }));
-  const divisionOptions = divisions.map(({ id, name, code }) => ({
-    id,
-    name,
-    code,
-  }));
-
   const activeOffices = offices.filter((item) => item.isActive);
   const activeDepartments = departments.filter((item) => item.isActive);
   const activeDivisions = divisions.filter((item) => item.isActive);

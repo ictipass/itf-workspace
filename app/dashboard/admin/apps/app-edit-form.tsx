@@ -2,11 +2,10 @@
 
 import { useActionState } from "react";
 import {
-  App,
   AppCategory,
   AppEnvironment,
   AppStatus,
-} from "@/lib/generated/prisma/client";
+} from "@/lib/generated/prisma/enums";
 import { updateAppAction, AppActionState } from "./actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,7 +17,19 @@ const initialState: AppActionState = {
   message: "",
 };
 
-export default function AppEditForm({ app }: { app: App }) {
+type EditableApp = {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  url: string;
+  icon: string | null;
+  category: AppCategory;
+  environment: AppEnvironment;
+  status: AppStatus;
+};
+
+export default function AppEditForm({ app }: { app: EditableApp }) {
   const [state, formAction, isPending] = useActionState(updateAppAction, initialState);
 
   return (

@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { AppAccessStatus, AppStatus, AuditAction } from "@/lib/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { requireCurrentUser } from "@/lib/auth/current-user";
+import { createWorkspaceLaunchToken } from "@/lib/security/sso-launch-token";
 
 type Props = {
   params: Promise<{
@@ -31,6 +32,29 @@ export async function GET(_req: Request, { params }: Props) {
     redirect("/dashboard/apps");
   }
 
+  const launchToken = createWorkspaceLaunchToken({
+    user: {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      staffNumber: user.staffNumber,
+      workspaceRole: user.workspaceRole,
+      officeId: user.officeId,
+      departmentId: user.departmentId,
+      divisionId: user.divisionId,
+      unitId: user.unitId,
+      positionId: user.positionId,
+    },
+    app: {
+      id: access.app.id,
+      slug: access.app.slug,
+      name: access.app.name,
+      role: access.appRole,
+    },
+  });
+  const launchUrl = new URL(access.app.url);
+  launchUrl.searchParams.set("workspace_launch_token", launchToken.token);
+
   await prisma.auditLog.create({
     data: {
       actorId: user.id,
@@ -39,9 +63,11 @@ export async function GET(_req: Request, { params }: Props) {
         appId: access.app.id,
         appName: access.app.name,
         appUrl: access.app.url,
+        launchTokenId: launchToken.tokenId,
+        launchTokenExpiresAt: launchToken.expiresAt,
       },
     },
   });
 
-  redirect(access.app.url);
+  redirect(launchUrl.toString());
 }
