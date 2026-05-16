@@ -1,8 +1,9 @@
 "use client";
 
-import { useActionState } from "react";
+import { forwardRef, useActionState, useRef } from "react";
 import { createAppAction } from "./actions";
 import type { AppActionState } from "./actions";
+import AppUrlTestButton from "./app-url-test-button";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -38,6 +39,7 @@ const appEnvironments = ["PRODUCTION", "STAGING", "DEVELOPMENT"] as const;
 const appStatuses = ["ACTIVE", "INACTIVE", "MAINTENANCE"] as const;
 
 export default function AppCreateForm() {
+  const urlInputRef = useRef<HTMLInputElement>(null);
   const [state, formAction, isPending] = useActionState(
     createAppAction,
     initialState
@@ -53,7 +55,14 @@ export default function AppCreateForm() {
 
       <Field label="Name" name="name" error={state.errors?.name?.[0]} />
       <Field label="Slug" name="slug" error={state.errors?.slug?.[0]} />
-      <Field label="URL" name="url" error={state.errors?.url?.[0]} />
+      <Field
+        label="Canonical Launch URL"
+        name="url"
+        error={state.errors?.url?.[0]}
+        ref={urlInputRef}
+        description="Use the exact reachable host, for example https://itfpromotel.itf.gov.ng. Do not add Workspace token parameters manually."
+      />
+      <AppUrlTestButton getUrl={() => urlInputRef.current?.value ?? ""} />
       <Field label="Icon" name="icon" error={state.errors?.icon?.[0]} />
 
       <div className="space-y-2">
@@ -89,23 +98,28 @@ export default function AppCreateForm() {
   );
 }
 
-function Field({
-  label,
-  name,
-  error,
-}: {
+const Field = forwardRef<HTMLInputElement, {
   label: string;
   name: string;
   error?: string;
-}) {
+  description?: string;
+}>(function Field({
+  label,
+  name,
+  error,
+  description,
+}, ref) {
   return (
     <div className="space-y-2">
       <Label>{label}</Label>
-      <Input name={name} />
+      <Input ref={ref} name={name} />
+      {description ? (
+        <p className="text-xs leading-5 text-muted-foreground">{description}</p>
+      ) : null}
       {error ? <p className="text-xs text-destructive">{error}</p> : null}
     </div>
   );
-}
+});
 
 function EnumSelect({
   label,

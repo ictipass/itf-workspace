@@ -21,6 +21,7 @@ import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { deactivateAppAction } from "./actions";
 import { Button } from "@/components/ui/button";
+import AppUrlTestButton from "./app-url-test-button";
 
 export default async function AdminAppsPage() {
   const user = await requireCurrentUser();
@@ -85,7 +86,12 @@ export default async function AdminAppsPage() {
                         {app.status}
                       </Badge>
                     </TableCell>
-                    <TableCell className="max-w-xs truncate">{app.url}</TableCell>
+                    <TableCell className="max-w-xs">
+                      <div className="truncate">{app.url}</div>
+                      <div className="mt-2">
+                        <AppUrlTestButton url={app.url} />
+                      </div>
+                    </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
                         <Button asChild size="sm" variant="outline">

@@ -7,6 +7,7 @@ import {
   AppStatus,
 } from "@/lib/generated/prisma/enums";
 import { updateAppAction, AppActionState } from "./actions";
+import AppUrlTestButton from "./app-url-test-button";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -44,7 +45,13 @@ export default function AppEditForm({ app }: { app: EditableApp }) {
 
       <Field label="Name" name="name" defaultValue={app.name} />
       <Field label="Slug" name="slug" defaultValue={app.slug} />
-      <Field label="URL" name="url" defaultValue={app.url} />
+      <Field
+        label="Canonical Launch URL"
+        name="url"
+        defaultValue={app.url}
+        description="Use the exact reachable host. Workspace adds workspace_launch_token during launch."
+      />
+      <AppUrlTestButton url={app.url} />
       <Field label="Icon" name="icon" defaultValue={app.icon ?? ""} />
 
       <div className="space-y-2">
@@ -71,15 +78,20 @@ function Field({
   label,
   name,
   defaultValue,
+  description,
 }: {
   label: string;
   name: string;
   defaultValue?: string;
+  description?: string;
 }) {
   return (
     <div className="space-y-2">
       <Label>{label}</Label>
       <Input name={name} defaultValue={defaultValue} />
+      {description ? (
+        <p className="text-xs leading-5 text-muted-foreground">{description}</p>
+      ) : null}
     </div>
   );
 }

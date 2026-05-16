@@ -3,6 +3,7 @@ import { AppAccessStatus, AppStatus, AuditAction } from "@/lib/generated/prisma/
 import { prisma } from "@/lib/prisma";
 import { requireCurrentUser } from "@/lib/auth/current-user";
 import { createWorkspaceLaunchToken } from "@/lib/security/sso-launch-token";
+import { appendWorkspaceLaunchToken } from "@/lib/apps/launch-url";
 
 type Props = {
   params: Promise<{
@@ -52,8 +53,7 @@ export async function GET(_req: Request, { params }: Props) {
       role: access.appRole,
     },
   });
-  const launchUrl = new URL(access.app.url);
-  launchUrl.searchParams.set("workspace_launch_token", launchToken.token);
+  const launchUrl = appendWorkspaceLaunchToken(access.app.url, launchToken.token);
 
   await prisma.auditLog.create({
     data: {
@@ -69,5 +69,5 @@ export async function GET(_req: Request, { params }: Props) {
     },
   });
 
-  redirect(launchUrl.toString());
+  redirect(launchUrl);
 }

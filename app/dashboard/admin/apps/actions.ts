@@ -11,12 +11,25 @@ import {
 } from "@/lib/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { requireCurrentUser } from "@/lib/auth/current-user";
+import { normalizeAppLaunchUrl } from "@/lib/apps/launch-url";
+
+const appLaunchUrlSchema = z.string().trim().min(1).refine(
+  (value) => {
+    try {
+      normalizeAppLaunchUrl(value);
+      return true;
+    } catch {
+      return false;
+    }
+  },
+  { message: "Enter a valid http or https URL." }
+);
 
 const appSchema = z.object({
   name: z.string().min(2),
   slug: z.string().min(2).regex(/^[a-z0-9-]+$/),
   description: z.string().optional(),
-  url: z.string().url(),
+  url: appLaunchUrlSchema,
   icon: z.string().optional(),
   category: z.nativeEnum(AppCategory),
   environment: z.nativeEnum(AppEnvironment),
@@ -70,7 +83,10 @@ export async function createAppAction(
   }
 
   const app = await prisma.app.create({
-    data: parsed.data,
+    data: {
+      ...parsed.data,
+      url: normalizeAppLaunchUrl(parsed.data.url),
+    },
   });
 
   await prisma.auditLog.create({
@@ -132,7 +148,10 @@ export async function updateAppAction(
 
   const app = await prisma.app.update({
     where: { id },
-    data,
+    data: {
+      ...data,
+      url: normalizeAppLaunchUrl(data.url),
+    },
   });
 
   await prisma.auditLog.create({
