@@ -118,15 +118,28 @@ export default function Home() {
             </div>
 
             <div className="lg:justify-self-end">
-              <div className="mx-auto flex aspect-square w-full max-w-sm items-center justify-center">
-                <Image
-                  src="/itf-logo.png"
-                  alt="Industrial Training Fund seal"
-                  width={220}
-                  height={220}
-                  priority
-                  className="logo-settle h-56 w-56 object-contain"
-                />
+              <div className="logo-3d-scene mx-auto flex aspect-square w-full max-w-sm items-center justify-center">
+                <div className="logo-3d-coin" aria-label="Industrial Training Fund seal">
+                  <div className="logo-3d-face logo-3d-front">
+                    <Image
+                      src="/itf-logo.png"
+                      alt="Industrial Training Fund seal"
+                      width={224}
+                      height={224}
+                      priority
+                      className="h-full w-full object-contain"
+                    />
+                  </div>
+                  <div className="logo-3d-face logo-3d-back" aria-hidden="true">
+                    <Image
+                      src="/itf-logo.png"
+                      alt=""
+                      width={224}
+                      height={224}
+                      className="h-full w-full object-contain"
+                    />
+                  </div>
+                </div>
               </div>
             </div>
           </div>
