@@ -25,11 +25,15 @@ type CsvRow = {
   divisionCode?: string;
   unitCode?: string;
   positionCode?: string;
+  supervisorStaffNumber?: string;
+  itfFlowRole?: string;
 };
 
 export type BulkImportResult = {
   success: boolean;
   createdCount: number;
+  validatedCount?: number;
+  dryRun?: boolean;
   errors: string[];
   devLogPath?: string;
 };
@@ -44,7 +48,20 @@ const REQUIRED_HEADERS = [
   "divisionCode",
   "unitCode",
   "positionCode",
+  "supervisorStaffNumber",
+  "itfFlowRole",
 ];
+
+const ITF_FLOW_ROLES = new Set([
+  "DG_SECRETARY",
+  "DG",
+  "DIRECTOR",
+  "DIVISION_HEAD",
+  "UNIT_HEAD",
+  "OFFICER",
+  "RECORDS_ADMIN",
+  "SYSTEM_ADMIN",
+]);
 
 function normalize(value: unknown) {
   return String(value ?? "").trim();
@@ -61,6 +78,7 @@ function isValidWorkspaceRole(role: string): role is WorkspaceRole {
 export async function importWorkspaceUsersFromCsv(params: {
   csvText: string;
   importedById: string;
+  dryRun?: boolean;
 }): Promise<BulkImportResult> {
   const { csvText, importedById } = params;
 
@@ -104,6 +122,8 @@ export async function importWorkspaceUsersFromCsv(params: {
     divisionCode: normalize(row.divisionCode),
     unitCode: normalize(row.unitCode),
     positionCode: normalize(row.positionCode),
+    supervisorStaffNumber: normalize(row.supervisorStaffNumber),
+    itfFlowRole: normalize(row.itfFlowRole),
   }));
 
   const emailsInCsv = new Set<string>();
@@ -126,6 +146,16 @@ export async function importWorkspaceUsersFromCsv(params: {
         `Row ${row.rowNumber}: Invalid workspaceRole "${row.workspaceRole}". Allowed roles are ${Object.values(
           WorkspaceRole
         ).join(", ")}.`
+      );
+    }
+
+    if (row.supervisorStaffNumber && row.supervisorStaffNumber === row.staffNumber) {
+      errors.push(`Row ${row.rowNumber}: a user cannot supervise themselves.`);
+    }
+
+    if (row.itfFlowRole && !ITF_FLOW_ROLES.has(row.itfFlowRole)) {
+      errors.push(
+        `Row ${row.rowNumber}: invalid itfFlowRole "${row.itfFlowRole}".`,
       );
     }
 
@@ -158,6 +188,8 @@ export async function importWorkspaceUsersFromCsv(params: {
     divisions,
     units,
     positions,
+    existingSupervisors,
+    itfFlowApp,
   ] = await Promise.all([
     prisma.user.findMany({
       where: { email: { in: rows.map((r) => r.email) } },
@@ -171,7 +203,16 @@ export async function importWorkspaceUsersFromCsv(params: {
     prisma.department.findMany({ where: { isActive: true } }),
     prisma.division.findMany({ where: { isActive: true } }),
     prisma.unit.findMany({ where: { isActive: true } }),
-    prisma.position.findMany({ where: { isActive: true } })
+    prisma.position.findMany({ where: { isActive: true } }),
+    prisma.user.findMany({
+      where: {
+        staffNumber: {
+          in: rows.map((row) => row.supervisorStaffNumber).filter(Boolean),
+        },
+      },
+      select: { id: true, staffNumber: true },
+    }),
+    prisma.app.findUnique({ where: { slug: "itf-flow" }, select: { id: true } }),
   ]);
 
   const existingEmails = new Set(existingByEmail.map((u) => u.email));
@@ -186,6 +227,11 @@ export async function importWorkspaceUsersFromCsv(params: {
   const divisionByCode = groupByCode(divisions);
   const unitByCode = groupByCode(units);
   const positionByCode = new Map(positions.map((item) => [item.code, item]));
+  const existingSupervisorByStaffNumber = new Map(
+    existingSupervisors
+      .filter((item) => item.staffNumber)
+      .map((item) => [item.staffNumber!, item.id]),
+  );
 
   type ValidatedRow = {
     rowNumber: number;
@@ -199,6 +245,8 @@ export async function importWorkspaceUsersFromCsv(params: {
     unit?: Unit;
     position?: Position;
     temporaryPassword: string;
+    supervisorStaffNumber?: string;
+    itfFlowRole?: string;
   };
 
   const validatedRows: ValidatedRow[] = [];
@@ -275,6 +323,22 @@ export async function importWorkspaceUsersFromCsv(params: {
       }
     }
 
+    if (
+      row.supervisorStaffNumber &&
+      !staffNumbersInCsv.has(row.supervisorStaffNumber) &&
+      !existingSupervisorByStaffNumber.has(row.supervisorStaffNumber)
+    ) {
+      errors.push(
+        `Row ${row.rowNumber}: supervisorStaffNumber "${row.supervisorStaffNumber}" was not found in Workspace or this import.`,
+      );
+    }
+
+    if (row.itfFlowRole && !itfFlowApp) {
+      errors.push(
+        `Row ${row.rowNumber}: ITF Flow must be registered before assigning itfFlowRole.`,
+      );
+    }
+
     validatedRows.push({
       rowNumber: row.rowNumber,
       staffNumber: row.staffNumber,
@@ -287,11 +351,23 @@ export async function importWorkspaceUsersFromCsv(params: {
       unit,
       position,
       temporaryPassword: generateTemporaryPassword(),
+      supervisorStaffNumber: row.supervisorStaffNumber || undefined,
+      itfFlowRole: row.itfFlowRole || undefined,
     });
   }
 
   if (errors.length > 0) {
     return { success: false, createdCount: 0, errors };
+  }
+
+  if (params.dryRun) {
+    return {
+      success: true,
+      createdCount: 0,
+      validatedCount: validatedRows.length,
+      dryRun: true,
+      errors: [],
+    };
   }
 
   const createdCredentials: Array<{
@@ -308,10 +384,12 @@ export async function importWorkspaceUsersFromCsv(params: {
   }> = [];
 
   await prisma.$transaction(async (tx) => {
+    const createdUserIdByStaffNumber = new Map<string, string>();
+
     for (const row of validatedRows) {
       const passwordHash = await bcrypt.hash(row.temporaryPassword, 10);
 
-      await tx.user.create({
+      const created = await tx.user.create({
         data: {
           staffNumber: row.staffNumber,
           fullName: row.fullName,
@@ -327,6 +405,7 @@ export async function importWorkspaceUsersFromCsv(params: {
           positionId: row.position?.id,
         },
       });
+      createdUserIdByStaffNumber.set(row.staffNumber, created.id);
 
       createdCredentials.push({
         staffNumber: row.staffNumber,
@@ -342,6 +421,29 @@ export async function importWorkspaceUsersFromCsv(params: {
       });
     }
 
+    for (const row of validatedRows) {
+      const userId = createdUserIdByStaffNumber.get(row.staffNumber)!;
+      if (row.supervisorStaffNumber) {
+        const supervisorId =
+          createdUserIdByStaffNumber.get(row.supervisorStaffNumber) ??
+          existingSupervisorByStaffNumber.get(row.supervisorStaffNumber);
+        if (!supervisorId) throw new Error("Validated supervisor could not be resolved.");
+        await tx.user.update({ where: { id: userId }, data: { supervisorId } });
+      }
+
+      if (row.itfFlowRole && itfFlowApp) {
+        await tx.appAccess.create({
+          data: {
+            userId,
+            appId: itfFlowApp.id,
+            appRole: row.itfFlowRole,
+            status: "ACTIVE",
+            grantedById: importedById,
+          },
+        });
+      }
+    }
+
     await tx.auditLog.create({
       data: {
         actorId: importedById,
@@ -349,6 +451,8 @@ export async function importWorkspaceUsersFromCsv(params: {
         metadata: {
           mode: "BULK_IMPORT",
           createdCount: validatedRows.length,
+          reportingLinesAssigned: validatedRows.filter((row) => row.supervisorStaffNumber).length,
+          itfFlowEntitlementsGranted: validatedRows.filter((row) => row.itfFlowRole).length,
         },
       },
     });

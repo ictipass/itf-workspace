@@ -10,9 +10,9 @@ export async function GET() {
   }
 
   const csv = [
-    "staffNumber,fullName,email,workspaceRole,officeCode,departmentCode,divisionCode,unitCode,positionCode",
-    "ITF00123,Amina Bala,amina.bala@itf.gov.ng,STAFF,HQ,ICT,PASS,SOFTWARE_SUPPORT,SERVICE_OFFICER",
-    "ITF00124,John Okafor,john.okafor@itf.gov.ng,APP_ADMIN,HQ,ICT,HARDWARE,HARDWARE_SUPPORT,SERVICE_OFFICER",
+    "staffNumber,fullName,email,workspaceRole,officeCode,departmentCode,divisionCode,unitCode,positionCode,supervisorStaffNumber,itfFlowRole",
+    "ITF00123,Amina Bala,amina.bala@itf.gov.ng,STAFF,HQ,ICT,PASS,SOFTWARE_SUPPORT,SERVICE_OFFICER,ITF00120,OFFICER",
+    "ITF00120,John Okafor,john.okafor@itf.gov.ng,APP_ADMIN,HQ,ICT,PASS,SOFTWARE_SUPPORT,UNIT_HEAD,ITF00110,UNIT_HEAD",
   ].join("\n");
 
   return new NextResponse(csv, {

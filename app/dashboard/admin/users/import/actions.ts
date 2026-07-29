@@ -3,6 +3,7 @@
 import { WorkspaceRole } from "@/lib/generated/prisma/client";
 import { requireCurrentUser } from "@/lib/auth/current-user";
 import { importWorkspaceUsersFromCsv } from "@/lib/services/workspace-user-bulk-import.service";
+import { syncItfFlowDirectory } from "@/lib/integrations/itf-flow-directory-sync";
 
 export type ImportUsersState = {
   success: boolean;
@@ -46,6 +47,7 @@ export async function importUsersAction(
   const result = await importWorkspaceUsersFromCsv({
     csvText,
     importedById: user.id,
+    dryRun: formData.get("dryRun") === "on",
   });
 
   if (!result.success) {
@@ -59,8 +61,38 @@ export async function importUsersAction(
 
   return {
     success: true,
-    message: `${result.createdCount} user(s) created successfully.`,
+    message: result.dryRun
+      ? `Dry run passed. ${result.validatedCount} row(s) are ready to import; no data was changed.`
+      : `${result.createdCount} user(s) created successfully.`,
     createdCount: result.createdCount,
     devLogPath: result.devLogPath,
   };
+}
+
+export type DirectorySyncState = {
+  success: boolean;
+  message: string;
+};
+
+export async function syncItfFlowDirectoryAction(
+  _previousState: DirectorySyncState,
+): Promise<DirectorySyncState> {
+  void _previousState;
+  const user = await requireCurrentUser();
+  if (user.workspaceRole !== WorkspaceRole.SYSTEM_ADMIN) {
+    return { success: false, message: "Only System Administrators can synchronize ITF Flow." };
+  }
+
+  try {
+    const result = await syncItfFlowDirectory();
+    return {
+      success: true,
+      message: `Synchronized ${result.totalCount} entitled user(s) in ${result.batchCount} batch(es): ${result.createdCount} created, ${result.updatedCount} updated, ${result.inactiveCount} inactive.`,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : "ITF Flow synchronization failed.",
+    };
+  }
 }

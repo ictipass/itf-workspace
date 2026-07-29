@@ -101,11 +101,17 @@ model User {
   positionId String?
   position   Position? @relation(fields: [positionId], references: [id])
 
+  supervisorId  String?
+  supervisor    User?  @relation("WorkspaceReportingLine", fields: [supervisorId], references: [id], onDelete: SetNull)
+  directReports User[] @relation("WorkspaceReportingLine")
+
   appAccesses AppAccess[]
   auditLogs   AuditLog[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([supervisorId, status])
 }
 
 model Office {

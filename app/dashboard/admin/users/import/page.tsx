@@ -5,6 +5,7 @@ import { requireCurrentUser } from "@/lib/auth/current-user";
 import ImportUsersForm from "./user-import-form";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { DirectorySyncForm } from "./directory-sync-form";
 
 export default async function ImportUsersPage() {
   const user = await requireCurrentUser();
@@ -45,11 +46,24 @@ export default async function ImportUsersPage() {
 
       <Card className="rounded-2xl">
         <CardHeader>
+          <CardTitle>ITF Flow Directory Synchronization</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <p className="text-sm text-muted-foreground">
+            Send active ITF Flow entitlements, organization placement, status, role, and
+            supervisor assignments to the child application in batches of 200.
+          </p>
+          <DirectorySyncForm />
+        </CardContent>
+      </Card>
+
+      <Card className="rounded-2xl">
+        <CardHeader>
           <CardTitle>Required Columns</CardTitle>
         </CardHeader>
         <CardContent>
           <pre className="overflow-x-auto rounded-lg bg-muted p-4 text-sm">
-{`staffNumber,fullName,email,workspaceRole,officeCode,departmentCode,divisionCode,unitCode,positionCode`}
+{`staffNumber,fullName,email,workspaceRole,officeCode,departmentCode,divisionCode,unitCode,positionCode,supervisorStaffNumber,itfFlowRole`}
           </pre>
         </CardContent>
       </Card>

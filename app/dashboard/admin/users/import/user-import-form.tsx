@@ -52,6 +52,15 @@ export default function ImportUsersForm() {
         <Input id="file" name="file" type="file" accept=".csv,text/csv" required />
       </div>
 
+      <label className="flex items-start gap-3 rounded-xl border p-4 text-sm">
+        <input className="mt-1" type="checkbox" name="dryRun" />
+        <span>
+          <strong className="block">Validate only (dry run)</strong>
+          Check the complete file, reference codes, reporting lines, roles, and duplicates
+          without creating users or granting access.
+        </span>
+      </label>
+
       <Button type="submit" disabled={isPending}>
         {isPending ? "Importing..." : "Import Users"}
       </Button>
