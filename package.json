@@ -6,8 +6,11 @@
   "scripts": {
     "dev": "next dev --webpack",
     "dev:turbopack": "next dev",
+    "postinstall": "prisma generate",
+    "db:seed": "tsx prisma/seed.ts",
     "build": "next build",
     "start": "next start",
+
     "lint": "eslint"
   },
   "dependencies": {
