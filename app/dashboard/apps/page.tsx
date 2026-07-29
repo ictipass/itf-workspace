@@ -9,19 +9,21 @@ import { Button } from "@/components/ui/button";
 export default async function MyAppsPage() {
   const user = await requireCurrentUser();
 
-  const appAccesses = await prisma.appAccess.findMany({
+  const apps = await prisma.app.findMany({
     where: {
-      userId: user.id,
-      status: "ACTIVE",
-      app: {
-        status: AppStatus.ACTIVE,
-      },
+      status: AppStatus.ACTIVE,
     },
     include: {
-      app: true,
+      accessRules: {
+        where: {
+          userId: user.id,
+          status: "ACTIVE",
+        },
+        take: 1,
+      },
     },
     orderBy: {
-      grantedAt: "desc",
+      name: "asc",
     },
   });
 
@@ -30,11 +32,11 @@ export default async function MyAppsPage() {
       <div>
         <h1 className="text-3xl font-bold tracking-tight">My Apps</h1>
         <p className="mt-2 text-muted-foreground">
-          Applications you are currently allowed to access.
+          All recognized ITF applications. Apps outside your entitlement remain visible but locked.
         </p>
       </div>
 
-      {appAccesses.length === 0 ? (
+      {apps.length === 0 ? (
         <Card className="rounded-2xl">
           <CardContent className="p-8 text-center text-muted-foreground">
             No application access has been assigned to you yet.
@@ -42,33 +44,43 @@ export default async function MyAppsPage() {
         </Card>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {appAccesses.map((access) => (
-            <Card key={access.id} className="rounded-2xl">
-              <CardHeader>
-                <div className="flex items-start justify-between gap-4">
-                  <CardTitle>{access.app.name}</CardTitle>
-                  <Badge variant="secondary">{access.app.category}</Badge>
-                </div>
-              </CardHeader>
+          {apps.map((app) => {
+            const access = app.accessRules[0];
+            return (
+              <Card
+                key={app.id}
+                className={`rounded-2xl ${access ? "" : "opacity-55 grayscale"}`}
+              >
+                <CardHeader>
+                  <div className="flex items-start justify-between gap-4">
+                    <CardTitle>{app.name}</CardTitle>
+                    <Badge variant="secondary">{app.category}</Badge>
+                  </div>
+                </CardHeader>
 
-              <CardContent className="space-y-4">
-                <p className="text-sm text-muted-foreground">
-                  {access.app.description ?? "No description provided."}
-                </p>
+                <CardContent className="space-y-4">
+                  <p className="text-sm text-muted-foreground">
+                    {app.description ?? "No description provided."}
+                  </p>
 
-                <div className="flex flex-wrap gap-2">
-                  <Badge variant="outline">{access.app.environment}</Badge>
-                  {access.appRole ? <Badge>{access.appRole}</Badge> : null}
-                </div>
+                  <div className="flex flex-wrap gap-2">
+                    <Badge variant="outline">{app.environment}</Badge>
+                    {access?.appRole ? <Badge>{access.appRole}</Badge> : null}
+                  </div>
 
-                <Button asChild className="w-full">
-                  <Link href={`/dashboard/apps/${access.app.id}/launch`}>
-                    Launch App
-                  </Link>
-                </Button>
-              </CardContent>
-            </Card>
-          ))}
+                  {access ? (
+                    <Button asChild className="w-full">
+                      <Link href={`/dashboard/apps/${app.id}/launch`}>Launch App</Link>
+                    </Button>
+                  ) : (
+                    <Button className="w-full" disabled>
+                      Access not assigned
+                    </Button>
+                  )}
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
       )}
     </div>

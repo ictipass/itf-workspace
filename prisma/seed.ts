@@ -1,15 +1,20 @@
 import bcrypt from "bcryptjs";
-import { PrismaClient, UserStatus, WorkspaceRole } from "@/lib/generated/prisma/client";
-import { prisma } from "@/lib/prisma"
+import {
+  AppCategory,
+  AppEnvironment,
+  AppStatus,
+  UserStatus,
+  WorkspaceRole,
+} from "@/lib/generated/prisma/client";
+import { prisma } from "@/lib/prisma";
 
 async function main() {
   const email = process.env.INITIAL_ADMIN_EMAIL ?? "admin@itf.gov.ng";
   const password = process.env.INITIAL_ADMIN_PASSWORD ?? "Password123!";
   const fullName = process.env.INITIAL_ADMIN_NAME ?? "System Administrator";
-
   const passwordHash = await bcrypt.hash(password, 10);
 
-  await prisma.user.upsert({
+  const admin = await prisma.user.upsert({
     where: { email },
     update: {
       fullName,
@@ -29,7 +34,33 @@ async function main() {
     },
   });
 
-  console.log("✅ SYSTEM_ADMIN seeded successfully");
+  const flow = await prisma.app.upsert({
+    where: { slug: "itf-flow" },
+    update: {},
+    create: {
+      name: "ITF Flow",
+      slug: "itf-flow",
+      description: "Correspondence intake, hierarchical routing, minutes and accountable action.",
+      url: process.env.ITF_FLOW_URL ?? "http://localhost:3001/workspace/launch",
+      category: AppCategory.WORKFLOW,
+      environment: AppEnvironment.DEVELOPMENT,
+      status: AppStatus.ACTIVE,
+    },
+  });
+
+  await prisma.appAccess.upsert({
+    where: { userId_appId: { userId: admin.id, appId: flow.id } },
+    update: { status: "ACTIVE", appRole: "SYSTEM_ADMIN", revokedAt: null },
+    create: {
+      userId: admin.id,
+      appId: flow.id,
+      appRole: "SYSTEM_ADMIN",
+      status: "ACTIVE",
+      grantedById: admin.id,
+    },
+  });
+
+  console.log("✅ SYSTEM_ADMIN and ITF Flow registry entry seeded successfully.");
   console.log(`Email: ${email}`);
   console.log(`Password: ${password}`);
 }
