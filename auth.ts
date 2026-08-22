@@ -3,7 +3,11 @@ import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { UserStatus, AuditAction } from "@/lib/generated/prisma/client";
+import {
+  UserStatus,
+  AuditAction,
+  WorkspaceRole,
+} from "@/lib/generated/prisma/client";
 
 const loginSchema = z.object({
   email: z.string().email(),
@@ -109,8 +113,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (session.user) {
         session.user.id = token.id as string;
         session.user.staffNumber = token.staffNumber as string | null;
-        session.user.workspaceRole = token.workspaceRole as any;
-        session.user.status = token.status as any;
+        session.user.workspaceRole = token.workspaceRole as WorkspaceRole;
+        session.user.status = token.status as UserStatus;
         session.user.isTemporaryPassword = token.isTemporaryPassword as boolean;
         session.user.officeId = token.officeId as string | null;
         session.user.departmentId = token.departmentId as string | null;
