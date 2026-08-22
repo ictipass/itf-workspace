@@ -10,8 +10,10 @@
     "db:seed": "tsx prisma/seed.ts",
     "build": "next build",
     "start": "next start",
-
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "npm run test:security",
+    "test:security": "tsx --test tests/security-regression.test.ts",
+    "verify": "prisma validate && npm run test:security && npm run lint && npm run build"
   },
   "dependencies": {
     "@base-ui/react": "^1.4.1",

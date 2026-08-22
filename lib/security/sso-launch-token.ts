@@ -89,11 +89,13 @@ export function createWorkspaceLaunchToken(
 }
 
 export function verifyWorkspaceLaunchToken(token: string) {
-  const [encodedPayload, signature] = token.split(".");
+  const tokenParts = token.split(".");
 
-  if (!encodedPayload || !signature) {
+  if (tokenParts.length !== 2 || !tokenParts[0] || !tokenParts[1]) {
     throw new Error("Invalid launch token.");
   }
+
+  const [encodedPayload, signature] = tokenParts;
 
   const expectedSignature = sign(encodedPayload);
   const signatureBuffer = Buffer.from(signature);
@@ -114,7 +116,7 @@ export function verifyWorkspaceLaunchToken(token: string) {
     throw new Error("Unsupported launch token version.");
   }
 
-  if (payload.expiresAt < Math.floor(Date.now() / 1000)) {
+  if (payload.expiresAt <= Math.floor(Date.now() / 1000)) {
     throw new Error("Launch token has expired.");
   }
 

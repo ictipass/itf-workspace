@@ -62,11 +62,13 @@ export function verifyWorkspaceLaunchTokenForApp(
     throw new Error("Workspace launch token secret is required.");
   }
 
-  const [encodedPayload, signature] = token.split(".");
+  const tokenParts = token.split(".");
 
-  if (!encodedPayload || !signature) {
+  if (tokenParts.length !== 2 || !tokenParts[0] || !tokenParts[1]) {
     throw new Error("Invalid Workspace launch token.");
   }
+
+  const [encodedPayload, signature] = tokenParts;
 
   const expectedSignature = sign(encodedPayload, options.secret);
   const signatureBuffer = Buffer.from(signature);
@@ -89,7 +91,7 @@ export function verifyWorkspaceLaunchTokenForApp(
 
   const nowSeconds = Math.floor((options.now ?? new Date()).getTime() / 1000);
 
-  if (payload.expiresAt < nowSeconds) {
+  if (payload.expiresAt <= nowSeconds) {
     throw new Error("Workspace launch token has expired.");
   }
 
