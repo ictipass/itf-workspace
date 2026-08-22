@@ -26,7 +26,9 @@ result. Repository code, migrations and commits remain the final implementation 
 8. No slice is marked Implemented when required validation could not run.
 9. Every completed implementation is committed as a focused change. Its handoff must briefly state what was
    implemented, what changed, the operational use case/effect, whether visible UI changed, verification results and
-   the commit hash.
+   the commit hash. It must also name the next best implementable slice and identify any gate blocking it.
+10. Child-application readiness is evaluated against [`child-app-readiness-gates.md`](child-app-readiness-gates.md).
+    Completing code does not override an open ITF policy, assurance or production-approval gate.
 
 ## Phase 1 — secure the current foundation
 
@@ -99,6 +101,12 @@ result. Repository code, migrations and commits remain the final implementation 
 4. Deliver W04 before treating Workspace logout or entitlement revocation as centralized.
 5. Resolve W05, W06 and W09 production gates.
 6. Start Phase 2 governance before onboarding more than ITF Flow.
+
+**Next best implementable slice:** W08 — Workspace security regression test foundation. It has no unresolved ITF policy
+dependency and is required to complete W01 safely.
+
+**Current child-app readiness:** Not yet integration-development-ready. W00 is complete; W01, W02-W04, W07-W08 and
+D01-D07 remain on the ITF Flow reassessment gate.
 
 ## Cross-chat handoff protocol
 
