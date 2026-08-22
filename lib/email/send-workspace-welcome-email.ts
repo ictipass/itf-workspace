@@ -1,4 +1,4 @@
-import { resend } from "@/lib/email/resend";
+import { createWorkspaceEmailClient } from "@/lib/email/resend";
 
 type Params = {
   to: string;
@@ -11,13 +11,10 @@ export async function sendWorkspaceWelcomeEmail({
   fullName,
   temporaryPassword,
 }: Params) {
-  const loginUrl = process.env.APP_LOGIN_URL ?? "http://localhost:3000/login";
-  const from =
-    process.env.RESEND_FROM_EMAIL ??
-    "ITF Workspace <onboarding@resend.dev>";
+  const { client, configuration } = createWorkspaceEmailClient();
 
-  const { error } = await resend.emails.send({
-    from,
+  const { error } = await client.emails.send({
+    from: configuration.from,
     to: [to],
     subject: "Your ITF Workspace Login Details",
     html: `
@@ -25,7 +22,7 @@ export async function sendWorkspaceWelcomeEmail({
         <h2>Welcome to ITF Workspace</h2>
         <p>Dear ${fullName},</p>
         <p>Your ITF Workspace account has been created.</p>
-        <p><strong>Login URL:</strong> <a href="${loginUrl}">${loginUrl}</a></p>
+        <p><strong>Login URL:</strong> <a href="${configuration.loginUrl}">${configuration.loginUrl}</a></p>
         <p><strong>Email:</strong> ${to}</p>
         <p><strong>Temporary Password:</strong> ${temporaryPassword}</p>
         <p>You will be required to change this password after your first login.</p>

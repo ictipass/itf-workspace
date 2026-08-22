@@ -1,3 +1,11 @@
 import { Resend } from "resend";
+import { resolveWorkspaceEmailConfiguration } from "@/lib/config/workspace-environment";
 
-export const resend = new Resend(process.env.RESEND_API_KEY);
+export function createWorkspaceEmailClient() {
+  const configuration = resolveWorkspaceEmailConfiguration();
+
+  return {
+    configuration,
+    client: new Resend(configuration.apiKey),
+  };
+}

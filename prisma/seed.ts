@@ -1,3 +1,5 @@
+import "dotenv/config";
+
 import bcrypt from "bcryptjs";
 import {
   AppCategory,
@@ -7,26 +9,25 @@ import {
   WorkspaceRole,
 } from "@/lib/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
+import { resolveWorkspaceSeedConfiguration } from "@/lib/config/workspace-environment";
 
 async function main() {
-  const email = process.env.INITIAL_ADMIN_EMAIL ?? "admin@itf.gov.ng";
-  const password = process.env.INITIAL_ADMIN_PASSWORD ?? "Password123!";
-  const fullName = process.env.INITIAL_ADMIN_NAME ?? "System Administrator";
-  const passwordHash = await bcrypt.hash(password, 10);
+  const configuration = resolveWorkspaceSeedConfiguration();
+  const passwordHash = await bcrypt.hash(configuration.password, 10);
 
   const admin = await prisma.user.upsert({
-    where: { email },
+    where: { email: configuration.email },
     update: {
-      fullName,
+      fullName: configuration.fullName,
       workspaceRole: WorkspaceRole.SYSTEM_ADMIN,
       status: UserStatus.ACTIVE,
       isTemporaryPassword: true,
       passwordHash,
     },
     create: {
-      staffNumber: "ITF-SYS-001",
-      fullName,
-      email,
+      staffNumber: configuration.staffNumber,
+      fullName: configuration.fullName,
+      email: configuration.email,
       passwordHash,
       workspaceRole: WorkspaceRole.SYSTEM_ADMIN,
       status: UserStatus.ACTIVE,
@@ -41,7 +42,7 @@ async function main() {
       name: "ITF Flow",
       slug: "itf-flow",
       description: "Correspondence intake, hierarchical routing, minutes and accountable action.",
-      url: process.env.ITF_FLOW_URL ?? "http://localhost:3001/workspace/launch",
+      url: configuration.itfFlowUrl,
       category: AppCategory.WORKFLOW,
       environment: AppEnvironment.DEVELOPMENT,
       status: AppStatus.ACTIVE,
@@ -61,8 +62,10 @@ async function main() {
   });
 
   console.log("✅ SYSTEM_ADMIN and ITF Flow registry entry seeded successfully.");
-  console.log(`Email: ${email}`);
-  console.log(`Password: ${password}`);
+  console.log(`Email: ${configuration.email}`);
+  if (configuration.mode !== "production") {
+    console.log(`Development password: ${configuration.password}`);
+  }
 }
 
 main()

@@ -1,20 +1,11 @@
 import { AppAccessStatus, UserStatus } from "@/lib/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
+import { resolveItfFlowDirectorySyncConfiguration } from "@/lib/config/workspace-environment";
 
 const BATCH_SIZE = 200;
 
-function getEndpoint() {
-  if (process.env.ITF_FLOW_DIRECTORY_SYNC_URL) {
-    return process.env.ITF_FLOW_DIRECTORY_SYNC_URL;
-  }
-  const launchUrl = process.env.ITF_FLOW_URL;
-  if (!launchUrl) throw new Error("ITF_FLOW_URL or ITF_FLOW_DIRECTORY_SYNC_URL is required.");
-  return new URL("/api/integrations/workspace/directory-sync", launchUrl).toString();
-}
-
 export async function syncItfFlowDirectory() {
-  const secret = process.env.WORKSPACE_DIRECTORY_SYNC_SECRET;
-  if (!secret) throw new Error("WORKSPACE_DIRECTORY_SYNC_SECRET is required.");
+  const configuration = resolveItfFlowDirectorySyncConfiguration();
 
   const accessRecords = await prisma.appAccess.findMany({
     where: {
@@ -43,10 +34,10 @@ export async function syncItfFlowDirectory() {
 
   for (let offset = 0; offset < accessRecords.length; offset += BATCH_SIZE) {
     const batch = accessRecords.slice(offset, offset + BATCH_SIZE);
-    const response = await fetch(getEndpoint(), {
+    const response = await fetch(configuration.endpoint, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${secret}`,
+        Authorization: `Bearer ${configuration.secret}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({

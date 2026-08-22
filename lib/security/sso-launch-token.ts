@@ -1,4 +1,5 @@
 import { createHmac, randomUUID, timingSafeEqual } from "crypto";
+import { resolveWorkspaceLaunchTokenSecret } from "@/lib/config/workspace-environment";
 
 const TOKEN_VERSION = "itf-workspace-launch-v1";
 const DEFAULT_TTL_SECONDS = 60;
@@ -29,15 +30,7 @@ export type WorkspaceLaunchTokenPayload = {
 };
 
 function getLaunchTokenSecret() {
-  const secret = process.env.WORKSPACE_LAUNCH_TOKEN_SECRET;
-
-  if (secret) return secret;
-
-  if (process.env.NODE_ENV === "production") {
-    throw new Error("WORKSPACE_LAUNCH_TOKEN_SECRET is required in production.");
-  }
-
-  return "development-only-workspace-launch-token-secret";
+  return resolveWorkspaceLaunchTokenSecret();
 }
 
 function base64UrlEncode(value: string | Buffer) {
