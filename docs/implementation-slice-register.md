@@ -32,8 +32,8 @@ result. Repository code, migrations and commits remain the final implementation 
 
 | ID | Slice | Status | Dependency or evidence |
 |---|---|---|---|
-| W00 | Production dependency advisory remediation | In progress | Audit baseline captured; direct Auth.js and Next.js upgrades require an isolated compatibility slice. See [`slices/W00-dependency-security-baseline.md`](slices/W00-dependency-security-baseline.md) |
-| W01 | Authoritative current-user validation | In progress | Targeted lint and production build pass; full lint baseline and W08 coverage remain. See [`slices/W01-authoritative-current-user.md`](slices/W01-authoritative-current-user.md) |
+| W00 | Production dependency advisory remediation | Implemented | `acf76c5`; runtime audit reports zero known vulnerabilities. See [`slices/W00-dependency-security-baseline.md`](slices/W00-dependency-security-baseline.md) |
+| W01 | Authoritative current-user validation | In progress | Full lint and production build pass; W08 regression coverage remains. See [`slices/W01-authoritative-current-user.md`](slices/W01-authoritative-current-user.md) |
 | W02 | Revocable Workspace sessions and session inventory | Policy gate | D01-D04: IdP direction, idle/absolute lifetimes and concurrent-session policy |
 | W03 | Workspace launch v2 issuer aligned with ITF Flow | Policy gate | W02 plus D01, D05-D07: authentication assurance, token lifetime and key management |
 | W04 | Immediate central logout and entitlement-revocation delivery to ITF Flow | Planned | W02-W03; transactional outbox and ITF Flow session-event contract |
@@ -93,13 +93,12 @@ result. Repository code, migrations and commits remain the final implementation 
 
 ## Current execution order
 
-1. Complete W00 in an isolated dependency-compatibility change and rerun the complete verification suite.
-2. Complete W01 by resolving the repository-wide lint baseline and adding its W08 regression coverage.
-3. Complete W07 and establish W08 before further authentication changes.
-4. Resolve D01-D07, then design W02 and W03 together so Workspace and ITF Flow share one approved contract.
-5. Deliver W04 before treating Workspace logout or entitlement revocation as centralized.
-6. Resolve W05, W06 and W09 production gates.
-7. Start Phase 2 governance before onboarding more than ITF Flow.
+1. Establish W08 regression coverage and complete W01.
+2. Complete W07 before further authentication changes.
+3. Resolve D01-D07, then design W02 and W03 together so Workspace and ITF Flow share one approved contract.
+4. Deliver W04 before treating Workspace logout or entitlement revocation as centralized.
+5. Resolve W05, W06 and W09 production gates.
+6. Start Phase 2 governance before onboarding more than ITF Flow.
 
 ## Cross-chat handoff protocol
 

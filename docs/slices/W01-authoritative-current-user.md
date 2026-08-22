@@ -47,13 +47,12 @@ database user whose status is `ACTIVE`; authorization uses that record's current
 - Source review: passed.
 - Targeted ESLint for the two changed application files: passed.
 - Next.js production build and TypeScript validation: passed.
-- Repository-wide ESLint: failed on four pre-existing errors in `auth.ts`, `components/ui/carousel.tsx` and
-  `hooks/use-mobile.ts`; none is in a W01-changed file.
+- Repository-wide ESLint: passed after W00 resolved the four pre-existing baseline errors.
 - `git diff --check`: passed.
 - Security regression tests: pending W08 test foundation.
 
-The slice remains **In progress** until the repository-wide lint baseline is green and W08 adds the relevant security
-regression coverage. No database migration or new configuration is required.
+The slice remains **In progress** until W08 adds the relevant security regression coverage. No database migration or
+new configuration is required.
 
 ## Rollback
 
