@@ -1,4 +1,12 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ITF Workspace
+
+ITF Workspace is the central registry and controlled access portal for ITF enterprise applications.
+
+Implementation status and cross-chat handoff are maintained in
+[`docs/implementation-slice-register.md`](docs/implementation-slice-register.md). Organizational decisions that must
+not be hard-coded are tracked separately in [`docs/policy-decision-register.md`](docs/policy-decision-register.md).
+
+This application is built with [Next.js](https://nextjs.org).
 
 ## Getting Started
 

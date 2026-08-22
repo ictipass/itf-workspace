@@ -1,4 +1,4 @@
-import { auth, signOut } from "@/auth";
+import { signOut } from "@/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import {
@@ -16,20 +16,21 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { prisma } from "@/lib/prisma";
 import { AuditAction } from "@/lib/generated/prisma/client";
+import { getCurrentUser } from "@/lib/auth/current-user";
 
 export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const session = await auth();
+  const user = await getCurrentUser();
 
-  if (!session?.user) {
+  if (!user) {
     redirect("/login");
   }
 
   const initials =
-    session.user.name
+    user.name
       ?.split(" ")
       .map((part) => part[0])
       .slice(0, 2)
@@ -37,7 +38,7 @@ export default async function DashboardLayout({
       .toUpperCase() ?? "U";
 
   const isSystemAdmin =
-    session.user.workspaceRole === WorkspaceRole.SYSTEM_ADMIN;
+    user.workspaceRole === WorkspaceRole.SYSTEM_ADMIN;
 
   return (
     <div className="min-h-screen bg-muted/30">
@@ -99,9 +100,9 @@ export default async function DashboardLayout({
             </Avatar>
 
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium">{session.user.name}</p>
+              <p className="truncate text-sm font-medium">{user.name}</p>
               <p className="truncate text-xs text-sidebar-foreground/70">
-                {session.user.workspaceRole}
+                {user.workspaceRole}
               </p>
             </div>
           </div>
@@ -112,12 +113,12 @@ export default async function DashboardLayout({
               "use server";
 
 
-              const session = await auth();
+              const currentUser = await getCurrentUser();
 
-              if (session?.user?.id) {
+              if (currentUser) {
                 await prisma.auditLog.create({
                   data: {
-                    actorId: session.user.id,
+                    actorId: currentUser.id,
                     action: AuditAction.LOGOUT,
                   },
                 });
@@ -143,7 +144,7 @@ export default async function DashboardLayout({
           <div className="flex h-16 items-center justify-between px-4 lg:px-8">
             <div>
               <p className="text-sm font-medium">Welcome back</p>
-              <p className="text-xs text-muted-foreground">{session.user.name}</p>
+              <p className="text-xs text-muted-foreground">{user.name}</p>
             </div>
           </div>
         </header>
