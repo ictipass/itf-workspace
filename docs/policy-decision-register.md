@@ -4,6 +4,9 @@ This register separates organizational policy from technical implementation. **O
 select a default. The accountable ITF owner and approval evidence must be recorded before a dependent slice moves to
 Ready. Secrets and personal data must never be recorded here.
 
+Plain-language scenarios and the information needed to answer every question are available in
+[`policy-decision-guide.md`](policy-decision-guide.md). Examples in that guide explain impact; they are not defaults.
+
 ## Identity and sessions
 
 | ID | Required decision | Status | Accountable owner | Approved outcome/evidence |
