@@ -47,6 +47,10 @@ Implementation commit: `444287a`.
 - Operational effect: maintainers can run `npm run test:security` for fast boundary checks or `npm run verify` for the
   full schema, security-test, lint and production-build gate.
 
+## Expansion history
+
+- W07 commit `2caeede` added 11 configuration regression tests. The suite now contains 25 tests across 6 suites.
+
 ## Rollback
 
 Revert `444287a`. No data rollback is required. Reverting also removes exact-expiry and extra-segment token rejection,

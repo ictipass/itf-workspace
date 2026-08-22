@@ -26,7 +26,7 @@ Required:
 - Workspace and ITF Flow contract tests pass in both repositories.
 - Development and staging use environment-specific credentials; no production secret is shared with them.
 
-Current status: **Not met**. W00, W01 and the W08 foundation are complete. W02-W04, W07, D01-D07, expanded
+Current status: **Not met**. W00, W01, W07 and the W08 foundation are complete. W02-W04, D01-D07, expanded
 session/entitlement/replay/revocation coverage, cross-repository contract tests and environment-separated credentials
 remain.
 
