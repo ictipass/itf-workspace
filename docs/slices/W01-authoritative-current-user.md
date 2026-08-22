@@ -40,7 +40,10 @@ database user whose status is `ACTIVE`; authorization uses that record's current
 
 - `lib/auth/current-user.ts` is a server-only authorization helper that resolves the JWT subject through Prisma,
   requires `UserStatus.ACTIVE` and memoizes duplicate lookups during a React render pass.
+- `lib/auth/authoritative-user.ts` isolates the authoritative-record decision so the exact production rule can be
+  tested without substituting a test database for the request path.
 - `app/dashboard/layout.tsx` uses the authoritative helper for shell authorization and logout audit attribution.
+- Implementation commit: `16dcefc`; regression evidence commit: `444287a`.
 
 ## Verification status
 
@@ -49,10 +52,10 @@ database user whose status is `ACTIVE`; authorization uses that record's current
 - Next.js production build and TypeScript validation: passed.
 - Repository-wide ESLint: passed after W00 resolved the four pre-existing baseline errors.
 - `git diff --check`: passed.
-- Security regression tests: pending W08 test foundation.
+- W08 security regression tests: passed for missing/deleted, inactive and suspended records; active-user attribute
+  mapping; and current-role promotion/demotion behavior.
 
-The slice remains **In progress** until W08 adds the relevant security regression coverage. No database migration or
-new configuration is required.
+The slice is **Implemented**. No database migration or new configuration is required.
 
 ## Rollback
 

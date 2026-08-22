@@ -35,14 +35,14 @@ result. Repository code, migrations and commits remain the final implementation 
 | ID | Slice | Status | Dependency or evidence |
 |---|---|---|---|
 | W00 | Production dependency advisory remediation | Implemented | `acf76c5`; runtime audit reports zero known vulnerabilities. See [`slices/W00-dependency-security-baseline.md`](slices/W00-dependency-security-baseline.md) |
-| W01 | Authoritative current-user validation | In progress | Full lint and production build pass; W08 regression coverage remains. See [`slices/W01-authoritative-current-user.md`](slices/W01-authoritative-current-user.md) |
+| W01 | Authoritative current-user validation | Implemented | `16dcefc`, regression evidence `444287a`; full verification passes. See [`slices/W01-authoritative-current-user.md`](slices/W01-authoritative-current-user.md) |
 | W02 | Revocable Workspace sessions and session inventory | Policy gate | D01-D04: IdP direction, idle/absolute lifetimes and concurrent-session policy |
 | W03 | Workspace launch v2 issuer aligned with ITF Flow | Policy gate | W02 plus D01, D05-D07: authentication assurance, token lifetime and key management |
 | W04 | Immediate central logout and entitlement-revocation delivery to ITF Flow | Planned | W02-W03; transactional outbox and ITF Flow session-event contract |
 | W05 | Login abuse protection and authentication security events | Policy gate | D08-D11: throttling, lockout, recovery and alerting policy |
 | W06 | App URL and outbound-request SSRF protection | Policy gate | D12: permitted domains/networks and operational exception process |
 | W07 | Secure configuration validation and removal of unsafe credential defaults | Ready | Preserve local-development usability without production fallback secrets |
-| W08 | Workspace security regression test foundation | Planned | Begins with W01 and expands with each Phase 1 slice |
+| W08 | Workspace security regression test foundation | Implemented | `444287a`; 14 tests cover authoritative users, launch-token v1 and launch-URL handling. See [`slices/W08-security-regression-foundation.md`](slices/W08-security-regression-foundation.md) |
 | W09 | Security headers, browser policy and deployment trust boundary | Policy gate | D13-D14: hosting topology, proxy/CDN and permitted origins |
 
 ## Phase 2 — scalable access governance
@@ -95,18 +95,20 @@ result. Repository code, migrations and commits remain the final implementation 
 
 ## Current execution order
 
-1. Establish W08 regression coverage and complete W01.
-2. Complete W07 before further authentication changes.
-3. Resolve D01-D07, then design W02 and W03 together so Workspace and ITF Flow share one approved contract.
+1. Complete W07 before further authentication changes.
+2. Resolve D01-D07, then design W02 and W03 together so Workspace and ITF Flow share one approved contract.
+3. Extend W08 while implementing W02-W04 so session, entitlement, replay and revocation behavior is covered.
 4. Deliver W04 before treating Workspace logout or entitlement revocation as centralized.
 5. Resolve W05, W06 and W09 production gates.
 6. Start Phase 2 governance before onboarding more than ITF Flow.
 
-**Next best implementable slice:** W08 — Workspace security regression test foundation. It has no unresolved ITF policy
-dependency and is required to complete W01 safely.
+**Next best implementable slice:** W07 — secure configuration validation and removal of unsafe credential defaults.
+It has no unresolved ITF policy dependency and protects later authentication and integration work from invalid or
+development-only production settings.
 
-**Current child-app readiness:** Not yet integration-development-ready. W00 is complete; W01, W02-W04, W07-W08 and
-D01-D07 remain on the ITF Flow reassessment gate.
+**Current child-app readiness:** Not yet integration-development-ready. W00, W01 and the W08 foundation are complete.
+W02-W04, W07, D01-D07, expanded cross-contract coverage and environment-separated credentials remain on the ITF Flow
+reassessment gate.
 
 ## Cross-chat handoff protocol
 
