@@ -32,7 +32,7 @@ development remains usable without silently carrying its fallback credentials in
 | `AUTH_SECRET` or `NEXTAUTH_SECRET` | Optional framework development behavior; aliases must agree | Required, at least 32 characters, no documented placeholder |
 | `AUTH_URL` or `NEXTAUTH_URL` | Optional; validated when set | Required; aliases must agree |
 | `AUTH_TRUST_HOST` | Optional boolean value | Optional boolean value pending D13 topology approval |
-| `WORKSPACE_LAUNCH_TOKEN_SECRET` | Explicit value or development-only fallback | Required, at least 32 characters, no documented placeholder |
+| Launch signing (superseded by W03) | The former development v1 secret was permitted | W03 removed the shared launch secret and requires RS256/JWKS with a production KMS/HSM provider |
 | `RESEND_API_KEY`, `RESEND_FROM_EMAIL` | Optional, but required together when email is configured or invoked | Required before server startup |
 | `APP_LOGIN_URL` | Optional; defaults locally or derives from Auth.js URL | Optional when derivable from Auth.js URL |
 | `ITF_FLOW_URL` or `ITF_FLOW_DIRECTORY_SYNC_URL` | Optional; directory sync still requires a matching secret when invoked | If any ITF Flow sync setting is present, endpoint and secret must form a complete configuration |
@@ -41,7 +41,8 @@ development remains usable without silently carrying its fallback credentials in
 
 The validator checks URL syntax and supported protocols but does not select permitted domains, internal networks, TLS
 termination or proxy trust. Those remain governed by D12-D13 and W06/W09. It also does not select the W03 signing
-model, custody or rotation policy governed by D07.
+model, custody or rotation policy governed by D07. W03 subsequently implemented the approved model and supersedes the
+launch-signing row above.
 
 ## Regression coverage
 

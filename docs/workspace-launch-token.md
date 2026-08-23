@@ -1,31 +1,42 @@
-# Workspace Launch Token Contract
+# Workspace launch assertion v2 contract
 
-ITF Workspace app launches append a short-lived signed token to the registered app URL:
+Workspace launches an entitled child application by appending a short-lived, single-use JWS to its registered URL:
 
 ```text
-workspace_launch_token=<payload>.<signature>
+workspace_launch_token=<protected-header>.<payload>.<signature>
 ```
 
-The receiving application must treat this as a launch handoff, not as a permanent session.
+This is a migration handoff, not an OAuth/OIDC access token and not the child application's session. The child app
+must redeem it once, remove it from the visible URL through a redirect, and create its own revocable server-side
+session. W04 adds immediate central logout and entitlement-revocation delivery for those child sessions.
 
-## Token Properties
+## Protected header
 
-- Version: `itf-workspace-launch-v1`
-- Signature: HMAC-SHA256
-- Default lifetime: 60 seconds
-- Transport: query string during Workspace launch
-- Secret: `WORKSPACE_LAUNCH_TOKEN_SECRET`
+```json
+{
+  "alg": "RS256",
+  "typ": "itf-workspace-launch+jwt",
+  "kid": "active-key-id"
+}
+```
 
-## Payload Shape
+Only RS256 is permitted. Production keys are governed by D07 and
+[`2026-08-23-launch-assertion-key-management-policy.md`](policies/2026-08-23-launch-assertion-key-management-policy.md).
+Workspace publishes public keys at `/api/integrations/workspace/v2/jwks`; private key material is never published.
+
+## Payload
 
 ```ts
-type WorkspaceLaunchTokenPayload = {
-  version: "itf-workspace-launch-v1";
-  tokenId: string;
-  issuedAt: number;
-  expiresAt: number;
-  user: {
-    id: string;
+type WorkspaceLaunchV2Payload = {
+  version: "itf-workspace-launch-v2";
+  iss: string;
+  sub: string; // immutable Workspace user ID
+  aud: string; // stable child-app launch audience
+  iat: number;
+  nbf: number;
+  exp: number;
+  jti: string; // unique, single-use assertion ID
+  identity: {
     name?: string | null;
     email?: string | null;
     staffNumber?: string | null;
@@ -36,110 +47,66 @@ type WorkspaceLaunchTokenPayload = {
     unitId?: string | null;
     positionId?: string | null;
   };
-  app: {
-    id: string;
+  entitlement: {
+    appId: string;
     slug: string;
-    name: string;
-    role?: string | null;
+    role: string;
+    requiredAssurance: "STANDARD" | "SENSITIVE";
+  };
+  authentication: {
+    workspaceSessionId: string;
+    methods: string[]; // pwd, and totp when sensitive
+    authenticatedAt: number;
+    mfaAuthenticatedAt?: number;
   };
 };
 ```
 
-## Receiving App Responsibilities
+The D06 defaults are a 120-second assertion lifetime and 30 seconds of clock-skew tolerance. `aud` is configured per
+application and is independent of its URL. A receiver must check both `aud` and `entitlement.slug`.
 
-1. Verify the token signature with the shared secret.
-2. Reject expired tokens.
-3. Confirm `app.slug` matches the receiving app.
-4. Create the receiving app's own session.
-5. Remove the token from the browser URL after successful exchange.
-6. Log the token id and Workspace user id for audit correlation.
+## Assurance evaluation
 
-## Reusable Receiver Helper
+Every active application and assignable child-app role has an explicit `STANDARD` or `SENSITIVE` classification. The
+effective result is `SENSITIVE` when any of these is true:
 
-This Workspace repo includes a reusable receiver-side helper at:
+- the application is sensitive;
+- the assigned child-app role is sensitive;
+- the Workspace user is `SYSTEM_ADMIN` or `APP_ADMIN`.
 
-```text
-lib/integrations/workspace-launch-token-receiver.ts
-```
+Standard launches require the Workspace password-authenticated session. Sensitive launches require TOTP enrollment
+and a successful TOTP step-up within ten minutes. The stricter classification always wins and privileged Workspace
+roles cannot be downgraded in settings.
 
-Future ITF business apps can copy that file into their own `lib/integrations/`
-folder. It intentionally requires an explicit secret and expected app slug so a
-receiving app cannot accidentally trust a token issued for another application.
+## Receiver requirements
 
-## Next.js Receiving Route Pattern
+1. Permit only the documented algorithm/type and resolve `kid` from the trusted Workspace JWKS endpoint.
+2. Verify the signature before trusting claims.
+3. Validate the exact issuer, audience, app slug, timestamps, lifetime, immutable subject, role and authentication
+   context.
+4. For sensitive assertions, require method `totp` and validate its approved freshness.
+5. Atomically create a unique redemption record for `jti`; reject an existing value.
+6. Require an active locally provisioned user and exact recognized child-app role. Do not invent role mappings.
+7. Redirect immediately after exchange so the assertion is removed from browser history and subsequent application
+requests.
+8. Avoid logging the assertion. Audit only non-secret correlation fields such as `jti`, `sub`, app ID and `kid`.
 
-A business app should expose a launch route that receives the token, verifies it,
-creates an app-local session, and redirects to the internal dashboard.
+ITF Flow implements the first receiver in commit `f0696bc`. Its deployment variables and behavior are documented in
+`itf-flow/docs/workspace-launch-v2.md`.
 
-Example for a future Client Reimbursement App:
+## Configuration
 
-```ts
-// app/workspace/launch/route.ts
-import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
-import {
-  getWorkspaceLaunchTokenFromUrl,
-  removeWorkspaceLaunchTokenFromUrl,
-  verifyWorkspaceLaunchTokenForApp,
-} from "@/lib/integrations/workspace-launch-token-receiver";
+Workspace uses these values:
 
-const APP_SLUG = "client-reimbursement";
+- `WORKSPACE_LAUNCH_ISSUER`
+- `WORKSPACE_LAUNCH_SIGNER_PROVIDER` (`ephemeral`, `software`, or `kms`)
+- `WORKSPACE_LAUNCH_ACTIVE_KID`
+- `WORKSPACE_LAUNCH_PRIVATE_KEY_PEM_BASE64` for development/staging software signing only
+- `WORKSPACE_LAUNCH_KMS_KEY_ID` for the production provider adapter
+- `WORKSPACE_LAUNCH_ADDITIONAL_PUBLIC_JWKS_JSON` for normal rotation overlap
+- `WORKSPACE_LAUNCH_TTL_SECONDS`, `WORKSPACE_LAUNCH_CLOCK_SKEW_SECONDS`, and `WORKSPACE_MFA_STEP_UP_SECONDS`
+- `WORKSPACE_MFA_ENCRYPTION_KEY_BASE64`, which must decode to exactly 32 bytes
 
-export async function GET(request: Request) {
-  const token = getWorkspaceLaunchTokenFromUrl(request.url);
-
-  if (!token) {
-    redirect("/login");
-  }
-
-  const payload = verifyWorkspaceLaunchTokenForApp(token, {
-    secret: process.env.WORKSPACE_LAUNCH_TOKEN_SECRET!,
-    expectedAppSlug: APP_SLUG,
-  });
-
-  // Upsert or locate the receiving app's local user record here.
-  // Store only the identifiers and role context this app needs.
-  const sessionValue = JSON.stringify({
-    workspaceUserId: payload.user.id,
-    email: payload.user.email,
-    name: payload.user.name,
-    staffNumber: payload.user.staffNumber,
-    appRole: payload.app.role,
-    tokenId: payload.tokenId,
-  });
-
-  const cookieStore = await cookies();
-  cookieStore.set("client_reimbursement_session", sessionValue, {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-    path: "/",
-    maxAge: 60 * 60 * 8,
-  });
-
-  // Useful when launch URLs contain app-specific destination parameters.
-  removeWorkspaceLaunchTokenFromUrl(request.url);
-
-  redirect("/dashboard");
-}
-```
-
-In a production receiving app, replace the JSON cookie example with the app's
-real session store. The key idea is that the Workspace launch token is exchanged
-once, then removed from the visible URL.
-
-## URL Registry Rule
-
-Register the exact reachable canonical host in Workspace. For example, if this works:
-
-```text
-https://itfpromotel.itf.gov.ng
-```
-
-do not register:
-
-```text
-https://www.itfpromotel.itf.gov.ng
-```
-
-unless the `www` DNS and hosting configuration are also active.
+Production validation requires HTTPS, provider `kms`, an active key ID, a provider key reference, and an MFA
+encryption key. The vendor-specific KMS/HSM adapter remains intentionally unavailable until ITF approves the provider;
+production launch must remain blocked until that adapter and the launch checklist are completed.

@@ -3,8 +3,8 @@
 ## Business outcome
 
 Workspace now has a fast, repeatable security test entry point that can run without a database or live child
-application. It protects the current authoritative-user rule and the existing version-1 launch boundary while later
-Phase 1 slices add entitlement, replay and child-app revocation cases.
+application. It protects authoritative-user, configuration, session, launch-v2, assurance and TOTP boundaries while
+later Phase 1 slices add central child-app revocation cases.
 
 ## Scope implemented
 
@@ -14,20 +14,18 @@ Phase 1 slices add entitlement, replay and child-app revocation cases.
   request path.
 - Covered rejection of missing/deleted, inactive and suspended users.
 - Covered active-user directory attributes and immediate role promotion/demotion behavior.
-- Covered version-1 launch-token issue/receive compatibility, signature tampering, malformed structure, wrong audience,
-  exact expiration and missing receiver secret.
+- W03 replaced the original version-1 cases with RS256 signing, signature tampering, issuer/audience binding, timing,
+  sensitive-assurance and TOTP controls; ITF Flow carries matching receiver contract fixtures.
 - Covered configured launch-URL normalization, injected token/fragment removal, non-HTTP rejection, token extraction and
   post-redemption URL cleanup.
-- Tightened both version-1 verifiers to reject extra token segments and to reject a token at, rather than only after,
-  its expiry second.
+- Removed the obsolete shared-secret verifier after the asymmetric contract and receiving app agreed.
 - Added `test`, `test:security` and comprehensive `verify` package scripts.
 
 ## Test boundaries
 
-These tests deliberately do not claim that version-1 launch tokens are production SSO. W03 will replace or version
-that contract after D05 and D07 are fully approved. W03-W04 must extend this suite with current entitlement,
-single-use/replay, logout and revocation-delivery cases. Cross-repository Workspace/ITF Flow contract
-tests are still required by Gate A.
+These tests do not claim that the launch handoff is production OIDC. W03 covers current entitlement, assurance and the
+signed handoff in both repositories. W04 must still extend the suite with central logout and entitlement-revocation
+delivery behavior before Gate A is met.
 
 ## Verification
 
@@ -51,6 +49,9 @@ Implementation commit: `444287a`.
 
 - W07 commit `2caeede` added 11 configuration regression tests. The suite now contains 25 tests across 6 suites.
 - W02 commit `1483531` added 7 session-policy regression tests. The suite now contains 32 tests across 7 suites.
+- W03 commits `9cbec46` and `42c4f3b` removed obsolete v1 cases and added launch-v2/assurance/TOTP coverage. The current
+  Workspace suite contains 31 tests across eight suites. ITF Flow commit `f0696bc` passes eight security tests,
+  including four receiver contract cases.
 
 ## Rollback
 
