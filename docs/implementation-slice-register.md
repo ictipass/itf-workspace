@@ -38,11 +38,11 @@ result. Repository code, migrations and commits remain the final implementation 
 | W01 | Authoritative current-user validation | Implemented | `16dcefc`, regression evidence `444287a`; full verification passes. See [`slices/W01-authoritative-current-user.md`](slices/W01-authoritative-current-user.md) |
 | W02 | Revocable Workspace sessions and session inventory | Implemented | `1483531`; DB-authoritative revocation, expiry, two-session recovery and inventory; 32-test suite passes. See [`slices/W02-revocable-workspace-sessions.md`](slices/W02-revocable-workspace-sessions.md) |
 | W03 | Workspace launch v2 issuer aligned with ITF Flow | Implemented | Workspace `9cbec46`, `42c4f3b`, `4c88f89`, QR enrollment `ca8b88b`; ITF Flow `f0696bc`; RS256/JWKS, assurance/TOTP, single-use receiver and contract tests. See [`slices/W03-workspace-launch-v2.md`](slices/W03-workspace-launch-v2.md) |
-| W04 | Immediate central logout and entitlement-revocation delivery to ITF Flow | Ready | W02-W03 implemented; next define and implement the transactional outbox/session-event acceptance contract |
+| W04 | Immediate central logout and entitlement-revocation delivery to ITF Flow | Implemented | Workspace `c8d3605`; ITF Flow `30ace13`; transactional outbox, bounded immediate/retry delivery and atomic idempotent receiver. See [`slices/W04-central-revocation-delivery.md`](slices/W04-central-revocation-delivery.md) |
 | W05 | Login abuse protection and authentication security events | Policy gate | D08-D11: throttling, lockout, recovery and alerting policy |
 | W06 | App URL and outbound-request SSRF protection | Policy gate | D12: permitted domains/networks and operational exception process |
 | W07 | Secure configuration validation and removal of unsafe credential defaults | Implemented | `2caeede`; startup and command validation, production fail-closed behavior and 11 regression tests. See [`slices/W07-secure-configuration-validation.md`](slices/W07-secure-configuration-validation.md) |
-| W08 | Workspace security regression test foundation | Implemented | `444287a`, expanded through `ca8b88b`; 33 Workspace tests across eight suites plus 8 ITF Flow security tests cover authoritative users, configuration, first-login ordering, session policy, launch v2, assurance/TOTP/QR and launch URLs. See [`slices/W08-security-regression-foundation.md`](slices/W08-security-regression-foundation.md) |
+| W08 | Workspace security regression test foundation | Implemented | Expanded through W04; 37 Workspace tests across eight suites plus 11 ITF Flow security tests cover authoritative users, configuration, sessions, launch v2, assurance/TOTP/QR, launch URLs and the revocation contract. See [`slices/W08-security-regression-foundation.md`](slices/W08-security-regression-foundation.md) |
 | W09 | Security headers, browser policy and deployment trust boundary | Policy gate | D13-D14: hosting topology, proxy/CDN and permitted origins |
 
 ## Phase 2 — scalable access governance
@@ -74,7 +74,7 @@ result. Repository code, migrations and commits remain the final implementation 
 
 | ID | Application slice | Status | Dependency |
 |---|---|---|---|
-| A01 | ITF Flow launch v2, provisioning and revocation integration | In progress | Launch v2 receiver completed in `f0696bc`; W04 central revocation remains |
+| A01 | ITF Flow launch v2, provisioning and revocation integration | Ready for reassessment | Launch `f0696bc` and revocation receiver `30ace13` agree with Workspace; environment-separated staging credentials and joint staging acceptance remain |
 | A02 | Client Reimbursement staff integration | Planned | A01 lessons plus W17/W21 onboarding contract |
 | A03 | SIWES staff-facing integration | Policy gate | A01; D32 separates staff and external SIWES identities |
 | A04 | PromoIntel staff integration | Planned | A01 lessons plus W17/W21 onboarding contract |
@@ -95,17 +95,19 @@ result. Repository code, migrations and commits remain the final implementation 
 
 ## Current execution order
 
-1. Implement W04 and extend W08 with central session/entitlement revocation behavior.
-2. Reassess ITF Flow against Gate A after W04 and environment-separated staging configuration are complete.
+1. Configure environment-separated staging credentials and run the joint A01 ITF Flow integration reassessment.
+2. Exercise immediate, duplicate and outage/retry revocation in staging to close Gate A.
 3. Resolve W05, W06 and W09 production gates.
 4. Start Phase 2 governance before onboarding more than ITF Flow.
 
-**Next best implementable slice:** W04 — immediate central logout and entitlement-revocation delivery to ITF Flow.
-W02-W03 now provide the authoritative Workspace sessions and versioned Flow contract it depends on.
+**Next best implementable slice:** A01 — joint ITF Flow staging integration reassessment, once Infrastructure supplies
+separate staging interoperability/worker credentials and an approved scheduler. If that external configuration is not
+yet available, prepare W05 by resolving D08-D11.
 
-**Current child-app readiness:** Ready for continued ITF Flow integration development, but Gate A is not met. W03 and
-the cross-repository launch contract are complete. W04, revocation coverage, environment-separated staging
-configuration and the production KMS/HSM adapter gate remain before formal ITF Flow integration reassessment.
+**Current child-app readiness:** The Workspace code foundation is mature enough for joint ITF Flow reassessment, but
+Gate A is not formally met. W04 and its cross-repository contract coverage are complete. Environment-separated staging
+credentials and staging outage/duplicate-delivery evidence remain; production signing additionally requires the
+approved KMS/HSM adapter.
 
 ## Cross-chat handoff protocol
 

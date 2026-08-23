@@ -3,8 +3,8 @@
 ## Business outcome
 
 Workspace now has a fast, repeatable security test entry point that can run without a database or live child
-application. It protects authoritative-user, configuration, session, launch-v2, assurance and TOTP boundaries while
-later Phase 1 slices add central child-app revocation cases.
+application. It protects authoritative-user, configuration, session, launch-v2, assurance, TOTP and versioned central
+child-app revocation boundaries.
 
 ## Scope implemented
 
@@ -24,15 +24,16 @@ later Phase 1 slices add central child-app revocation cases.
 ## Test boundaries
 
 These tests do not claim that the launch handoff is production OIDC. W03 covers current entitlement, assurance and the
-signed handoff in both repositories. W04 must still extend the suite with central logout and entitlement-revocation
-delivery behavior before Gate A is met.
+signed handoff in both repositories. W04 adds matching producer/receiver fixtures, target-app validation and bounded
+retry-policy coverage. Live outage and duplicate-delivery behavior remains a staging acceptance boundary.
 
 ## Verification
 
-- `npm.cmd run test:security`: passed, 14 tests across 3 suites.
+- `npm.cmd run test:security`: passed, 37 tests across 8 suites.
+- ITF Flow `npm.cmd run test:security`: passed, 11 tests.
 - `npx.cmd prisma validate`: passed.
 - `npm.cmd run lint`: passed.
-- `npm.cmd run build`: passed, including TypeScript and all 17 routes.
+- `npm.cmd run build`: passed, including TypeScript and all 24 Workspace routes; ITF Flow build also passed.
 - `git diff --check`: passed; only Git's existing LF-to-CRLF working-copy notices were emitted.
 
 Implementation commit: `444287a`.
@@ -55,9 +56,13 @@ Implementation commit: `444287a`.
 - W03 correction `4c88f89` adds the privileged first-login credential-order regression. At that point, the Workspace
   suite contained 32 tests across eight suites.
 - W03 QR enrollment `ca8b88b` adds local TOTP QR rendering and rejects non-TOTP QR input. The current Workspace suite
-  contains 33 tests across eight suites.
+  contained 33 tests across eight suites.
+- W04 Workspace commit `c8d3605` and ITF Flow commit `30ace13` add the versioned central-logout/entitlement contract,
+  receiver selectors, configuration and retry-boundary cases. The suites now contain 37 Workspace tests across eight
+  suites and 11 ITF Flow security tests.
 
 ## Rollback
 
-Revert `444287a`. No data rollback is required. Reverting also removes exact-expiry and extra-segment token rejection,
-so rollback should not be used as a production workaround.
+The initial test harness can be removed by reverting `444287a`, but later slice regressions must be reverted with their
+own implementations. W04 data/delivery rollback is governed by its slice document; dropping retained outbox evidence is
+not a safe application rollback.
