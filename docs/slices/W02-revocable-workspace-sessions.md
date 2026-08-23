@@ -69,15 +69,19 @@ No device, browser or location label is shown because W02 deliberately does not 
 - All pre-W02 browser JWTs lack a database session identifier and therefore require one deliberate sign-in after
   deployment. Communicate this before rollout.
 - Run `prisma migrate deploy` before starting W02 code. Rolling out code first fails closed but prevents protected use.
-- The configured local database `itf_workspace_db` did not exist, so it was not created or altered. The full migration
-  chain was instead applied to a uniquely named disposable PostgreSQL database, both W02 tables were verified, and the
-  disposable database was removed.
+- At implementation time, the configured local database did not exist, so the full migration chain was first verified
+  against a disposable PostgreSQL database that was then removed. After the repository owner created
+  `itf_workspace_db`, a follow-up check on 2026-08-23 confirmed that all five migrations are applied, both W02 tables,
+  foreign keys and required indexes exist, and the database remains unseeded.
 
 ## Verification
 
 - TypeScript (`tsc --noEmit`): passed.
 - Prisma schema validation and client generation: passed.
 - Disposable PostgreSQL full-chain migration and W02 table verification: passed.
+- Owner-created `itf_workspace_db` connection, migration-status, constraints, indexes and empty-data verification:
+  passed. PostgreSQL reports version 18.6; `User`, `App`, `AuditLog`, `WorkspaceSession` and
+  `WorkspaceSessionRecoveryGrant` each contain zero rows.
 - Security regression suite: 32/32 tests passed across seven suites. Seven W02 tests cover approved defaults,
   configurable overrides, invalid policy relationships, role-specific idle timing, exact expiry boundaries,
   revocation precedence and the absolute-lifetime cap.
