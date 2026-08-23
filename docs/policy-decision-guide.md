@@ -49,6 +49,13 @@ actions.
 **Please provide:** Approved MFA methods, roles required to use MFA, actions requiring fresh step-up, and how long a
 successful step-up remains valid.
 
+**Approved interim outcome (2026-08-23):** Standard applications and roles permit password-only authentication. TOTP
+step-up is required when either the application or the user's assigned child-app role is classified sensitive; the
+more restrictive classification wins. Workspace `SYSTEM_ADMIN` and `APP_ADMIN` roles always require TOTP and cannot be
+downgraded through settings. Step-up remains fresh for ten minutes. Every app and child-app role requires an explicit
+standard/sensitive classification before activation. Email remains a notification/recovery channel, not an MFA factor.
+See the project architecture directive follow-up and D05 in the decision register.
+
 ### D06 — App-launch assertion lifetime and clock skew
 
 **Use case:** Workspace issues a one-time handoff that ITF Flow redeems. A very long lifetime increases theft/replay

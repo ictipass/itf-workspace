@@ -53,7 +53,7 @@
 - The initial inventory stores only identifiers and timestamps required for enforcement. Any expansion to IP address,
   detailed user-agent or location retention requires the applicable privacy/audit approval.
 
-## D05 - Partial direction; remains open
+## D05 - Approved interim risk-tiered MFA policy
 
 - Default passwords derived from staff numbers are prohibited.
 - Provisioning uses a unique cryptographically random, single-use temporary credential delivered to the staff member's
@@ -61,7 +61,23 @@
 - Email is not an MFA factor.
 - TOTP is accepted as the interim MFA direction; WebAuthn/passkeys or hardware-backed authenticators are preferred for
   privileged access as capability permits.
-- Required roles, protected actions and step-up validity are not yet approved. D05 remains Open.
+- Standard applications and standard child-app roles permit password-only authentication during the interim period.
+- TOTP step-up is required when either the selected application or the user's assigned child-app role is classified
+  `SENSITIVE`; the more restrictive requirement always wins.
+- Workspace `SYSTEM_ADMIN` and `APP_ADMIN` roles are always sensitive, require TOTP at authentication and full
+  reauthentication, and cannot be downgraded through settings.
+- A successful step-up remains fresh for ten minutes. A sensitive launch after that period requires a new TOTP.
+- Fresh step-up is also required before changing application/role sensitivity, roles or entitlements; changing MFA;
+  terminating another user's sessions; accessing sensitive audit exports; changing connectors; or administering
+  signing keys.
+- Every application and child-app role must be explicitly classified `STANDARD` or `SENSITIVE` before activation. A
+  user without an enrolled TOTP authenticator cannot launch sensitive access and is directed to enrollment.
+- Launch assertions state the achieved authentication method/time and the required assurance so child apps can reject
+  insufficient assurance server-side.
+- Sensitivity and MFA policy changes are audit logged. Email is limited to notifications and separately governed
+  recovery communication; it is not an authentication factor.
+- Approved by the super administrator on `2026-08-23` as a project architecture directive follow-up. D05 is Approved
+  (interim).
 
 ## D06 - Launch assertion timing
 
