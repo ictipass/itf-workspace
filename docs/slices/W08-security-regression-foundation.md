@@ -49,9 +49,11 @@ Implementation commit: `444287a`.
 
 - W07 commit `2caeede` added 11 configuration regression tests. The suite now contains 25 tests across 6 suites.
 - W02 commit `1483531` added 7 session-policy regression tests. The suite now contains 32 tests across 7 suites.
-- W03 commits `9cbec46` and `42c4f3b` removed obsolete v1 cases and added launch-v2/assurance/TOTP coverage. The current
-  Workspace suite contains 31 tests across eight suites. ITF Flow commit `f0696bc` passes eight security tests,
+- W03 commits `9cbec46` and `42c4f3b` removed obsolete v1 cases and added launch-v2/assurance/TOTP coverage. At that
+  point, the Workspace suite contained 31 tests across eight suites. ITF Flow commit `f0696bc` passes eight security tests,
   including four receiver contract cases.
+- W03 correction `4c88f89` adds the privileged first-login credential-order regression. The current Workspace suite
+  contains 32 tests across eight suites.
 
 ## Rollback
 

@@ -4,7 +4,7 @@ Status: **Implemented**
 
 Implementation date: 2026-08-23
 
-Workspace commits: `9cbec46`, validation hardening `42c4f3b`
+Workspace commits: `9cbec46`, validation hardening `42c4f3b`, onboarding correction `4c88f89`
 
 ITF Flow commit: `f0696bc`
 
@@ -45,6 +45,17 @@ Existing app audiences were backfilled from their slugs, blank access roles beca
 normalized to uppercase, and corresponding standard role policies were created. The migration was applied successfully
 to local `itf_workspace_db`; the database remains unseeded.
 
+Follow-up migration `20260823170000_align_app_role_policy_updated_at` removes the temporary database default used when
+creating `AppRolePolicy.updatedAt`, aligning the live database with Prisma's `@updatedAt` ownership. This resolves the
+schema difference that caused `prisma migrate dev` to request an unnecessary migration name after W03.
+
+## First-login correction
+
+Commit `4c88f89` restores the required authentication order for privileged temporary accounts: verify the supplied
+temporary password, replace it, revoke all sessions, sign in with the new password, and only then enroll/verify TOTP.
+The pre-MFA exception is restricted to a valid password-authenticated session whose authoritative user record still
+requires temporary-password replacement. It does not grant dashboard or administrative access before MFA.
+
 ## Visible UI change
 
 - System administrators can classify an application and its roles as standard or sensitive and configure the stable
@@ -57,7 +68,7 @@ to local `itf_workspace_db`; the database remains unseeded.
 
 - Workspace Prisma format, generate, validate/migration deployment: passed.
 - Workspace TypeScript, ESLint and production build: passed.
-- Workspace security regressions: 31/31 passed across eight suites.
+- Workspace security regressions: 32/32 passed across eight suites.
 - ITF Flow TypeScript, ESLint and production build: passed.
 - ITF Flow security regressions: 8/8 passed, including four launch-v2 contract tests.
 - Both repositories passed `git diff --check` for the committed implementation.
