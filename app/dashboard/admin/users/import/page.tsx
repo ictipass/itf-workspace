@@ -20,7 +20,8 @@ export default async function ImportUsersPage() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Bulk Import Users</h1>
           <p className="mt-2 text-muted-foreground">
-            Upload a CSV to create users in batch. This import is all-or-nothing.
+            Upload an HR master-list CSV to create ordinary staff in batch. This import is all-or-nothing;
+            privileged Workspace roles must be granted separately by an approved super administrator.
           </p>
         </div>
 

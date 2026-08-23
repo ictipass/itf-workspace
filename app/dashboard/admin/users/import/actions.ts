@@ -1,7 +1,7 @@
 "use server";
 
 import { WorkspaceRole } from "@/lib/generated/prisma/client";
-import { requireCurrentUser } from "@/lib/auth/current-user";
+import { requireCurrentUser, requireFreshMfaContext } from "@/lib/auth/current-user";
 import { importWorkspaceUsersFromCsv } from "@/lib/services/workspace-user-bulk-import.service";
 import { syncItfFlowDirectory } from "@/lib/integrations/itf-flow-directory-sync";
 
@@ -44,10 +44,22 @@ export async function importUsersAction(
 
   const csvText = await file.text();
 
+  const dryRun = formData.get("dryRun") === "on";
+  if (!dryRun) {
+    try {
+      await requireFreshMfaContext();
+    } catch {
+      return {
+        success: false,
+        message: "Fresh TOTP verification is required to import staff and grant application access.",
+      };
+    }
+  }
+
   const result = await importWorkspaceUsersFromCsv({
     csvText,
     importedById: user.id,
-    dryRun: formData.get("dryRun") === "on",
+    dryRun,
   });
 
   if (!result.success) {

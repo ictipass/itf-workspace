@@ -14,6 +14,10 @@ import { prisma } from "@/lib/prisma";
 import { generateTemporaryPassword } from "@/lib/security/password";
 import { writeDevCreatedUsersLog } from "@/lib/dev/dev-created-users-log";
 import { sendWorkspaceWelcomeEmail } from "@/lib/email/send-workspace-welcome-email";
+import {
+  HR_MASTER_LIST_WORKSPACE_ROLE,
+  isPermittedHrMasterListWorkspaceRole,
+} from "@/lib/policies/staff-onboarding";
 
 type CsvRow = {
   staffNumber?: string;
@@ -69,10 +73,6 @@ function normalize(value: unknown) {
 
 function normalizeEmail(value: unknown) {
   return normalize(value).toLowerCase();
-}
-
-function isValidWorkspaceRole(role: string): role is WorkspaceRole {
-  return Object.values(WorkspaceRole).includes(role as WorkspaceRole);
 }
 
 export async function importWorkspaceUsersFromCsv(params: {
@@ -141,11 +141,10 @@ export async function importWorkspaceUsersFromCsv(params: {
 
     if (!row.workspaceRole) {
       errors.push(`Row ${row.rowNumber}: workspaceRole is required.`);
-    } else if (!isValidWorkspaceRole(row.workspaceRole)) {
+    } else if (!isPermittedHrMasterListWorkspaceRole(row.workspaceRole)) {
       errors.push(
-        `Row ${row.rowNumber}: Invalid workspaceRole "${row.workspaceRole}". Allowed roles are ${Object.values(
-          WorkspaceRole
-        ).join(", ")}.`
+        `Row ${row.rowNumber}: HR master-list imports may create ${HR_MASTER_LIST_WORKSPACE_ROLE} accounts only. ` +
+        "Privileged Workspace roles must be granted separately by an approved super administrator."
       );
     }
 
@@ -344,7 +343,7 @@ export async function importWorkspaceUsersFromCsv(params: {
       staffNumber: row.staffNumber,
       fullName: row.fullName,
       email: row.email,
-      workspaceRole: row.workspaceRole as WorkspaceRole,
+      workspaceRole: HR_MASTER_LIST_WORKSPACE_ROLE,
       office,
       department,
       division,
