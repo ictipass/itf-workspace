@@ -37,7 +37,7 @@ result. Repository code, migrations and commits remain the final implementation 
 | W00 | Production dependency advisory remediation | Implemented | `acf76c5`; runtime audit reports zero known vulnerabilities. See [`slices/W00-dependency-security-baseline.md`](slices/W00-dependency-security-baseline.md) |
 | W01 | Authoritative current-user validation | Implemented | `16dcefc`, regression evidence `444287a`; full verification passes. See [`slices/W01-authoritative-current-user.md`](slices/W01-authoritative-current-user.md) |
 | W02 | Revocable Workspace sessions and session inventory | Implemented | `1483531`; DB-authoritative revocation, expiry, two-session recovery and inventory; 32-test suite passes. See [`slices/W02-revocable-workspace-sessions.md`](slices/W02-revocable-workspace-sessions.md) |
-| W03 | Workspace launch v2 issuer aligned with ITF Flow | Policy gate | W02 plus unresolved D07 key custody/rotation operations; D01, D05 and D06 are approved |
+| W03 | Workspace launch v2 issuer aligned with ITF Flow | Ready | W02 implemented; D01 and D05-D07 approved; production KMS/HSM selection remains a deployment gate, not a design assumption |
 | W04 | Immediate central logout and entitlement-revocation delivery to ITF Flow | Planned | W02-W03; transactional outbox and ITF Flow session-event contract |
 | W05 | Login abuse protection and authentication security events | Policy gate | D08-D11: throttling, lockout, recovery and alerting policy |
 | W06 | App URL and outbound-request SSRF protection | Policy gate | D12: permitted domains/networks and operational exception process |
@@ -95,18 +95,17 @@ result. Repository code, migrations and commits remain the final implementation 
 
 ## Current execution order
 
-1. Resolve the remaining D07 details while keeping W02 compatible with the approved D05-D06 policy.
-2. Implement W03 after full D07 approval, then extend W08 with assurance, launch and replay behavior.
-3. Deliver W04 before treating Workspace logout or entitlement revocation as centralized.
-4. Resolve W05, W06 and W09 production gates.
-5. Start Phase 2 governance before onboarding more than ITF Flow.
+1. Implement W03 against approved D01 and D05-D07, then extend W08 with assurance, launch and replay behavior.
+2. Deliver W04 before treating Workspace logout or entitlement revocation as centralized.
+3. Resolve W05, W06 and W09 production gates.
+4. Start Phase 2 governance before onboarding more than ITF Flow.
 
-**Next best implementation target:** W03 — Workspace launch v2 issuer. It is not yet implementable because D07's key
-custody/storage platform, rotation, overlap, emergency authority and child-app notification process remain unapproved.
-Policy closure for D07 is therefore the next safe action; no implementation will assume those answers.
+**Next best implementable slice:** W03 — Workspace launch v2 issuer aligned with ITF Flow. Its architecture and interim
+key policy are approved. Production remains gated on selecting/configuring the actual KMS/HSM and satisfying the
+dedicated signing-key launch checklist.
 
 **Current child-app readiness:** Not yet integration-development-ready. W00-W02, W07 and the W08 foundation are
-complete. W03-W04, D07, expanded entitlement/assurance/launch/replay/revocation and cross-contract coverage, and
+complete. W03-W04, expanded entitlement/assurance/launch/replay/revocation and cross-contract coverage, and
 environment-separated credentials remain on the ITF Flow reassessment gate.
 
 ## Cross-chat handoff protocol

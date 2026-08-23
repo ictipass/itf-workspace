@@ -87,8 +87,21 @@
 - An expired assertion does not create a child-app session. The user returns to Workspace and deliberately launches the
   application again.
 
-## D07 - Partial direction; remains open
+## D07 - Approved interim signing-key policy
 
-- Production launch assertions will use asymmetric signing so child applications receive verification keys only.
-- The private-key custody/storage platform, rotation frequency, verification-key overlap, emergency-rotation authority
-  and child-app notification process remain unapproved. D07 remains Open and blocks W03.
+- Launch v2 uses RS256 with 3072-bit RSA keys and fixed-algorithm validation.
+- The implementation uses a vendor-neutral signer; production requires non-exportable private keys in a managed
+  KMS/HSM or approved Vault/HSM, while child apps receive public keys only.
+- ICT Security owns policy, Infrastructure Operations administers custody, and the Workspace service identity receives
+  sign-only permission.
+- Keys rotate every 90 days with 24-hour normal public-key verification overlap. Emergency compromise rotation has no
+  overlap and revokes the affected `kid` immediately.
+- The ICT Security lead or designated incident commander has emergency authority, with second-party review and an
+  incident record within 24 hours.
+- Versioned HTTPS JWKS, five-minute caching, automated connector events and ICT operational notices distribute changes.
+- Environment and token-purpose keys are separate. Production keys are prohibited from source control, databases and
+  environment variables.
+- Approved by the super administrator on `2026-08-23` as a project architecture directive follow-up. Operational and
+  production reminders are governed by the dedicated
+  [`launch assertion signing-key policy`](2026-08-23-launch-assertion-key-management-policy.md). D07 is Approved
+  (interim).

@@ -72,6 +72,14 @@ Asymmetric keys or per-app secrets reduce that blast radius but require an appro
 **Please provide:** Approved signing model, key owner/storage system, rotation frequency, overlap period, emergency
 rotation authority, and child-app notification process.
 
+**Approved interim outcome (2026-08-23):** Launch v2 uses RS256 with 3072-bit RSA keys through a vendor-neutral signer.
+Production requires a non-exportable managed KMS/HSM or approved Vault/HSM; ICT Security owns policy, Infrastructure
+Operations administers custody, and Workspace receives sign-only access. Keys rotate every 90 days with 24-hour normal
+public-key overlap. The ICT Security lead or incident commander may order no-overlap emergency rotation with a second
+reviewer within 24 hours. Public keys and rotation state are delivered through versioned JWKS, five-minute caching,
+automated connector events and ICT notifications. See the dedicated
+[`launch assertion signing-key policy`](policies/2026-08-23-launch-assertion-key-management-policy.md).
+
 ### D08 — Login throttling
 
 **Use case:** An attacker tries many passwords for one account or one common password across many staff accounts. Rate
