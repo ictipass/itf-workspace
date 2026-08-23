@@ -1,8 +1,14 @@
-import { AppAccessStatus, UserStatus } from "@/lib/generated/prisma/client";
+import { randomUUID } from "node:crypto";
+import {
+  AppAccessStatus,
+  AppStatus,
+  IntegrationOutboxStatus,
+  UserStatus,
+} from "@/lib/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { resolveItfFlowDirectorySyncConfiguration } from "@/lib/config/workspace-environment";
-
-const BATCH_SIZE = 200;
+import { buildItfFlowDirectoryBatch } from "@/lib/integrations/itf-flow-directory-contract";
+import { deliverItfFlowSessionEvents } from "@/lib/integrations/itf-flow-session-events";
 
 export async function syncItfFlowDirectory() {
   const configuration = resolveItfFlowDirectorySyncConfiguration();
@@ -10,7 +16,7 @@ export async function syncItfFlowDirectory() {
   const accessRecords = await prisma.appAccess.findMany({
     where: {
       status: AppAccessStatus.ACTIVE,
-      app: { slug: "itf-flow" },
+      app: { slug: configuration.appSlug, status: AppStatus.ACTIVE },
     },
     include: {
       user: {
@@ -27,21 +33,53 @@ export async function syncItfFlowDirectory() {
     orderBy: { userId: "asc" },
   });
 
+  const workspaceUserIds = accessRecords.map((access) => access.userId);
+  if (workspaceUserIds.length) {
+    const outstanding = await prisma.integrationOutboxEvent.findMany({
+      where: {
+        targetAppSlug: configuration.appSlug,
+        workspaceUserId: { in: workspaceUserIds },
+        status: { not: IntegrationOutboxStatus.DELIVERED },
+      },
+      select: { eventId: true },
+    });
+    if (outstanding.length) {
+      await deliverItfFlowSessionEvents(outstanding.map((event) => event.eventId));
+      const remaining = await prisma.integrationOutboxEvent.count({
+        where: {
+          eventId: { in: outstanding.map((event) => event.eventId) },
+          status: { not: IntegrationOutboxStatus.DELIVERED },
+        },
+      });
+      if (remaining) {
+        throw new Error(
+          "ITF Flow synchronization is blocked until pending revocation events are delivered."
+        );
+      }
+    }
+  }
+
   let createdCount = 0;
   let updatedCount = 0;
   let inactiveCount = 0;
   const runIds: string[] = [];
 
-  for (let offset = 0; offset < accessRecords.length; offset += BATCH_SIZE) {
-    const batch = accessRecords.slice(offset, offset + BATCH_SIZE);
+  const batchCount = Math.ceil(accessRecords.length / configuration.batchSize);
+  for (let offset = 0; offset < accessRecords.length; offset += configuration.batchSize) {
+    const batch = accessRecords.slice(offset, offset + configuration.batchSize);
+    const batchIndex = Math.floor(offset / configuration.batchSize) + 1;
+    const requestId = randomUUID();
     const response = await fetch(configuration.endpoint, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${configuration.secret}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        source: "itf-workspace",
+      body: JSON.stringify(buildItfFlowDirectoryBatch({
+        requestId,
+        targetAppSlug: configuration.appSlug,
+        batchIndex,
+        batchCount,
         users: batch.map(({ user, appRole }) => ({
           workspaceUserId: user.id,
           staffNumber: user.staffNumber,
@@ -60,8 +98,9 @@ export async function syncItfFlowDirectory() {
             : null,
           supervisorWorkspaceUserId: user.supervisor?.id ?? null,
         })),
-      }),
+      })),
       cache: "no-store",
+      signal: AbortSignal.timeout(configuration.requestTimeoutMs),
     });
     const result = (await response.json()) as {
       error?: string;
@@ -69,8 +108,10 @@ export async function syncItfFlowDirectory() {
       createdCount?: number;
       updatedCount?: number;
       inactiveCount?: number;
+      version?: string;
+      requestId?: string;
     };
-    if (!response.ok) {
+    if (!response.ok || result.version !== "itf-workspace-directory-v1" || result.requestId !== requestId) {
       throw new Error(result.error ?? `ITF Flow synchronization failed (${response.status}).`);
     }
     if (result.runId) runIds.push(result.runId);
@@ -81,7 +122,7 @@ export async function syncItfFlowDirectory() {
 
   return {
     totalCount: accessRecords.length,
-    batchCount: Math.ceil(accessRecords.length / BATCH_SIZE),
+    batchCount,
     createdCount,
     updatedCount,
     inactiveCount,

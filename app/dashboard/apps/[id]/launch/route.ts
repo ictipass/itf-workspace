@@ -80,6 +80,8 @@ export async function GET(_request: Request, { params }: Props) {
       workspaceSessionId: context.session.id,
       methods: context.session.authenticationMethods,
       authenticatedAt: Math.floor(context.session.authenticatedAt.getTime() / 1000),
+      idleExpiresAt: Math.ceil(context.session.idleExpiresAt.getTime() / 1000),
+      absoluteExpiresAt: Math.ceil(context.session.absoluteExpiresAt.getTime() / 1000),
       mfaAuthenticatedAt: context.session.mfaAuthenticatedAt
         ? Math.floor(context.session.mfaAuthenticatedAt.getTime() / 1000)
         : undefined,

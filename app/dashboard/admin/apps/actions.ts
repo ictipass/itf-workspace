@@ -15,7 +15,9 @@ import { requireCurrentUser, requireFreshMfaContext } from "@/lib/auth/current-u
 import { normalizeAppLaunchUrl } from "@/lib/apps/launch-url";
 import {
   deliverItfFlowSessionEvents,
+  enqueueCentralLogoutForWorkspaceUsers,
   enqueueEntitlementRevocationEvents,
+  isItfFlowAppSlug,
 } from "@/lib/integrations/itf-flow-session-events";
 
 const appLaunchUrlSchema = z.string().trim().min(1).refine(
@@ -188,17 +190,27 @@ export async function updateAppAction(
       where: { id },
       data: { ...data, url: normalizeAppLaunchUrl(data.url) },
     });
-    const queued =
-      previous.status === AppStatus.ACTIVE && app.status === AppStatus.INACTIVE
-        ? await enqueueEntitlementRevocationEvents(
+    let queued: string[] = [];
+    if (previous.status === AppStatus.ACTIVE && app.status === AppStatus.INACTIVE) {
+      queued = await enqueueEntitlementRevocationEvents(
             transaction,
             previous.accessRules.map((access) => ({
               workspaceUserId: access.userId,
               appSlug: previous.slug,
               reason: "APP_DEACTIVATED",
             }))
-          )
-        : [];
+          );
+    } else if (
+      previous.assuranceRequirement === AssuranceRequirement.STANDARD &&
+      app.assuranceRequirement === AssuranceRequirement.SENSITIVE &&
+      isItfFlowAppSlug(previous.slug)
+    ) {
+      queued = await enqueueCentralLogoutForWorkspaceUsers(
+        transaction,
+        previous.accessRules.map((access) => access.userId),
+        "APP_ASSURANCE_INCREASED"
+      );
+    }
     await transaction.auditLog.create({
       data: {
         actorId: user.id,
@@ -288,21 +300,50 @@ export async function upsertAppRolePolicyAction(formData: FormData) {
   const parsed = rolePolicySchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) throw new Error("A valid role code and assurance classification are required.");
   const roleCode = parsed.data.roleCode.toUpperCase();
-  const existing = await prisma.appRolePolicy.findUnique({
-    where: { appId_roleCode: { appId: parsed.data.appId, roleCode } },
+  const result = await prisma.$transaction(async (transaction) => {
+    const [existing, app] = await Promise.all([
+      transaction.appRolePolicy.findUnique({
+        where: { appId_roleCode: { appId: parsed.data.appId, roleCode } },
+      }),
+      transaction.app.findUnique({ where: { id: parsed.data.appId }, select: { slug: true } }),
+    ]);
+    if (!app) throw new Error("Application not found.");
+    const policy = await transaction.appRolePolicy.upsert({
+      where: { appId_roleCode: { appId: parsed.data.appId, roleCode } },
+      create: { appId: parsed.data.appId, roleCode, assuranceRequirement: parsed.data.assuranceRequirement },
+      update: { assuranceRequirement: parsed.data.assuranceRequirement, isActive: true },
+    });
+    let eventIds: string[] = [];
+    if (
+      existing?.assuranceRequirement === AssuranceRequirement.STANDARD &&
+      policy.assuranceRequirement === AssuranceRequirement.SENSITIVE &&
+      isItfFlowAppSlug(app.slug)
+    ) {
+      const accesses = await transaction.appAccess.findMany({
+        where: { appId: policy.appId, appRole: roleCode, status: "ACTIVE" },
+        select: { userId: true },
+      });
+      eventIds = await enqueueCentralLogoutForWorkspaceUsers(
+        transaction,
+        accesses.map((access) => access.userId),
+        "ROLE_ASSURANCE_INCREASED"
+      );
+    }
+    await transaction.auditLog.create({
+      data: {
+        actorId: context.user.id,
+        action: existing ? AuditAction.APP_ROLE_POLICY_UPDATED : AuditAction.APP_ROLE_POLICY_CREATED,
+        metadata: {
+          appId: policy.appId,
+          roleCode,
+          assuranceRequirement: policy.assuranceRequirement,
+          sessionEventsQueued: eventIds.length,
+        },
+      },
+    });
+    return { policy, eventIds };
   });
-  const policy = await prisma.appRolePolicy.upsert({
-    where: { appId_roleCode: { appId: parsed.data.appId, roleCode } },
-    create: { appId: parsed.data.appId, roleCode, assuranceRequirement: parsed.data.assuranceRequirement },
-    update: { assuranceRequirement: parsed.data.assuranceRequirement, isActive: true },
-  });
-  await prisma.auditLog.create({
-    data: {
-      actorId: context.user.id,
-      action: existing ? AuditAction.APP_ROLE_POLICY_UPDATED : AuditAction.APP_ROLE_POLICY_CREATED,
-      metadata: { appId: policy.appId, roleCode, assuranceRequirement: policy.assuranceRequirement },
-    },
-  });
-  revalidatePath(`/dashboard/admin/apps/${policy.appId}/edit`);
+  await deliverItfFlowSessionEvents(result.eventIds);
+  revalidatePath(`/dashboard/admin/apps/${result.policy.appId}/edit`);
   revalidatePath("/dashboard/admin/access");
 }

@@ -12,7 +12,9 @@ import { requireCurrentUser, requireFreshMfaContext } from "@/lib/auth/current-u
 import {
   deliverItfFlowSessionEvents,
   enqueueEntitlementRevocationEvent,
+  isItfFlowAppSlug,
 } from "@/lib/integrations/itf-flow-session-events";
+import { shouldQueueEntitlementRoleChange } from "@/lib/integrations/outbox-policy";
 
 const grantAccessSchema = z.object({
   userId: z.string().min(1, "Please select a user."),
@@ -84,41 +86,57 @@ export async function grantAppAccessAction(
     return { success: false, message: "Selected app role is not active or classified." };
   }
 
-  const access = await prisma.appAccess.upsert({
-    where: {
-      userId_appId: {
-        userId,
-        appId,
+  const result = await prisma.$transaction(async (transaction) => {
+    const existing = await transaction.appAccess.findUnique({
+      where: { userId_appId: { userId, appId } },
+    });
+    const roleChanged = shouldQueueEntitlementRoleChange(existing, appRole);
+    const eventIds = roleChanged
+      ? await enqueueEntitlementRevocationEvent(transaction, {
+          workspaceUserId: userId,
+          appSlug: app.slug,
+          reason: "ACCESS_ROLE_CHANGED",
+        })
+      : [];
+    const access = await transaction.appAccess.upsert({
+      where: {
+        userId_appId: {
+          userId,
+          appId,
+        },
       },
-    },
-    update: {
-      appRole,
-      status: AppAccessStatus.ACTIVE,
-      grantedById: currentUser.id,
-      grantedAt: new Date(),
-      revokedAt: null,
-    },
-    create: {
-      userId,
-      appId,
-      appRole,
-      status: AppAccessStatus.ACTIVE,
-      grantedById: currentUser.id,
-    },
-  });
-
-  await prisma.auditLog.create({
-    data: {
-      actorId: currentUser.id,
-      action: AuditAction.ACCESS_GRANTED,
-      metadata: {
-        accessId: access.id,
+      update: {
+        appRole,
+        status: AppAccessStatus.ACTIVE,
+        grantedById: currentUser.id,
+        grantedAt: new Date(),
+        revokedAt: null,
+      },
+      create: {
         userId,
         appId,
         appRole,
+        status: AppAccessStatus.ACTIVE,
+        grantedById: currentUser.id,
       },
-    },
+    });
+    await transaction.auditLog.create({
+      data: {
+        actorId: currentUser.id,
+        action: AuditAction.ACCESS_GRANTED,
+        metadata: {
+          accessId: access.id,
+          userId,
+          appId,
+          appRole,
+          previousAppRole: existing?.appRole,
+          roleChangeRevocationQueued: eventIds.length === 1,
+        },
+      },
+    });
+    return { eventIds, requiresFlowSync: isItfFlowAppSlug(app.slug) };
   });
+  await deliverItfFlowSessionEvents(result.eventIds);
 
   revalidatePath("/dashboard");
   revalidatePath("/dashboard/apps");
@@ -126,7 +144,9 @@ export async function grantAppAccessAction(
 
   return {
     success: true,
-    message: "App access granted successfully.",
+    message: result.requiresFlowSync
+      ? "ITF Flow access was updated. Synchronize the ITF Flow directory before the user launches the changed role."
+      : "App access granted successfully.",
   };
 }
 

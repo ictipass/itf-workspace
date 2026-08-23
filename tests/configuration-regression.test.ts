@@ -150,6 +150,9 @@ describe("feature configuration", () => {
       "https://flow.example.test/api/integrations/workspace/directory-sync"
     );
     assert.equal(configuration.secret, "directory-secret");
+    assert.equal(configuration.appSlug, "itf-flow");
+    assert.equal(configuration.batchSize, 200);
+    assert.equal(configuration.requestTimeoutMs, 30000);
 
     assert.throws(
       () =>

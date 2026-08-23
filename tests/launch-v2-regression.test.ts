@@ -63,6 +63,8 @@ function launchInput(
       workspaceSessionId: "workspace-session-1",
       methods: requiredAssurance === AssuranceRequirement.SENSITIVE ? ["pwd", "totp"] : ["pwd"],
       authenticatedAt: Math.floor(issuedAt.getTime() / 1000) - 60,
+      idleExpiresAt: Math.floor(issuedAt.getTime() / 1000) + 1200,
+      absoluteExpiresAt: Math.floor(issuedAt.getTime() / 1000) + 10800,
       mfaAuthenticatedAt:
         requiredAssurance === AssuranceRequirement.SENSITIVE
           ? Math.floor(issuedAt.getTime() / 1000) - 30
@@ -126,6 +128,22 @@ describe("Workspace launch v2 assertions", () => {
     missingMfa.authentication.mfaAuthenticatedAt = undefined;
     const invalid = createWorkspaceLaunchV2Token(missingMfa, { now: issuedAt });
     assert.throws(() => verify(invalid.token), /Fresh Workspace MFA/);
+  });
+
+  test("requires current Workspace idle and absolute session bounds", () => {
+    const expiredIdle = launchInput();
+    expiredIdle.authentication.idleExpiresAt = Math.floor(issuedAt.getTime() / 1000);
+    assert.throws(
+      () => verify(createWorkspaceLaunchV2Token(expiredIdle, { now: issuedAt }).token),
+      /timing/
+    );
+
+    const invertedBounds = launchInput();
+    invertedBounds.authentication.idleExpiresAt = invertedBounds.authentication.absoluteExpiresAt + 1;
+    assert.throws(
+      () => verify(createWorkspaceLaunchV2Token(invertedBounds, { now: issuedAt }).token),
+      /timing/
+    );
   });
 });
 

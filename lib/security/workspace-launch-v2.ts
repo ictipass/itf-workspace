@@ -45,6 +45,8 @@ export type WorkspaceLaunchV2Payload = {
     workspaceSessionId: string;
     methods: string[];
     authenticatedAt: number;
+    idleExpiresAt: number;
+    absoluteExpiresAt: number;
     mfaAuthenticatedAt?: number;
   };
 };
@@ -224,7 +226,9 @@ export function verifyWorkspaceLaunchV2Token(
     !payload.entitlement?.role ||
     !Object.values(AssuranceRequirement).includes(payload.entitlement.requiredAssurance) ||
     !Array.isArray(payload.authentication.methods) ||
-    !Number.isInteger(payload.authentication.authenticatedAt)
+    !Number.isInteger(payload.authentication.authenticatedAt) ||
+    !Number.isInteger(payload.authentication.idleExpiresAt) ||
+    !Number.isInteger(payload.authentication.absoluteExpiresAt)
   ) {
     throw new Error("Workspace launch v2 claims are invalid.");
   }
@@ -237,7 +241,11 @@ export function verifyWorkspaceLaunchV2Token(
     payload.exp + skew < now ||
     payload.exp <= payload.iat ||
     payload.exp - payload.iat > ttl ||
-    payload.authentication.authenticatedAt > payload.iat + skew
+    payload.authentication.authenticatedAt > payload.iat + skew ||
+    payload.authentication.idleExpiresAt <= now ||
+    payload.authentication.absoluteExpiresAt <= now ||
+    payload.authentication.idleExpiresAt > payload.authentication.absoluteExpiresAt ||
+    payload.authentication.absoluteExpiresAt < payload.authentication.authenticatedAt
   ) {
     throw new Error("Workspace launch v2 timing is invalid.");
   }

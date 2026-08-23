@@ -3,6 +3,7 @@ import test from "node:test";
 import {
   buildItfFlowSessionEventPayload,
   retryDelaySeconds,
+  shouldQueueEntitlementRoleChange,
 } from "../lib/integrations/outbox-policy";
 
 test("builds the versioned, audience-addressed ITF Flow revocation contract", () => {
@@ -34,4 +35,10 @@ test("integration retry delay grows exponentially and remains bounded", () => {
   assert.equal(retryDelaySeconds(2, 30, 3600), 60);
   assert.equal(retryDelaySeconds(8, 30, 3600), 3600);
   assert.equal(retryDelaySeconds(20, 30, 3600), 3600);
+});
+
+test("queues old-role revocation only for an active role change", () => {
+  assert.equal(shouldQueueEntitlementRoleChange({ status: "ACTIVE", appRole: "OFFICER" }, "DIRECTOR"), true);
+  assert.equal(shouldQueueEntitlementRoleChange({ status: "ACTIVE", appRole: "OFFICER" }, "OFFICER"), false);
+  assert.equal(shouldQueueEntitlementRoleChange({ status: "REVOKED", appRole: "OFFICER" }, "DIRECTOR"), false);
 });

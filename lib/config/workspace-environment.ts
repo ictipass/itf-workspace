@@ -17,6 +17,9 @@ export type WorkspaceEmailConfiguration = {
 export type ItfFlowDirectorySyncConfiguration = {
   endpoint: string;
   secret: string;
+  appSlug: string;
+  batchSize: number;
+  requestTimeoutMs: number;
 };
 
 export type ItfFlowSessionEventConfiguration = {
@@ -511,10 +514,30 @@ export function resolveItfFlowDirectorySyncConfiguration(
     ["https:", "http:"],
     issues
   );
+  const appSlug = readValue(environment, "ITF_FLOW_APP_SLUG") ?? "itf-flow";
+  if (!/^[a-z0-9-]{2,64}$/.test(appSlug)) {
+    issues.push("ITF_FLOW_APP_SLUG must be a lowercase application slug.");
+  }
+  const batchSize = readInteger(
+    environment,
+    "WORKSPACE_DIRECTORY_SYNC_BATCH_SIZE",
+    200,
+    1,
+    500,
+    issues
+  );
+  const requestTimeoutMs = readInteger(
+    environment,
+    "WORKSPACE_DIRECTORY_SYNC_TIMEOUT_MS",
+    30000,
+    1000,
+    120000,
+    issues
+  );
   validateSecret("WORKSPACE_DIRECTORY_SYNC_SECRET", secret, mode, issues);
   throwIfInvalid(issues);
 
-  return { endpoint: endpoint!, secret: secret! };
+  return { endpoint: endpoint!, secret: secret!, appSlug, batchSize, requestTimeoutMs };
 }
 
 export function resolveItfFlowSessionEventConfiguration(

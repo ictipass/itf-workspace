@@ -45,6 +45,19 @@ export async function enqueueCentralLogoutEvents(
   return events.map((event) => event.eventId);
 }
 
+export async function enqueueCentralLogoutForWorkspaceUsers(
+  transaction: Prisma.TransactionClient,
+  workspaceUserIds: readonly string[],
+  reason: string
+) {
+  if (workspaceUserIds.length === 0) return [];
+  const sessions = await transaction.workspaceSession.findMany({
+    where: { userId: { in: [...workspaceUserIds] }, revokedAt: null },
+    select: { id: true, userId: true },
+  });
+  return enqueueCentralLogoutEvents(transaction, sessions, reason);
+}
+
 export async function enqueueEntitlementRevocationEvent(
   transaction: Prisma.TransactionClient,
   input: { workspaceUserId: string; appSlug: string; reason: string }
