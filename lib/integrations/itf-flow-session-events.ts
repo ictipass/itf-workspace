@@ -157,6 +157,27 @@ async function deliverClaimedEvent(event: ClaimedEvent) {
   const configuration = resolveItfFlowSessionEventConfiguration();
   const attemptCount = event.attemptCount + 1;
   try {
+    if (event.type === IntegrationOutboxEventType.CENTRAL_LOGOUT && !event.workspaceSessionId) {
+      throw new Error("A central logout event is missing its Workspace session identifier.");
+    }
+    const payload = event.type === IntegrationOutboxEventType.CENTRAL_LOGOUT
+      ? buildItfFlowSessionEventPayload({
+          eventId: event.eventId,
+          type: "CENTRAL_LOGOUT",
+          workspaceUserId: event.workspaceUserId,
+          workspaceSessionId: event.workspaceSessionId!,
+          targetAppSlug: event.targetAppSlug,
+          occurredAt: event.createdAt,
+          reason: event.reason,
+        })
+      : buildItfFlowSessionEventPayload({
+          eventId: event.eventId,
+          type: "ENTITLEMENT_REVOKED",
+          workspaceUserId: event.workspaceUserId,
+          targetAppSlug: event.targetAppSlug,
+          occurredAt: event.createdAt,
+          reason: event.reason,
+        });
     const response = await fetch(configuration.endpoint, {
       method: "POST",
       headers: {
@@ -164,15 +185,7 @@ async function deliverClaimedEvent(event: ClaimedEvent) {
         "Content-Type": "application/json",
         "X-Correlation-Id": event.eventId,
       },
-      body: JSON.stringify(buildItfFlowSessionEventPayload({
-        eventId: event.eventId,
-        type: event.type,
-        workspaceUserId: event.workspaceUserId,
-        workspaceSessionId: event.workspaceSessionId ?? undefined,
-        targetAppSlug: event.targetAppSlug,
-        occurredAt: event.createdAt,
-        reason: event.reason,
-      })),
+      body: JSON.stringify(payload),
       cache: "no-store",
       signal: AbortSignal.timeout(configuration.requestTimeoutMs),
     });

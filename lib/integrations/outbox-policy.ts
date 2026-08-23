@@ -1,14 +1,18 @@
 export const ITF_FLOW_SESSION_EVENT_VERSION = "itf-workspace-session-event-v1" as const;
 
-export type ItfFlowSessionEventPayloadInput = {
+type ItfFlowSessionEventPayloadCommon = {
   eventId: string;
-  type: "CENTRAL_LOGOUT" | "ENTITLEMENT_REVOKED";
   workspaceUserId: string;
-  workspaceSessionId?: string;
   targetAppSlug: string;
   occurredAt: Date;
   reason: string;
 };
+
+export type ItfFlowSessionEventPayloadInput = ItfFlowSessionEventPayloadCommon &
+  (
+    | { type: "CENTRAL_LOGOUT"; workspaceSessionId: string }
+    | { type: "ENTITLEMENT_REVOKED"; workspaceSessionId?: never }
+  );
 
 export function buildItfFlowSessionEventPayload(input: ItfFlowSessionEventPayloadInput) {
   return {
@@ -16,7 +20,9 @@ export function buildItfFlowSessionEventPayload(input: ItfFlowSessionEventPayloa
     eventId: input.eventId,
     type: input.type,
     workspaceUserId: input.workspaceUserId,
-    workspaceSessionId: input.workspaceSessionId,
+    ...(input.type === "CENTRAL_LOGOUT"
+      ? { workspaceSessionId: input.workspaceSessionId }
+      : {}),
     targetAppSlug: input.targetAppSlug,
     occurredAt: input.occurredAt.toISOString(),
     reason: input.reason,
