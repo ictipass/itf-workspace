@@ -36,13 +36,13 @@ result. Repository code, migrations and commits remain the final implementation 
 |---|---|---|---|
 | W00 | Production dependency advisory remediation | Implemented | `acf76c5`; runtime audit reports zero known vulnerabilities. See [`slices/W00-dependency-security-baseline.md`](slices/W00-dependency-security-baseline.md) |
 | W01 | Authoritative current-user validation | Implemented | `16dcefc`, regression evidence `444287a`; full verification passes. See [`slices/W01-authoritative-current-user.md`](slices/W01-authoritative-current-user.md) |
-| W02 | Revocable Workspace sessions and session inventory | Ready | D01-D04 approved by the `2026-08-23` project architecture directive |
+| W02 | Revocable Workspace sessions and session inventory | Implemented | `1483531`; DB-authoritative revocation, expiry, two-session recovery and inventory; 32-test suite passes. See [`slices/W02-revocable-workspace-sessions.md`](slices/W02-revocable-workspace-sessions.md) |
 | W03 | Workspace launch v2 issuer aligned with ITF Flow | Policy gate | W02 plus unresolved portions of D05 and D07; D01 and D06 are approved |
 | W04 | Immediate central logout and entitlement-revocation delivery to ITF Flow | Planned | W02-W03; transactional outbox and ITF Flow session-event contract |
 | W05 | Login abuse protection and authentication security events | Policy gate | D08-D11: throttling, lockout, recovery and alerting policy |
 | W06 | App URL and outbound-request SSRF protection | Policy gate | D12: permitted domains/networks and operational exception process |
 | W07 | Secure configuration validation and removal of unsafe credential defaults | Implemented | `2caeede`; startup and command validation, production fail-closed behavior and 11 regression tests. See [`slices/W07-secure-configuration-validation.md`](slices/W07-secure-configuration-validation.md) |
-| W08 | Workspace security regression test foundation | Implemented | `444287a`, expanded by `2caeede`; 25 tests cover authoritative users, configuration, launch-token v1 and launch-URL handling. See [`slices/W08-security-regression-foundation.md`](slices/W08-security-regression-foundation.md) |
+| W08 | Workspace security regression test foundation | Implemented | `444287a`, expanded by `2caeede` and `1483531`; 32 tests cover authoritative users, configuration, session policy, launch-token v1 and launch-URL handling. See [`slices/W08-security-regression-foundation.md`](slices/W08-security-regression-foundation.md) |
 | W09 | Security headers, browser policy and deployment trust boundary | Policy gate | D13-D14: hosting topology, proxy/CDN and permitted origins |
 
 ## Phase 2 — scalable access governance
@@ -95,18 +95,18 @@ result. Repository code, migrations and commits remain the final implementation 
 
 ## Current execution order
 
-1. Implement W02 against approved D01-D04 and record its session-policy regression coverage in W08.
-2. Resolve the remaining D05 and D07 details while keeping W02 compatible with the approved D06 launch policy.
-3. Implement W03 after W02 and full D05/D07 approval, then extend W08 with launch and replay behavior.
-4. Deliver W04 before treating Workspace logout or entitlement revocation as centralized.
-5. Resolve W05, W06 and W09 production gates.
-6. Start Phase 2 governance before onboarding more than ITF Flow.
+1. Resolve the remaining D05 and D07 details while keeping W02 compatible with the approved D06 launch policy.
+2. Implement W03 after full D05/D07 approval, then extend W08 with launch and replay behavior.
+3. Deliver W04 before treating Workspace logout or entitlement revocation as centralized.
+4. Resolve W05, W06 and W09 production gates.
+5. Start Phase 2 governance before onboarding more than ITF Flow.
 
-**Next best implementable slice:** W02 — revocable Workspace sessions and session inventory. D01-D04 are approved and
-the implementation must remain compatible with the approved D06 launch timing while D05 and D07 remain gated.
+**Next best implementation target:** W03 — Workspace launch v2 issuer. It is not yet implementable because D05's exact
+MFA/step-up coverage and validity and D07's key custody, rotation, overlap and emergency authority remain unapproved.
+Policy closure for D05 and D07 is therefore the next safe action; no implementation will assume those answers.
 
-**Current child-app readiness:** Not yet integration-development-ready. W00, W01, W07 and the W08 foundation are
-complete. W02-W04, D05, D07, expanded session/entitlement/replay/revocation and cross-contract coverage, and
+**Current child-app readiness:** Not yet integration-development-ready. W00-W02, W07 and the W08 foundation are
+complete. W03-W04, D05, D07, expanded entitlement/launch/replay/revocation and cross-contract coverage, and
 environment-separated credentials remain on the ITF Flow reassessment gate.
 
 ## Cross-chat handoff protocol

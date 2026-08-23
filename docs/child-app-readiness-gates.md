@@ -26,10 +26,9 @@ Required:
 - Workspace and ITF Flow contract tests pass in both repositories.
 - Development and staging use environment-specific credentials; no production secret is shared with them.
 
-Current status: **Not met**. W00, W01, W07 and the W08 foundation are complete; D01-D04 and D06 are approved.
-W02-W04, the remaining D05/D07 details, expanded
-session/entitlement/replay/revocation coverage, cross-repository contract tests and environment-separated credentials
-remain.
+Current status: **Not met**. W00-W02, W07 and the W08 foundation are complete; D01-D04 and D06 are approved.
+W03-W04, the remaining D05/D07 details, expanded entitlement/launch/replay/revocation coverage, cross-repository
+contract tests and environment-separated credentials remain.
 
 When the final item is satisfied, the slice handoff must explicitly state: **Workspace is ready for ITF Flow
 integration reassessment.**

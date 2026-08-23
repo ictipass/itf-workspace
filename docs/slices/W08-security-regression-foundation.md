@@ -4,7 +4,7 @@
 
 Workspace now has a fast, repeatable security test entry point that can run without a database or live child
 application. It protects the current authoritative-user rule and the existing version-1 launch boundary while later
-Phase 1 slices add session, entitlement, replay and revocation cases.
+Phase 1 slices add entitlement, replay and child-app revocation cases.
 
 ## Scope implemented
 
@@ -25,8 +25,8 @@ Phase 1 slices add session, entitlement, replay and revocation cases.
 ## Test boundaries
 
 These tests deliberately do not claim that version-1 launch tokens are production SSO. W03 will replace or version
-that contract after D01 and D05-D07 are approved. W02-W04 must extend this suite with revocable-session, current
-entitlement, single-use/replay, logout and revocation-delivery cases. Cross-repository Workspace/ITF Flow contract
+that contract after D05 and D07 are fully approved. W03-W04 must extend this suite with current entitlement,
+single-use/replay, logout and revocation-delivery cases. Cross-repository Workspace/ITF Flow contract
 tests are still required by Gate A.
 
 ## Verification
@@ -50,6 +50,7 @@ Implementation commit: `444287a`.
 ## Expansion history
 
 - W07 commit `2caeede` added 11 configuration regression tests. The suite now contains 25 tests across 6 suites.
+- W02 commit `1483531` added 7 session-policy regression tests. The suite now contains 32 tests across 7 suites.
 
 ## Rollback
 
