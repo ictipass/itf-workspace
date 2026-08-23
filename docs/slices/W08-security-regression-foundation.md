@@ -57,9 +57,9 @@ Implementation commit: `444287a`.
   suite contained 32 tests across eight suites.
 - W03 QR enrollment `ca8b88b` adds local TOTP QR rendering and rejects non-TOTP QR input. The current Workspace suite
   contained 33 tests across eight suites.
-- W04 Workspace commit `c8d3605` and ITF Flow commit `30ace13` add the versioned central-logout/entitlement contract,
-  receiver selectors, configuration and retry-boundary cases. The suites now contain 37 Workspace tests across eight
-  suites and 11 ITF Flow security tests.
+- W04 Workspace commits `c8d3605`, `6427f98` and ITF Flow commits `30ace13`, `7a3a849` add the versioned
+  central-logout/entitlement contract, fail-closed event scope, receiver selectors, configuration and retry-boundary
+  cases. The suites now contain 37 Workspace tests across eight suites and 11 ITF Flow security tests.
 
 ## Rollback
 

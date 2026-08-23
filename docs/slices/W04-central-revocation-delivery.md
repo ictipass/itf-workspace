@@ -1,8 +1,8 @@
 # W04 — Immediate central revocation delivery to ITF Flow
 
-Workspace implementation commit: `c8d3605`
+Workspace implementation commits: `c8d3605`, fail-closed contract hardening `6427f98`
 
-ITF Flow receiver commits: `30ace13`, documentation `0018690`
+ITF Flow receiver commits: `30ace13`, fail-closed contract hardening `7a3a849`, documentation `0018690`
 
 ## Business outcome
 
@@ -81,7 +81,8 @@ worker before reverting application code; retained outbox rows must not be dropp
 
 - Workspace: 37/37 security tests pass; TypeScript, Prisma validation/status, ESLint and production build pass.
 - ITF Flow: 11/11 security tests pass; TypeScript, ESLint and production build pass.
-- Both repositories carry the same `itf-workspace-session-event-v1` fixture.
+- Both repositories carry the same `itf-workspace-session-event-v1` fixture. Central logout requires an exact session
+  identifier, while entitlement revocation prohibits one and always applies to all active sessions for the identity.
 - The local database migration applied successfully and reports up to date.
 
 End-to-end outage/retry and duplicate-delivery testing remains a staging acceptance activity because the Workspace

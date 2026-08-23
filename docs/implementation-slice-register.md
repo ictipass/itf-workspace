@@ -38,7 +38,7 @@ result. Repository code, migrations and commits remain the final implementation 
 | W01 | Authoritative current-user validation | Implemented | `16dcefc`, regression evidence `444287a`; full verification passes. See [`slices/W01-authoritative-current-user.md`](slices/W01-authoritative-current-user.md) |
 | W02 | Revocable Workspace sessions and session inventory | Implemented | `1483531`; DB-authoritative revocation, expiry, two-session recovery and inventory; 32-test suite passes. See [`slices/W02-revocable-workspace-sessions.md`](slices/W02-revocable-workspace-sessions.md) |
 | W03 | Workspace launch v2 issuer aligned with ITF Flow | Implemented | Workspace `9cbec46`, `42c4f3b`, `4c88f89`, QR enrollment `ca8b88b`; ITF Flow `f0696bc`; RS256/JWKS, assurance/TOTP, single-use receiver and contract tests. See [`slices/W03-workspace-launch-v2.md`](slices/W03-workspace-launch-v2.md) |
-| W04 | Immediate central logout and entitlement-revocation delivery to ITF Flow | Implemented | Workspace `c8d3605`; ITF Flow `30ace13`; transactional outbox, bounded immediate/retry delivery and atomic idempotent receiver. See [`slices/W04-central-revocation-delivery.md`](slices/W04-central-revocation-delivery.md) |
+| W04 | Immediate central logout and entitlement-revocation delivery to ITF Flow | Implemented | Workspace `c8d3605`, `6427f98`; ITF Flow `30ace13`, `7a3a849`; transactional outbox, bounded immediate/retry delivery and atomic idempotent receiver. See [`slices/W04-central-revocation-delivery.md`](slices/W04-central-revocation-delivery.md) |
 | W05 | Login abuse protection and authentication security events | Policy gate | D08-D11: throttling, lockout, recovery and alerting policy |
 | W06 | App URL and outbound-request SSRF protection | Policy gate | D12: permitted domains/networks and operational exception process |
 | W07 | Secure configuration validation and removal of unsafe credential defaults | Implemented | `2caeede`; startup and command validation, production fail-closed behavior and 11 regression tests. See [`slices/W07-secure-configuration-validation.md`](slices/W07-secure-configuration-validation.md) |
@@ -74,7 +74,7 @@ result. Repository code, migrations and commits remain the final implementation 
 
 | ID | Application slice | Status | Dependency |
 |---|---|---|---|
-| A01 | ITF Flow launch v2, provisioning and revocation integration | Ready for reassessment | Launch `f0696bc` and revocation receiver `30ace13` agree with Workspace; environment-separated staging credentials and joint staging acceptance remain |
+| A01 | ITF Flow launch v2, provisioning and revocation integration | Ready for reassessment | Launch `f0696bc` and revocation receiver `30ace13`, `7a3a849` agree with Workspace; environment-separated staging credentials and joint staging acceptance remain |
 | A02 | Client Reimbursement staff integration | Planned | A01 lessons plus W17/W21 onboarding contract |
 | A03 | SIWES staff-facing integration | Policy gate | A01; D32 separates staff and external SIWES identities |
 | A04 | PromoIntel staff integration | Planned | A01 lessons plus W17/W21 onboarding contract |
