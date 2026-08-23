@@ -73,6 +73,18 @@ enum AuditAction {
   ACCESS_REVOKED
   USER_CREATED
   USER_UPDATED
+  SESSION_TERMINATED
+}
+
+enum WorkspaceSessionRevocationReason {
+  USER_SIGN_OUT
+  USER_TERMINATED
+  ADMIN_TERMINATED
+  PASSWORD_CHANGED
+  ACCOUNT_DEACTIVATED
+  IDLE_TIMEOUT
+  ABSOLUTE_TIMEOUT
+  SESSION_LIMIT_RECOVERY
 }
 
 model User {
@@ -102,16 +114,53 @@ model User {
   position   Position? @relation(fields: [positionId], references: [id])
 
   supervisorId  String?
-  supervisor    User?  @relation("WorkspaceReportingLine", fields: [supervisorId], references: [id], onDelete: SetNull)
-  directReports User[] @relation("WorkspaceReportingLine")
+  supervisor    User?   @relation("WorkspaceReportingLine", fields: [supervisorId], references: [id], onDelete: SetNull)
+  directReports User[]  @relation("WorkspaceReportingLine")
 
-  appAccesses AppAccess[]
-  auditLogs   AuditLog[]
+  appAccesses           AppAccess[]
+  auditLogs             AuditLog[]
+  workspaceSessions     WorkspaceSession[]
+  sessionRecoveryGrants WorkspaceSessionRecoveryGrant[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([supervisorId, status])
+}
+
+model WorkspaceSession {
+  id String @id @default(cuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  authenticatedAt   DateTime @default(now())
+  lastActivityAt    DateTime @default(now())
+  idleExpiresAt     DateTime
+  absoluteExpiresAt DateTime
+
+  revokedAt    DateTime?
+  revokeReason WorkspaceSessionRevocationReason?
+
+  createdAt DateTime @default(now())
+
+  @@index([userId, revokedAt])
+  @@index([idleExpiresAt])
+  @@index([absoluteExpiresAt])
+}
+
+model WorkspaceSessionRecoveryGrant {
+  id        String @id @default(cuid())
+  tokenHash String @unique
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  expiresAt  DateTime
+  consumedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([userId, expiresAt])
 }
 
 model Office {

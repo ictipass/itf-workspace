@@ -1,41 +1,17 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { signIn } from "next-auth/react";
-import { useSearchParams } from "next/navigation";
+import { useActionState } from "react";
+import { loginAction } from "./actions";
 
-export default function LoginForm() {
-  const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
-
-  const [error, setError] = useState("");
-  const [isPending, startTransition] = useTransition();
-
-  function handleSubmit(formData: FormData) {
-    setError("");
-
-    startTransition(async () => {
-      const result = await signIn("credentials", {
-        email: String(formData.get("email") || ""),
-        password: String(formData.get("password") || ""),
-        redirect: false,
-        callbackUrl,
-      });
-
-      if (result?.error) {
-        setError("Invalid email or password.");
-        return;
-      }
-
-      window.location.href = callbackUrl;
-    });
-  }
+export default function LoginForm({ callbackUrl }: { callbackUrl: string }) {
+  const [state, action, isPending] = useActionState(loginAction, {});
 
   return (
-    <form action={handleSubmit} className="space-y-4">
-      {error ? (
+    <form action={action} className="space-y-4">
+      <input type="hidden" name="callbackUrl" value={callbackUrl} />
+      {state.error ? (
         <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-          {error}
+          {state.error}
         </div>
       ) : null}
 

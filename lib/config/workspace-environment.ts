@@ -36,6 +36,16 @@ export type WorkspaceRuntimeConfiguration = {
   launchTokenSecret: string;
   emailConfigured: boolean;
   itfFlowDirectorySyncConfigured: boolean;
+  sessionPolicy: WorkspaceSessionPolicyConfiguration;
+};
+
+export type WorkspaceSessionPolicyConfiguration = {
+  staffIdleSeconds: number;
+  privilegedIdleSeconds: number;
+  warningSeconds: number;
+  absoluteSeconds: number;
+  maxConcurrentSessions: number;
+  recoveryGrantSeconds: number;
 };
 
 const DEVELOPMENT_LAUNCH_TOKEN_SECRET =
@@ -167,6 +177,98 @@ function validateSender(name: string, value: string | undefined, issues: string[
 
 function throwIfInvalid(issues: string[]) {
   if (issues.length > 0) throw new WorkspaceConfigurationError(issues);
+}
+
+function readInteger(
+  environment: WorkspaceEnvironmentSource,
+  name: string,
+  fallback: number,
+  minimum: number,
+  maximum: number,
+  issues: string[]
+) {
+  const value = readValue(environment, name);
+  if (!value) return fallback;
+
+  const parsed = Number(value);
+  if (!Number.isInteger(parsed) || parsed < minimum || parsed > maximum) {
+    issues.push(`${name} must be an integer from ${minimum} to ${maximum}.`);
+    return fallback;
+  }
+
+  return parsed;
+}
+
+export function resolveWorkspaceSessionPolicy(
+  environment: WorkspaceEnvironmentSource = process.env
+): WorkspaceSessionPolicyConfiguration {
+  const issues: string[] = [];
+  const staffIdleSeconds = readInteger(
+    environment,
+    "WORKSPACE_STAFF_IDLE_TIMEOUT_SECONDS",
+    1200,
+    300,
+    7200,
+    issues
+  );
+  const privilegedIdleSeconds = readInteger(
+    environment,
+    "WORKSPACE_PRIVILEGED_IDLE_TIMEOUT_SECONDS",
+    600,
+    300,
+    3600,
+    issues
+  );
+  const warningSeconds = readInteger(
+    environment,
+    "WORKSPACE_SESSION_WARNING_SECONDS",
+    120,
+    30,
+    600,
+    issues
+  );
+  const absoluteSeconds = readInteger(
+    environment,
+    "WORKSPACE_ABSOLUTE_TIMEOUT_SECONDS",
+    10800,
+    1800,
+    86400,
+    issues
+  );
+  const maxConcurrentSessions = readInteger(
+    environment,
+    "WORKSPACE_MAX_CONCURRENT_SESSIONS",
+    2,
+    1,
+    10,
+    issues
+  );
+  const recoveryGrantSeconds = readInteger(
+    environment,
+    "WORKSPACE_SESSION_RECOVERY_TTL_SECONDS",
+    300,
+    60,
+    900,
+    issues
+  );
+
+  if (warningSeconds >= Math.min(staffIdleSeconds, privilegedIdleSeconds)) {
+    issues.push("WORKSPACE_SESSION_WARNING_SECONDS must be shorter than both idle timeouts.");
+  }
+  if (absoluteSeconds <= Math.max(staffIdleSeconds, privilegedIdleSeconds)) {
+    issues.push("WORKSPACE_ABSOLUTE_TIMEOUT_SECONDS must be longer than both idle timeouts.");
+  }
+
+  throwIfInvalid(issues);
+
+  return {
+    staffIdleSeconds,
+    privilegedIdleSeconds,
+    warningSeconds,
+    absoluteSeconds,
+    maxConcurrentSessions,
+    recoveryGrantSeconds,
+  };
 }
 
 export function resolveWorkspaceLaunchTokenSecret(
@@ -306,6 +408,13 @@ export function validateWorkspaceRuntimeEnvironment(
 ): WorkspaceRuntimeConfiguration {
   const mode = resolveMode(environment, options);
   const issues: string[] = [];
+  let sessionPolicy: WorkspaceSessionPolicyConfiguration | undefined;
+  try {
+    sessionPolicy = resolveWorkspaceSessionPolicy(environment);
+  } catch (error) {
+    if (error instanceof WorkspaceConfigurationError) issues.push(...error.issues);
+    else throw error;
+  }
   let databaseUrl: string | undefined;
   try {
     databaseUrl = resolveWorkspaceDatabaseUrl(environment);
@@ -410,6 +519,7 @@ export function validateWorkspaceRuntimeEnvironment(
         readValue(environment, "ITF_FLOW_DIRECTORY_SYNC_URL")) &&
         readValue(environment, "WORKSPACE_DIRECTORY_SYNC_SECRET")
     ),
+    sessionPolicy: sessionPolicy!,
   };
 }
 

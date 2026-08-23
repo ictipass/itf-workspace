@@ -1,5 +1,5 @@
 import { DefaultSession } from "next-auth";
-import { UserStatus, WorkspaceRole } from "@prisma/client";
+import { UserStatus, WorkspaceRole } from "@/lib/generated/prisma/client";
 
 declare module "next-auth" {
   interface User {
@@ -13,6 +13,9 @@ declare module "next-auth" {
     divisionId?: string | null;
     unitId?: string | null;
     positionId?: string | null;
+    workspaceSessionId: string;
+    workspaceSessionIdleExpiresAt: Date;
+    workspaceSessionAbsoluteExpiresAt: Date;
   }
 
   interface Session {
@@ -27,6 +30,9 @@ declare module "next-auth" {
       divisionId?: string | null;
       unitId?: string | null;
       positionId?: string | null;
+      workspaceSessionId: string;
+      workspaceSessionIdleExpiresAt: string;
+      workspaceSessionAbsoluteExpiresAt: string;
     } & DefaultSession["user"];
   }
 }
@@ -43,5 +49,8 @@ declare module "next-auth/jwt" {
     divisionId?: string | null;
     unitId?: string | null;
     positionId?: string | null;
+    workspaceSessionId: string;
+    workspaceSessionIdleExpiresAt: string;
+    workspaceSessionAbsoluteExpiresAt: string;
   }
 }

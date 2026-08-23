@@ -5,6 +5,7 @@ import {
   AuditAction,
   UserStatus,
   WorkspaceRole,
+  WorkspaceSessionRevocationReason,
 } from "@/lib/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { requireCurrentUser } from "@/lib/auth/current-user";
@@ -29,21 +30,22 @@ export async function deactivateUserAction(formData: FormData) {
     throw new Error("You cannot deactivate your own account.");
   }
 
-  const user = await prisma.user.update({
-    where: { id },
-    data: { status: UserStatus.INACTIVE },
-  });
-
-  await prisma.auditLog.create({
-    data: {
-      actorId: actor.id,
-      action: AuditAction.USER_UPDATED,
-      metadata: {
-        userId: user.id,
-        email: user.email,
-        updateType: "USER_DEACTIVATED",
+  await prisma.$transaction(async (transaction) => {
+    const user = await transaction.user.update({
+      where: { id },
+      data: { status: UserStatus.INACTIVE },
+    });
+    await transaction.workspaceSession.updateMany({
+      where: { userId: id, revokedAt: null },
+      data: { revokedAt: new Date(), revokeReason: WorkspaceSessionRevocationReason.ACCOUNT_DEACTIVATED },
+    });
+    await transaction.auditLog.create({
+      data: {
+        actorId: actor.id,
+        action: AuditAction.USER_UPDATED,
+        metadata: { userId: user.id, email: user.email, updateType: "USER_DEACTIVATED", sessionsRevoked: true },
       },
-    },
+    });
   });
 
   revalidatePath("/dashboard/admin/users");

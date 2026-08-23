@@ -40,6 +40,7 @@ const AUDIT_COLORS: Record<AuditAction, "default" | "secondary" | "destructive" 
   ACCESS_REVOKED: "destructive",
   USER_CREATED: "default",
   USER_UPDATED: "secondary",
+  SESSION_TERMINATED: "destructive",
 };
 
 export default async function AuditLogsPage({ searchParams }: Props) {

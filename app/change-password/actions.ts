@@ -5,7 +5,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requireCurrentUser } from "@/lib/auth/current-user";
 import { signOut } from "@/auth";
-import { AuditAction } from "@/lib/generated/prisma/client";
+import { AuditAction, WorkspaceSessionRevocationReason } from "@/lib/generated/prisma/client";
 
 const schema = z
   .object({
@@ -86,22 +86,22 @@ export async function changePasswordAction(
 
   const passwordHash = await bcrypt.hash(parsed.data.newPassword, 10);
 
-  await prisma.user.update({
-    where: { id: user.id },
-    data: {
-      passwordHash,
-      isTemporaryPassword: false,
-    },
-  });
-
-  await prisma.auditLog.create({
-    data: {
-      actorId: user.id,
-      action: AuditAction.USER_UPDATED,
-      metadata: {
-        type: "PASSWORD_CHANGED",
+  await prisma.$transaction(async (transaction) => {
+    await transaction.user.update({
+      where: { id: user.id },
+      data: { passwordHash, isTemporaryPassword: false },
+    });
+    await transaction.workspaceSession.updateMany({
+      where: { userId: user.id, revokedAt: null },
+      data: { revokedAt: new Date(), revokeReason: WorkspaceSessionRevocationReason.PASSWORD_CHANGED },
+    });
+    await transaction.auditLog.create({
+      data: {
+        actorId: user.id,
+        action: AuditAction.USER_UPDATED,
+        metadata: { type: "PASSWORD_CHANGED", sessionsRevoked: true },
       },
-    },
+    });
   });
 
   await signOut({

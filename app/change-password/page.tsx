@@ -1,15 +1,15 @@
-import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import ChangePasswordForm from "./change-password-form";
+import { getCurrentUser } from "@/lib/auth/current-user";
 
 export default async function ChangePasswordPage() {
-  const session = await auth();
+  const user = await getCurrentUser();
 
-  if (!session?.user) {
+  if (!user) {
     redirect("/login");
   }
 
-  if (!session.user.isTemporaryPassword) {
+  if (!user.isTemporaryPassword) {
     redirect("/dashboard");
   }
 

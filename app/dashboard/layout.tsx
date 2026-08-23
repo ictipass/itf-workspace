@@ -8,7 +8,8 @@ import {
   Settings,
   ShieldCheck,
   Users,
-  ClipboardList
+  ClipboardList,
+  MonitorSmartphone,
 } from "lucide-react";
 import { WorkspaceRole } from "@/lib/generated/prisma/client";
 import { Button } from "@/components/ui/button";
@@ -16,14 +17,17 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { prisma } from "@/lib/prisma";
 import { AuditAction } from "@/lib/generated/prisma/client";
-import { getCurrentUser } from "@/lib/auth/current-user";
+import { getCurrentSessionContext, getCurrentUser } from "@/lib/auth/current-user";
+import { resolveWorkspaceSessionPolicy } from "@/lib/config/workspace-environment";
+import { SessionActivityMonitor } from "@/components/session-activity-monitor";
 
 export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const user = await getCurrentUser();
+  const context = await getCurrentSessionContext();
+  const user = context?.user;
 
   if (!user) {
     redirect("/login");
@@ -39,9 +43,15 @@ export default async function DashboardLayout({
 
   const isSystemAdmin =
     user.workspaceRole === WorkspaceRole.SYSTEM_ADMIN;
+  const sessionPolicy = resolveWorkspaceSessionPolicy();
 
   return (
     <div className="min-h-screen bg-muted/30">
+      <SessionActivityMonitor
+        idleExpiresAt={context.session.idleExpiresAt.toISOString()}
+        absoluteExpiresAt={context.session.absoluteExpiresAt.toISOString()}
+        warningSeconds={sessionPolicy.warningSeconds}
+      />
       <aside className="fixed inset-y-0 left-0 hidden w-72 border-r border-sidebar-border bg-sidebar text-sidebar-foreground lg:flex lg:flex-col">
         <div className="flex h-20 items-center px-6">
           <div>
@@ -61,6 +71,10 @@ export default async function DashboardLayout({
 
           <NavItem href="/dashboard/apps" icon={<AppWindow className="h-4 w-4" />}>
             My Apps
+          </NavItem>
+
+          <NavItem href="/dashboard/sessions" icon={<MonitorSmartphone className="h-4 w-4" />}>
+            My Sessions
           </NavItem>
 
           {isSystemAdmin ? (

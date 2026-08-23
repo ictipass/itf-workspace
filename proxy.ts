@@ -1,7 +1,7 @@
 import { auth } from "@/auth";
 import { NextResponse } from "next/server";
 
-const publicRoutes = ["/", "/login", "/api/auth"];
+const publicRoutes = ["/", "/login", "/session-recovery", "/api/auth"];
 const passwordRoutes = ["/change-password"];
 
 export default auth((req) => {
