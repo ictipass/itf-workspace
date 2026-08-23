@@ -4,7 +4,7 @@ Status: **Implemented**
 
 Implementation date: 2026-08-23
 
-Workspace commits: `9cbec46`, validation hardening `42c4f3b`, onboarding correction `4c88f89`
+Workspace commits: `9cbec46`, validation hardening `42c4f3b`, onboarding correction `4c88f89`, QR enrollment `ca8b88b`
 
 ITF Flow commit: `f0696bc`
 
@@ -24,6 +24,8 @@ full SSO or claiming that existing child sessions are centrally revoked.
   classified roles; the most restrictive app/role/Workspace classification wins.
 - TOTP enrollment and step-up with AES-256-GCM encrypted secrets, a ten-minute enrollment challenge, one-code replay
   prevention, ten-minute freshness and audit events. Email remains recovery/notification only.
+- Locally rendered TOTP QR enrollment that never sends the provisioning URI to an external QR service, with a grouped
+  manual key retained as a fallback.
 - Server-side fresh-TOTP enforcement for app registration, app/role classification changes, access grant/revocation,
   and sensitive launches. Privileged Workspace accounts must complete TOTP after each password login.
 - ITF Flow RSA/JWKS verification, five-minute public-key cache, exact issuer/audience/slug and role checks, sensitive
@@ -63,15 +65,19 @@ requires temporary-password replacement. It does not grant dashboard or administ
 - Access grants use a classified application-role selection instead of free text.
 - The app catalogue displays effective assurance and disables launch when an existing role has no active policy.
 - New TOTP enrollment and verification screens appear when a privileged account or sensitive launch requires them.
+- The enrollment screen presents a scannable QR code first and keeps the manual setup key in a collapsible fallback.
 
 ## Verification evidence
 
 - Workspace Prisma format, generate, validate/migration deployment: passed.
 - Workspace TypeScript, ESLint and production build: passed.
-- Workspace security regressions: 32/32 passed across eight suites.
+- Workspace security regressions: 33/33 passed across eight suites.
 - ITF Flow TypeScript, ESLint and production build: passed.
 - ITF Flow security regressions: 8/8 passed, including four launch-v2 contract tests.
 - Both repositories passed `git diff --check` for the committed implementation.
+- The W00 production dependency audit command (`npm audit --omit=dev --omit=optional --audit-level=low`) reports zero
+  known runtime vulnerabilities after adding the QR renderer. Default development-tree findings remain governed by
+  W00's documented Prisma/scaffolding-tool interpretation and do not originate from `qrcode`.
 
 ## Operational and rollback notes
 

@@ -52,8 +52,10 @@ Implementation commit: `444287a`.
 - W03 commits `9cbec46` and `42c4f3b` removed obsolete v1 cases and added launch-v2/assurance/TOTP coverage. At that
   point, the Workspace suite contained 31 tests across eight suites. ITF Flow commit `f0696bc` passes eight security tests,
   including four receiver contract cases.
-- W03 correction `4c88f89` adds the privileged first-login credential-order regression. The current Workspace suite
-  contains 32 tests across eight suites.
+- W03 correction `4c88f89` adds the privileged first-login credential-order regression. At that point, the Workspace
+  suite contained 32 tests across eight suites.
+- W03 QR enrollment `ca8b88b` adds local TOTP QR rendering and rejects non-TOTP QR input. The current Workspace suite
+  contains 33 tests across eight suites.
 
 ## Rollback
 
