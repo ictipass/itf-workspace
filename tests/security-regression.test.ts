@@ -5,6 +5,7 @@ import { resolveAuthoritativeWorkspaceUser } from "../lib/auth/authoritative-use
 import { normalizeAppLaunchUrl } from "../lib/apps/launch-url";
 import { UserStatus, WorkspaceRole } from "../lib/generated/prisma/client";
 import { appendWorkspaceLaunchToken } from "../lib/apps/launch-url";
+import { canReplaceTemporaryPassword } from "../lib/auth/credential-transition-policy";
 
 const activeUser = {
   id: "user-1",
@@ -23,6 +24,30 @@ const activeUser = {
 
 
 describe("authoritative current-user policy", () => {
+  test("allows temporary-password replacement before privileged MFA enrollment", () => {
+    assert.equal(
+      canReplaceTemporaryPassword({
+        isTemporaryPassword: true,
+        authenticationMethods: ["pwd"],
+      }),
+      true
+    );
+    assert.equal(
+      canReplaceTemporaryPassword({
+        isTemporaryPassword: false,
+        authenticationMethods: ["pwd", "totp"],
+      }),
+      false
+    );
+    assert.equal(
+      canReplaceTemporaryPassword({
+        isTemporaryPassword: true,
+        authenticationMethods: ["totp"],
+      }),
+      false
+    );
+  });
+
   test("rejects a missing or deleted user record", () => {
     assert.equal(resolveAuthoritativeWorkspaceUser(null), null);
   });

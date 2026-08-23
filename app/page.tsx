@@ -51,7 +51,7 @@ export default function Home() {
                 alt="Industrial Training Fund logo"
                 width={44}
                 height={44}
-                priority
+                loading="eager"
                 className="h-11 w-11 shrink-0 object-contain"
               />
               <div className="min-w-0">
@@ -126,7 +126,7 @@ export default function Home() {
                       alt="Industrial Training Fund seal"
                       width={224}
                       height={224}
-                      priority
+                      loading="eager"
                       className="h-full w-full object-contain"
                     />
                   </div>
@@ -136,6 +136,7 @@ export default function Home() {
                       alt=""
                       width={224}
                       height={224}
+                      loading="eager"
                       className="h-full w-full object-contain"
                     />
                   </div>

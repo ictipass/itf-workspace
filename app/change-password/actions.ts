@@ -3,9 +3,10 @@
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { requireCurrentUser } from "@/lib/auth/current-user";
+import { requireAuthenticatedSessionContext } from "@/lib/auth/current-user";
 import { signOut } from "@/auth";
 import { AuditAction, WorkspaceSessionRevocationReason } from "@/lib/generated/prisma/client";
+import { canReplaceTemporaryPassword } from "@/lib/auth/credential-transition-policy";
 
 const schema = z
   .object({
@@ -33,7 +34,21 @@ export async function changePasswordAction(
   _prevState: ChangePasswordState,
   formData: FormData
 ): Promise<ChangePasswordState> {
-  const currentUser = await requireCurrentUser();
+  // Temporary-password replacement is the first-login prerequisite for MFA.
+  // It needs a valid password-authenticated session, but must not require MFA
+  // before the privileged user has been allowed to replace that credential.
+  const context = await requireAuthenticatedSessionContext();
+  const currentUser = context.user;
+
+  if (!canReplaceTemporaryPassword({
+    isTemporaryPassword: currentUser.isTemporaryPassword,
+    authenticationMethods: context.session.authenticationMethods,
+  })) {
+    return {
+      success: false,
+      message: "A password-authenticated temporary session is required.",
+    };
+  }
 
   const parsed = schema.safeParse({
     currentPassword: formData.get("currentPassword"),

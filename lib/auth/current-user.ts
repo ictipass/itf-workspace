@@ -32,13 +32,17 @@ export const getCurrentUser = cache(async (): Promise<CurrentWorkspaceUser | nul
   (await getCurrentSessionContext())?.user ?? null
 );
 
-export async function requireCurrentUser() {
+export async function requireAuthenticatedSessionContext() {
   const context = await getCurrentSessionContext();
-  const user = context?.user;
-
-  if (!user) {
+  if (!context) {
     throw new Error("UNAUTHENTICATED");
   }
+  return context;
+}
+
+export async function requireCurrentUser() {
+  const context = await requireAuthenticatedSessionContext();
+  const { user } = context;
 
   if (
     (user.workspaceRole === WorkspaceRole.SYSTEM_ADMIN ||
