@@ -64,8 +64,8 @@ to local `itf_workspace_db`; the database remains unseeded.
 
 ## Operational and rollback notes
 
-- Local MFA cannot enroll until `WORKSPACE_MFA_ENCRYPTION_KEY_BASE64` is configured with a base64-encoded 32-byte
-  random key. The value must be stored outside source control and backed up through the approved secret process.
+- This checkout now has an ignored, randomly generated 32-byte local `WORKSPACE_MFA_ENCRYPTION_KEY_BASE64`. Every new
+  environment must receive its own value outside source control and back it up through the approved secret process.
 - Production assertion signing is deliberately blocked until ITF selects the KMS/HSM provider and its adapter is
   implemented. Ephemeral or exportable software keys must not be used in production.
 - A rollback to the former shared-secret receiver is not approved. Application rollback requires stopping new launches,
