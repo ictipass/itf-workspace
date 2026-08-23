@@ -19,6 +19,18 @@ export type ItfFlowDirectorySyncConfiguration = {
   secret: string;
 };
 
+export type ItfFlowSessionEventConfiguration = {
+  endpoint: string;
+  secret: string;
+  appSlug: string;
+  requestTimeoutMs: number;
+  batchSize: number;
+  maxAttempts: number;
+  retryBaseSeconds: number;
+  retryMaxSeconds: number;
+  leaseSeconds: number;
+};
+
 export type WorkspaceSeedConfiguration = {
   mode: WorkspaceEnvironmentMode;
   email: string;
@@ -35,6 +47,7 @@ export type WorkspaceRuntimeConfiguration = {
   authUrl?: string;
   emailConfigured: boolean;
   itfFlowDirectorySyncConfigured: boolean;
+  itfFlowSessionEventsConfigured: boolean;
   sessionPolicy: WorkspaceSessionPolicyConfiguration;
   launchV2: WorkspaceLaunchV2Configuration;
   mfaConfigured: boolean;
@@ -504,6 +517,65 @@ export function resolveItfFlowDirectorySyncConfiguration(
   return { endpoint: endpoint!, secret: secret! };
 }
 
+export function resolveItfFlowSessionEventConfiguration(
+  environment: WorkspaceEnvironmentSource = process.env,
+  options: ValidationOptions = {}
+): ItfFlowSessionEventConfiguration {
+  const mode = resolveMode(environment, options);
+  const issues: string[] = [];
+  const explicitEndpoint = readValue(environment, "ITF_FLOW_SESSION_EVENTS_URL");
+  const launchUrlValue = readValue(environment, "ITF_FLOW_URL");
+  const launchUrl = parseUrl(
+    "ITF_FLOW_URL",
+    launchUrlValue,
+    mode === "production" ? ["https:"] : ["https:", "http:"],
+    issues
+  );
+  const endpointValue =
+    explicitEndpoint ??
+    (launchUrl
+      ? new URL("/api/integrations/workspace/session-events", launchUrl).toString()
+      : undefined);
+  if (!endpointValue) {
+    issues.push("ITF_FLOW_URL or ITF_FLOW_SESSION_EVENTS_URL is required.");
+  }
+  const endpoint = parseUrl(
+    "ITF_FLOW_SESSION_EVENTS_URL",
+    endpointValue,
+    mode === "production" ? ["https:"] : ["https:", "http:"],
+    issues
+  );
+  const secret = requireValue(environment, "WORKSPACE_INTEROP_SECRET", issues);
+  validateSecret("WORKSPACE_INTEROP_SECRET", secret, mode, issues);
+  const appSlug = readValue(environment, "ITF_FLOW_APP_SLUG") ?? "itf-flow";
+  if (!/^[a-z0-9-]{2,64}$/.test(appSlug)) {
+    issues.push("ITF_FLOW_APP_SLUG must be a lowercase application slug.");
+  }
+
+  const requestTimeoutMs = readInteger(environment, "WORKSPACE_OUTBOX_REQUEST_TIMEOUT_MS", 3000, 500, 15000, issues);
+  const batchSize = readInteger(environment, "WORKSPACE_OUTBOX_BATCH_SIZE", 20, 1, 100, issues);
+  const maxAttempts = readInteger(environment, "WORKSPACE_OUTBOX_MAX_ATTEMPTS", 10, 1, 50, issues);
+  const retryBaseSeconds = readInteger(environment, "WORKSPACE_OUTBOX_RETRY_BASE_SECONDS", 30, 1, 3600, issues);
+  const retryMaxSeconds = readInteger(environment, "WORKSPACE_OUTBOX_RETRY_MAX_SECONDS", 3600, 30, 86400, issues);
+  const leaseSeconds = readInteger(environment, "WORKSPACE_OUTBOX_LEASE_SECONDS", 30, 10, 300, issues);
+  if (retryMaxSeconds < retryBaseSeconds) {
+    issues.push("WORKSPACE_OUTBOX_RETRY_MAX_SECONDS must not be shorter than the base retry interval.");
+  }
+
+  throwIfInvalid(issues);
+  return {
+    endpoint: endpoint!,
+    secret: secret!,
+    appSlug,
+    requestTimeoutMs,
+    batchSize,
+    maxAttempts,
+    retryBaseSeconds,
+    retryMaxSeconds,
+    leaseSeconds,
+  };
+}
+
 export function validateWorkspaceRuntimeEnvironment(
   environment: WorkspaceEnvironmentSource = process.env,
   options: ValidationOptions = {}
@@ -596,6 +668,11 @@ export function validateWorkspaceRuntimeEnvironment(
       readValue(environment, "WORKSPACE_DIRECTORY_SYNC_SECRET")
   );
 
+  const itfFlowSessionEventValuesPresent = Boolean(
+    readValue(environment, "ITF_FLOW_SESSION_EVENTS_URL") ||
+      readValue(environment, "WORKSPACE_INTEROP_SECRET")
+  );
+
   if (mode === "production" && itfFlowValuesPresent) {
     try {
       resolveItfFlowDirectorySyncConfiguration(environment, { mode });
@@ -618,6 +695,24 @@ export function validateWorkspaceRuntimeEnvironment(
     );
   }
 
+  if (mode === "production" && (itfFlowValuesPresent || itfFlowSessionEventValuesPresent)) {
+    try {
+      resolveItfFlowSessionEventConfiguration(environment, { mode });
+    } catch (error) {
+      if (error instanceof WorkspaceConfigurationError) issues.push(...error.issues);
+      else throw error;
+    }
+    const workerSecret = requireValue(environment, "WORKSPACE_OUTBOX_WORKER_SECRET", issues);
+    validateSecret("WORKSPACE_OUTBOX_WORKER_SECRET", workerSecret, mode, issues);
+  } else {
+    parseUrl(
+      "ITF_FLOW_SESSION_EVENTS_URL",
+      readValue(environment, "ITF_FLOW_SESSION_EVENTS_URL"),
+      ["https:", "http:"],
+      issues
+    );
+  }
+
   throwIfInvalid(issues);
 
   return {
@@ -630,6 +725,11 @@ export function validateWorkspaceRuntimeEnvironment(
       (readValue(environment, "ITF_FLOW_URL") ||
         readValue(environment, "ITF_FLOW_DIRECTORY_SYNC_URL")) &&
         readValue(environment, "WORKSPACE_DIRECTORY_SYNC_SECRET")
+    ),
+    itfFlowSessionEventsConfigured: Boolean(
+      (readValue(environment, "ITF_FLOW_URL") ||
+        readValue(environment, "ITF_FLOW_SESSION_EVENTS_URL")) &&
+        readValue(environment, "WORKSPACE_INTEROP_SECRET")
     ),
     sessionPolicy: sessionPolicy!,
     launchV2: launchV2!,

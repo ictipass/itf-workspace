@@ -13,6 +13,10 @@ import {
 import { prisma } from "@/lib/prisma";
 import { requireCurrentUser, requireFreshMfaContext } from "@/lib/auth/current-user";
 import { normalizeAppLaunchUrl } from "@/lib/apps/launch-url";
+import {
+  deliverItfFlowSessionEvents,
+  enqueueEntitlementRevocationEvents,
+} from "@/lib/integrations/itf-flow-session-events";
 
 const appLaunchUrlSchema = z.string().trim().min(1).refine(
   (value) => {
@@ -172,25 +176,44 @@ export async function updateAppAction(
 
   const { id, ...data } = parsed.data;
 
-  const app = await prisma.app.update({
-    where: { id },
-    data: {
-      ...data,
-      url: normalizeAppLaunchUrl(data.url),
-    },
-  });
-
-  await prisma.auditLog.create({
-    data: {
-      actorId: user.id,
-      action: AuditAction.APP_UPDATED,
-      metadata: {
-        appId: app.id,
-        appName: app.name,
-        updateType: "APP_EDITED",
+  const eventIds = await prisma.$transaction(async (transaction) => {
+    const previous = await transaction.app.findUnique({
+      where: { id },
+      include: {
+        accessRules: { where: { status: "ACTIVE" }, select: { userId: true } },
       },
-    },
+    });
+    if (!previous) throw new Error("Application not found.");
+    const app = await transaction.app.update({
+      where: { id },
+      data: { ...data, url: normalizeAppLaunchUrl(data.url) },
+    });
+    const queued =
+      previous.status === AppStatus.ACTIVE && app.status === AppStatus.INACTIVE
+        ? await enqueueEntitlementRevocationEvents(
+            transaction,
+            previous.accessRules.map((access) => ({
+              workspaceUserId: access.userId,
+              appSlug: previous.slug,
+              reason: "APP_DEACTIVATED",
+            }))
+          )
+        : [];
+    await transaction.auditLog.create({
+      data: {
+        actorId: user.id,
+        action: AuditAction.APP_UPDATED,
+        metadata: {
+          appId: app.id,
+          appName: app.name,
+          updateType: "APP_EDITED",
+          revocationEventsQueued: queued.length,
+        },
+      },
+    });
+    return queued;
   });
+  await deliverItfFlowSessionEvents(eventIds);
 
   revalidatePath("/dashboard");
   revalidatePath("/dashboard/apps");
@@ -213,24 +236,40 @@ export async function deactivateAppAction(formData: FormData) {
     throw new Error("App ID is required.");
   }
 
-  const app = await prisma.app.update({
-    where: { id },
-    data: {
-      status: AppStatus.INACTIVE,
-    },
-  });
-
-  await prisma.auditLog.create({
-    data: {
-      actorId: user.id,
-      action: AuditAction.APP_UPDATED,
-      metadata: {
-        appId: app.id,
-        appName: app.name,
-        updateType: "APP_DEACTIVATED",
+  const eventIds = await prisma.$transaction(async (transaction) => {
+    const app = await transaction.app.update({
+      where: { id },
+      data: { status: AppStatus.INACTIVE },
+      include: {
+        accessRules: {
+          where: { status: "ACTIVE" },
+          select: { userId: true },
+        },
       },
-    },
+    });
+    const queued = await enqueueEntitlementRevocationEvents(
+      transaction,
+      app.accessRules.map((access) => ({
+        workspaceUserId: access.userId,
+        appSlug: app.slug,
+        reason: "APP_DEACTIVATED",
+      }))
+    );
+    await transaction.auditLog.create({
+      data: {
+        actorId: user.id,
+        action: AuditAction.APP_UPDATED,
+        metadata: {
+          appId: app.id,
+          appName: app.name,
+          updateType: "APP_DEACTIVATED",
+          revocationEventsQueued: queued.length,
+        },
+      },
+    });
+    return queued;
   });
+  await deliverItfFlowSessionEvents(eventIds);
 
   revalidatePath("/dashboard");
   revalidatePath("/dashboard/apps");

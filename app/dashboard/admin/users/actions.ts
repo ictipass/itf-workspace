@@ -9,6 +9,11 @@ import {
 } from "@/lib/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { requireCurrentUser } from "@/lib/auth/current-user";
+import {
+  deliverItfFlowSessionEvents,
+  enqueueEntitlementRevocationEvents,
+  revokeWorkspaceSessionsInTransaction,
+} from "@/lib/integrations/itf-flow-session-events";
 
 async function requireSystemAdmin() {
   const user = await requireCurrentUser();
@@ -30,15 +35,28 @@ export async function deactivateUserAction(formData: FormData) {
     throw new Error("You cannot deactivate your own account.");
   }
 
-  await prisma.$transaction(async (transaction) => {
+  const eventIds = await prisma.$transaction(async (transaction) => {
     const user = await transaction.user.update({
       where: { id },
       data: { status: UserStatus.INACTIVE },
     });
-    await transaction.workspaceSession.updateMany({
-      where: { userId: id, revokedAt: null },
-      data: { revokedAt: new Date(), revokeReason: WorkspaceSessionRevocationReason.ACCOUNT_DEACTIVATED },
+    const revoked = await revokeWorkspaceSessionsInTransaction(
+      transaction,
+      { userId: id },
+      WorkspaceSessionRevocationReason.ACCOUNT_DEACTIVATED
+    );
+    const activeAccesses = await transaction.appAccess.findMany({
+      where: { userId: id, status: "ACTIVE" },
+      select: { app: { select: { slug: true } } },
     });
+    const entitlementEvents = await enqueueEntitlementRevocationEvents(
+      transaction,
+      activeAccesses.map((access) => ({
+        workspaceUserId: id,
+        appSlug: access.app.slug,
+        reason: "ACCOUNT_DEACTIVATED",
+      }))
+    );
     await transaction.auditLog.create({
       data: {
         actorId: actor.id,
@@ -46,7 +64,9 @@ export async function deactivateUserAction(formData: FormData) {
         metadata: { userId: user.id, email: user.email, updateType: "USER_DEACTIVATED", sessionsRevoked: true },
       },
     });
+    return [...revoked.eventIds, ...entitlementEvents];
   });
+  await deliverItfFlowSessionEvents(eventIds);
 
   revalidatePath("/dashboard/admin/users");
 }

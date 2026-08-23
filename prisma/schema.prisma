@@ -96,6 +96,19 @@ enum WorkspaceSessionRevocationReason {
   SESSION_LIMIT_RECOVERY
 }
 
+enum IntegrationOutboxEventType {
+  CENTRAL_LOGOUT
+  ENTITLEMENT_REVOKED
+}
+
+enum IntegrationOutboxStatus {
+  PENDING
+  PROCESSING
+  RETRY
+  DELIVERED
+  DEAD_LETTER
+}
+
 model User {
   id                  String  @id @default(cuid())
   staffNumber         String? @unique
@@ -179,6 +192,32 @@ model WorkspaceSessionRecoveryGrant {
   createdAt  DateTime  @default(now())
 
   @@index([userId, expiresAt])
+}
+
+model IntegrationOutboxEvent {
+  id      String @id @default(cuid())
+  eventId String @unique @default(uuid())
+
+  targetAppSlug      String
+  type               IntegrationOutboxEventType
+  workspaceUserId    String
+  workspaceSessionId String?
+  reason             String
+
+  status         IntegrationOutboxStatus @default(PENDING)
+  attemptCount   Int                     @default(0)
+  availableAt    DateTime                @default(now())
+  leaseId        String?
+  leaseExpiresAt DateTime?
+  deliveredAt    DateTime?
+  lastError      String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([targetAppSlug, status, availableAt])
+  @@index([status, leaseExpiresAt])
+  @@index([workspaceUserId, createdAt])
 }
 
 model Office {

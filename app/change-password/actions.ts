@@ -7,6 +7,10 @@ import { requireAuthenticatedSessionContext } from "@/lib/auth/current-user";
 import { signOut } from "@/auth";
 import { AuditAction, WorkspaceSessionRevocationReason } from "@/lib/generated/prisma/client";
 import { canReplaceTemporaryPassword } from "@/lib/auth/credential-transition-policy";
+import {
+  deliverItfFlowSessionEvents,
+  revokeWorkspaceSessionsInTransaction,
+} from "@/lib/integrations/itf-flow-session-events";
 
 const schema = z
   .object({
@@ -101,15 +105,16 @@ export async function changePasswordAction(
 
   const passwordHash = await bcrypt.hash(parsed.data.newPassword, 10);
 
-  await prisma.$transaction(async (transaction) => {
+  const eventIds = await prisma.$transaction(async (transaction) => {
     await transaction.user.update({
       where: { id: user.id },
       data: { passwordHash, isTemporaryPassword: false },
     });
-    await transaction.workspaceSession.updateMany({
-      where: { userId: user.id, revokedAt: null },
-      data: { revokedAt: new Date(), revokeReason: WorkspaceSessionRevocationReason.PASSWORD_CHANGED },
-    });
+    const revoked = await revokeWorkspaceSessionsInTransaction(
+      transaction,
+      { userId: user.id },
+      WorkspaceSessionRevocationReason.PASSWORD_CHANGED
+    );
     await transaction.auditLog.create({
       data: {
         actorId: user.id,
@@ -117,7 +122,10 @@ export async function changePasswordAction(
         metadata: { type: "PASSWORD_CHANGED", sessionsRevoked: true },
       },
     });
+    return revoked.eventIds;
   });
+
+  await deliverItfFlowSessionEvents(eventIds);
 
   await signOut({
     redirectTo: "/login?passwordChanged=1",

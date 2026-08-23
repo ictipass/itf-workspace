@@ -15,6 +15,10 @@ import {
   nextIdleExpiry,
 } from "@/lib/auth/session-policy";
 import { prisma } from "@/lib/prisma";
+import {
+  deliverItfFlowSessionEvents,
+  revokeWorkspaceSessionsInTransaction,
+} from "@/lib/integrations/itf-flow-session-events";
 
 const authenticatedUserSelection = {
   id: true,
@@ -168,7 +172,7 @@ export async function getSessionRecoveryContext(token: string) {
 
 export async function recoverWorkspaceSession(token: string, terminateSessionId?: string) {
   const now = new Date();
-  return prisma.$transaction(async (transaction) => {
+  const result = await prisma.$transaction(async (transaction) => {
     const grant = await transaction.workspaceSessionRecoveryGrant.findUnique({
       where: { tokenHash: hashRecoveryToken(token) },
     });
@@ -184,10 +188,12 @@ export async function recoverWorkspaceSession(token: string, terminateSessionId?
     const revokeWhere: Prisma.WorkspaceSessionWhereInput = terminateSessionId
       ? { ...activeSessionWhere(user.id, now), id: terminateSessionId }
       : activeSessionWhere(user.id, now);
-    const revoked = await transaction.workspaceSession.updateMany({
-      where: revokeWhere,
-      data: { revokedAt: now, revokeReason: WorkspaceSessionRevocationReason.SESSION_LIMIT_RECOVERY },
-    });
+    const revoked = await revokeWorkspaceSessionsInTransaction(
+      transaction,
+      revokeWhere,
+      WorkspaceSessionRevocationReason.SESSION_LIMIT_RECOVERY,
+      now
+    );
     if (revoked.count === 0) return null;
 
     const session = await createSessionInTransaction(transaction, user, now);
@@ -202,8 +208,11 @@ export async function recoverWorkspaceSession(token: string, terminateSessionId?
         metadata: { mode: terminateSessionId ? "selected" : "all", replacementSessionId: session.id },
       },
     });
-    return toAuthUser(user, session);
+    return { user: toAuthUser(user, session), eventIds: revoked.eventIds };
   });
+  if (!result) return null;
+  await deliverItfFlowSessionEvents(result.eventIds);
+  return result.user;
 }
 
 export async function validateWorkspaceSession(sessionId: string, userId: string) {
@@ -232,16 +241,19 @@ export async function validateWorkspaceSession(sessionId: string, userId: string
   const state = classifyWorkspaceSession(evaluatedSession, now);
   if (state !== "ACTIVE") {
     if (!session.revokedAt) {
-      await prisma.workspaceSession.updateMany({
-        where: { id: session.id, revokedAt: null },
-        data: {
-          revokedAt: now,
-          revokeReason:
-            state === "ABSOLUTE_EXPIRED"
-              ? WorkspaceSessionRevocationReason.ABSOLUTE_TIMEOUT
-              : WorkspaceSessionRevocationReason.IDLE_TIMEOUT,
-        },
-      });
+      const reason =
+        state === "ABSOLUTE_EXPIRED"
+          ? WorkspaceSessionRevocationReason.ABSOLUTE_TIMEOUT
+          : WorkspaceSessionRevocationReason.IDLE_TIMEOUT;
+      const revoked = await prisma.$transaction((transaction) =>
+        revokeWorkspaceSessionsInTransaction(
+          transaction,
+          { id: session.id, userId },
+          reason,
+          now
+        )
+      );
+      await deliverItfFlowSessionEvents(revoked.eventIds);
     }
     return null;
   }
@@ -265,16 +277,20 @@ export async function revokeWorkspaceSession(
   reason: WorkspaceSessionRevocationReason,
   actorId = userId
 ) {
-  const now = new Date();
-  const result = await prisma.workspaceSession.updateMany({
-    where: { id: sessionId, userId, revokedAt: null },
-    data: { revokedAt: now, revokeReason: reason },
+  const result = await prisma.$transaction(async (transaction) => {
+    const revoked = await revokeWorkspaceSessionsInTransaction(
+      transaction,
+      { id: sessionId, userId },
+      reason
+    );
+    if (revoked.count) {
+      await transaction.auditLog.create({
+        data: { actorId, action: AuditAction.SESSION_TERMINATED, metadata: { sessionId, userId, reason } },
+      });
+    }
+    return revoked;
   });
-  if (result.count) {
-    await prisma.auditLog.create({
-      data: { actorId, action: AuditAction.SESSION_TERMINATED, metadata: { sessionId, userId, reason } },
-    });
-  }
+  await deliverItfFlowSessionEvents(result.eventIds);
   return result.count > 0;
 }
 
@@ -283,15 +299,20 @@ export async function revokeAllWorkspaceSessions(
   reason: WorkspaceSessionRevocationReason,
   actorId = userId
 ) {
-  const result = await prisma.workspaceSession.updateMany({
-    where: { userId, revokedAt: null },
-    data: { revokedAt: new Date(), revokeReason: reason },
+  const result = await prisma.$transaction(async (transaction) => {
+    const revoked = await revokeWorkspaceSessionsInTransaction(
+      transaction,
+      { userId },
+      reason
+    );
+    if (revoked.count) {
+      await transaction.auditLog.create({
+        data: { actorId, action: AuditAction.SESSION_TERMINATED, metadata: { userId, reason, count: revoked.count } },
+      });
+    }
+    return revoked;
   });
-  if (result.count) {
-    await prisma.auditLog.create({
-      data: { actorId, action: AuditAction.SESSION_TERMINATED, metadata: { userId, reason, count: result.count } },
-    });
-  }
+  await deliverItfFlowSessionEvents(result.eventIds);
   return result.count;
 }
 

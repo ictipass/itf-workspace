@@ -9,6 +9,10 @@ import {
 } from "@/lib/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { requireCurrentUser, requireFreshMfaContext } from "@/lib/auth/current-user";
+import {
+  deliverItfFlowSessionEvents,
+  enqueueEntitlementRevocationEvent,
+} from "@/lib/integrations/itf-flow-session-events";
 
 const grantAccessSchema = z.object({
   userId: z.string().min(1, "Please select a user."),
@@ -144,27 +148,32 @@ export async function revokeAppAccessAction(
     throw new Error("Invalid access record.");
   }
 
-  const access = await prisma.appAccess.update({
-    where: {
-      id: parsed.data.accessId,
-    },
-    data: {
-      status: AppAccessStatus.REVOKED,
-      revokedAt: new Date(),
-    },
-  });
-
-  await prisma.auditLog.create({
-    data: {
-      actorId: currentUser.id,
-      action: AuditAction.ACCESS_REVOKED,
-      metadata: {
-        accessId: access.id,
-        userId: access.userId,
-        appId: access.appId,
+  const eventIds = await prisma.$transaction(async (transaction) => {
+    const access = await transaction.appAccess.update({
+      where: { id: parsed.data.accessId },
+      data: { status: AppAccessStatus.REVOKED, revokedAt: new Date() },
+      include: { app: { select: { slug: true } } },
+    });
+    const queued = await enqueueEntitlementRevocationEvent(transaction, {
+      workspaceUserId: access.userId,
+      appSlug: access.app.slug,
+      reason: "ACCESS_REVOKED",
+    });
+    await transaction.auditLog.create({
+      data: {
+        actorId: currentUser.id,
+        action: AuditAction.ACCESS_REVOKED,
+        metadata: {
+          accessId: access.id,
+          userId: access.userId,
+          appId: access.appId,
+          revocationEventQueued: queued.length === 1,
+        },
       },
-    },
+    });
+    return queued;
   });
+  await deliverItfFlowSessionEvents(eventIds);
 
   revalidatePath("/dashboard");
   revalidatePath("/dashboard/apps");

@@ -3,6 +3,7 @@ import { describe, test } from "node:test";
 
 import {
   resolveItfFlowDirectorySyncConfiguration,
+  resolveItfFlowSessionEventConfiguration,
   resolveWorkspaceEmailConfiguration,
   resolveWorkspaceSeedConfiguration,
   validateWorkspaceRuntimeEnvironment,
@@ -24,6 +25,8 @@ const validProductionEnvironment = {
   RESEND_FROM_EMAIL: "ITF Workspace <workspace@example.test>",
   ITF_FLOW_URL: "https://flow.example.test/workspace/launch",
   WORKSPACE_DIRECTORY_SYNC_SECRET: "d".repeat(40),
+  WORKSPACE_INTEROP_SECRET: "e".repeat(40),
+  WORKSPACE_OUTBOX_WORKER_SECRET: "f".repeat(40),
 };
 
 describe("Workspace runtime configuration", () => {
@@ -48,6 +51,7 @@ describe("Workspace runtime configuration", () => {
     assert.equal(configuration.authUrl, "https://workspace.example.test/");
     assert.equal(configuration.emailConfigured, true);
     assert.equal(configuration.itfFlowDirectorySyncConfigured, true);
+    assert.equal(configuration.itfFlowSessionEventsConfigured, true);
   });
 
   test("reports every missing production requirement in one redacted error", () => {
@@ -153,6 +157,37 @@ describe("feature configuration", () => {
           ITF_FLOW_URL: "https://flow.example.test/workspace/launch",
         }),
       /WORKSPACE_DIRECTORY_SYNC_SECRET/
+    );
+  });
+
+  test("derives a bounded ITF Flow session-event outbox configuration", () => {
+    const configuration = resolveItfFlowSessionEventConfiguration({
+      ITF_FLOW_URL: "https://flow.example.test/workspace/launch",
+      WORKSPACE_INTEROP_SECRET: "interoperability-secret",
+      WORKSPACE_OUTBOX_BATCH_SIZE: "40",
+    });
+    assert.equal(
+      configuration.endpoint,
+      "https://flow.example.test/api/integrations/workspace/session-events"
+    );
+    assert.equal(configuration.appSlug, "itf-flow");
+    assert.equal(configuration.batchSize, 40);
+    assert.equal(configuration.maxAttempts, 10);
+  });
+
+  test("rejects incomplete or unsafe production session-event configuration", () => {
+    assert.throws(
+      () =>
+        resolveItfFlowSessionEventConfiguration(
+          { ITF_FLOW_URL: "http://flow.example.test/workspace/launch" },
+          { mode: "production" }
+        ),
+      (error) => {
+        assert.ok(error instanceof WorkspaceConfigurationError);
+        assert.match(error.message, /https/);
+        assert.match(error.message, /WORKSPACE_INTEROP_SECRET/);
+        return true;
+      }
     );
   });
 });
