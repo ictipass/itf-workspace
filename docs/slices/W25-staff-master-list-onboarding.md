@@ -1,0 +1,43 @@
+# W25 - Staff master-list onboarding and credential lifecycle
+
+Status: **In progress**
+
+First implementation commit: `ce680e0`
+
+## Implemented increment
+
+- HR master-list imports accept Workspace role `STAFF` only and reject `APP_ADMIN`, `SYSTEM_ADMIN`, unknown and
+  incorrectly cased values before creating any account.
+- The downloaded CSV template now contains ordinary staff examples only.
+- The import page explains that privileged Workspace roles are outside the HR workflow.
+- Actual imports require fresh TOTP; non-mutating dry runs retain ordinary System Administrator authorization.
+- The policy is centralized in a pure server-side rule with regression coverage.
+
+No database migration was required.
+
+## Practical effect
+
+A mistaken or altered HR spreadsheet cannot make a staff member a Workspace administrator. The file fails closed and
+ICT must correct it. Privileged roles require a separate future workflow with explicit authorization and audit.
+
+## Visible UI change
+
+The bulk-import introduction now states the ordinary-staff-only boundary. The downloadable example no longer shows an
+`APP_ADMIN` row. An actual import attempted without fresh TOTP returns a clear verification requirement.
+
+## Verification
+
+- 42/42 Workspace security/regression tests pass, including two onboarding-role tests.
+- TypeScript, ESLint and the 24-route production build pass.
+- `git diff --check` passes apart from Git's existing LF-to-CRLF notices.
+
+## Remaining W25 scope
+
+- Durable welcome-email outbox, retries and operator-visible delivery state.
+- Temporary-credential expiry, governed reissue and recovery under D10.
+- A separately approved privileged Workspace-role grant/revoke workflow with fresh TOTP and audit evidence.
+- Configurable official-email eligibility and child-role catalogue/approval under D15 and D22.
+- Governed HR reconciliation for corrections, transfers, suspensions and exits rather than create-only import.
+- Bounded import size, scalable password processing, resumable delivery and reconciliation reporting.
+
+W25 must not be marked Implemented until these lifecycle controls and their required policy inputs are complete.

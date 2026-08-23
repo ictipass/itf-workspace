@@ -61,6 +61,7 @@ Plain-language scenarios and the information needed to answer every question are
 | D33 | Workspace and integration audit retention, immutability and SIEM requirements | Open | ITF audit/legal/security | — |
 | D34 | Personal data allowed in launch claims, provisioning payloads and central logs | Open | ITF privacy/legal/security | — |
 | D35 | Availability targets, recovery time objective and recovery point objective | Open | ITF service owner/infrastructure | — |
+| D36 | Whether the HR master list may assign privileged Workspace roles | Approved (interim) | Super administrator | HR imports create `STAFF` only; `APP_ADMIN` and `SYSTEM_ADMIN` are granted separately by an approved super administrator through a governed, fresh-TOTP and audited process. `2026-08-23`, [`staff onboarding role-boundary directive`](policies/2026-08-23-staff-onboarding-role-boundary.md) |
 
 ## Decision procedure
 

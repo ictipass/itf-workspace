@@ -29,7 +29,7 @@ retry-policy coverage. Live outage and duplicate-delivery behavior remains a sta
 
 ## Verification
 
-- `npm.cmd run test:security`: passed, 40 tests across 8 suites.
+- `npm.cmd run test:security`: passed, 42 tests across 8 suites.
 - ITF Flow `npm.cmd run test:security`: passed, 21 tests.
 - `npx.cmd prisma validate`: passed.
 - `npm.cmd run lint`: passed.
@@ -63,6 +63,8 @@ Implementation commit: `444287a`.
 - A01 Workspace commit `1a08a5b` and ITF Flow commit `02b433d` add upstream session-deadline, versioned directory,
   immutable identity, payload-bound idempotency and role/status/assurance revocation cases. The suites now contain 40
   Workspace tests across eight suites and 21 ITF Flow security tests.
+- W25 increment `ce680e0` adds fail-closed HR master-list Workspace-role coverage. The Workspace suite now contains 42
+  tests across eight suites.
 
 ## Rollback
 

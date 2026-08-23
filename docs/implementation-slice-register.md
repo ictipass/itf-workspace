@@ -42,8 +42,9 @@ result. Repository code, migrations and commits remain the final implementation 
 | W05 | Login abuse protection and authentication security events | Policy gate | D08-D11: throttling, lockout, recovery and alerting policy |
 | W06 | App URL and outbound-request SSRF protection | Policy gate | D12: permitted domains/networks and operational exception process |
 | W07 | Secure configuration validation and removal of unsafe credential defaults | Implemented | `2caeede`; startup and command validation, production fail-closed behavior and 11 regression tests. See [`slices/W07-secure-configuration-validation.md`](slices/W07-secure-configuration-validation.md) |
-| W08 | Workspace security regression test foundation | Implemented | Expanded through A01; 40 Workspace tests across eight suites plus 21 ITF Flow security tests cover authoritative users, configuration, bounded sessions, launch v2, assurance/TOTP/QR, immutable provisioning and revocation. See [`slices/W08-security-regression-foundation.md`](slices/W08-security-regression-foundation.md) |
+| W08 | Workspace security regression test foundation | Implemented | Expanded through W25; 42 Workspace tests across eight suites plus 21 ITF Flow security tests cover authoritative users, configuration, bounded sessions, launch v2, assurance/TOTP/QR, immutable provisioning, revocation and HR-import role boundaries. See [`slices/W08-security-regression-foundation.md`](slices/W08-security-regression-foundation.md) |
 | W09 | Security headers, browser policy and deployment trust boundary | Policy gate | D13-D14: hosting topology, proxy/CDN and permitted origins |
+| W25 | Staff master-list onboarding and credential lifecycle | In progress | First control `ce680e0`: HR imports are `STAFF`-only and actual imports require fresh TOTP. Durable credential delivery/reissue, privileged-role workflow and HR lifecycle reconciliation remain. See [`slices/W25-staff-master-list-onboarding.md`](slices/W25-staff-master-list-onboarding.md) |
 
 ## Phase 2 — scalable access governance
 

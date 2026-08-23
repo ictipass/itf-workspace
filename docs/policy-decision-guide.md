@@ -289,3 +289,13 @@ other attributes increases privacy exposure and stale-data risk.
 long an outage and how much data loss are tolerable, and whether existing child-app sessions continue.
 
 **Please provide:** Availability target, RTO, RPO, maintenance windows, degraded-mode expectations and recovery owner.
+
+### D36 — HR master-list Workspace role boundary
+
+**Use case:** HR supplies an authoritative staff spreadsheet. If that file can assign `SYSTEM_ADMIN` or `APP_ADMIN`, a
+spreadsheet error or unauthorized alteration could create a privileged account without a separate security approval.
+
+**Approved interim outcome (2026-08-23):** HR master-list imports create `STAFF` accounts only. Privileged Workspace
+roles are granted separately by an approved super administrator through a governed action requiring fresh TOTP and
+audit evidence. Privileged role values in a file are rejected rather than silently converted. See D36 in the decision
+register and the staff onboarding role-boundary directive.
