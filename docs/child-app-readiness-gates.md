@@ -9,9 +9,9 @@ security, privacy, infrastructure or management approval.
 
 ## Gate A — ITF Flow integration reassessment
 
-When Gate A is satisfied, Workspace and ITF Flow should be reassessed together and their existing integration code and
-contracts updated as one bounded implementation. This is the point to begin full staging integration, not production
-rollout.
+Gate A measures whether Workspace and ITF Flow can enter full integrated staging, not production rollout. Their
+existing integration code and contracts must be reassessed together as one bounded implementation; environment and
+acceptance evidence then close the gate.
 
 Required:
 
@@ -27,12 +27,13 @@ Required:
 - Development and staging use environment-specific credentials; no production secret is shared with them.
 
 Current status: **Not met**. W00-W04, W07 and the expanded W08 foundation are complete; D01-D07 are approved, and
-Workspace/ITF Flow launch and revocation contract tests pass. Environment-separated staging credentials and a joint
-staging outage/duplicate-delivery exercise remain. The code foundation is mature enough to start that reassessment;
-production signing additionally remains gated on the approved KMS/HSM provider adapter.
+Workspace/ITF Flow launch, immutable provisioning and revocation contract tests pass, and the A01 code reassessment is
+complete. Environment-separated staging credentials and a joint lifecycle/outage/duplicate-delivery exercise remain.
+The code is mature enough for integrated staging; production signing additionally remains gated on the approved
+KMS/HSM provider adapter.
 
-When the final item is satisfied, the slice handoff must explicitly state: **Workspace is ready for ITF Flow
-integration reassessment.**
+When the final item is satisfied, the slice handoff must explicitly state: **Workspace is ready for integrated ITF
+Flow staging acceptance.**
 
 ## Gate B — Controlled ITF Flow pilot
 

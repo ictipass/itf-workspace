@@ -95,11 +95,11 @@ now propagate their security effect to ITF Flow in the background.
 
 ## Readiness and next action
 
-W04 is Implemented. The Workspace code foundation is now mature enough to begin the joint A01 ITF Flow integration
-reassessment. Gate A is not yet formally satisfied because environment-separated staging credentials and the staging
-outage/duplicate-delivery exercise have not been supplied. Production signing also still requires the approved KMS/HSM
-adapter.
+W04 is Implemented. Subsequent A01 commits `1a08a5b` (Workspace) and `02b433d` (Flow) completed the cross-repository
+code reassessment. Gate A is not yet formally satisfied because environment-separated staging configuration and the
+joint lifecycle/outage/duplicate-delivery exercise have not been supplied. Production signing also still requires the
+approved KMS/HSM adapter.
 
-Next best implementable work: **A01 — joint ITF Flow staging integration reassessment**, after Infrastructure supplies
-separate staging `WORKSPACE_INTEROP_SECRET` and `WORKSPACE_OUTBOX_WORKER_SECRET` values and an approved scheduler.
-Without that external configuration, the next policy preparation is W05 through decisions D08-D11.
+The next action is the joint A01 staging acceptance exercise after Infrastructure supplies separate staging launch,
+directory, interoperability and worker configuration plus an approved scheduler. Without that external
+configuration, the next policy preparation is W05 through decisions D08-D11.

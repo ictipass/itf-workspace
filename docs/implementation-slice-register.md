@@ -42,7 +42,7 @@ result. Repository code, migrations and commits remain the final implementation 
 | W05 | Login abuse protection and authentication security events | Policy gate | D08-D11: throttling, lockout, recovery and alerting policy |
 | W06 | App URL and outbound-request SSRF protection | Policy gate | D12: permitted domains/networks and operational exception process |
 | W07 | Secure configuration validation and removal of unsafe credential defaults | Implemented | `2caeede`; startup and command validation, production fail-closed behavior and 11 regression tests. See [`slices/W07-secure-configuration-validation.md`](slices/W07-secure-configuration-validation.md) |
-| W08 | Workspace security regression test foundation | Implemented | Expanded through W04; 37 Workspace tests across eight suites plus 11 ITF Flow security tests cover authoritative users, configuration, sessions, launch v2, assurance/TOTP/QR, launch URLs and the revocation contract. See [`slices/W08-security-regression-foundation.md`](slices/W08-security-regression-foundation.md) |
+| W08 | Workspace security regression test foundation | Implemented | Expanded through A01; 40 Workspace tests across eight suites plus 21 ITF Flow security tests cover authoritative users, configuration, bounded sessions, launch v2, assurance/TOTP/QR, immutable provisioning and revocation. See [`slices/W08-security-regression-foundation.md`](slices/W08-security-regression-foundation.md) |
 | W09 | Security headers, browser policy and deployment trust boundary | Policy gate | D13-D14: hosting topology, proxy/CDN and permitted origins |
 
 ## Phase 2 — scalable access governance
@@ -74,7 +74,7 @@ result. Repository code, migrations and commits remain the final implementation 
 
 | ID | Application slice | Status | Dependency |
 |---|---|---|---|
-| A01 | ITF Flow launch v2, provisioning and revocation integration | Ready for reassessment | Launch `f0696bc` and revocation receiver `30ace13`, `7a3a849` agree with Workspace; environment-separated staging credentials and joint staging acceptance remain |
+| A01 | ITF Flow launch v2, provisioning and revocation integration | In progress | Code complete: Workspace `1a08a5b`, Flow `02b433d`; bounded child sessions, immutable/versioned provisioning and lifecycle revocation pass 61 joint contract/security tests. Environment-separated staging configuration and acceptance remain. See [`slices/A01-itf-flow-integration-reassessment.md`](slices/A01-itf-flow-integration-reassessment.md) |
 | A02 | Client Reimbursement staff integration | Planned | A01 lessons plus W17/W21 onboarding contract |
 | A03 | SIWES staff-facing integration | Policy gate | A01; D32 separates staff and external SIWES identities |
 | A04 | PromoIntel staff integration | Planned | A01 lessons plus W17/W21 onboarding contract |
@@ -95,19 +95,19 @@ result. Repository code, migrations and commits remain the final implementation 
 
 ## Current execution order
 
-1. Configure environment-separated staging credentials and run the joint A01 ITF Flow integration reassessment.
-2. Exercise immediate, duplicate and outage/retry revocation in staging to close Gate A.
+1. Configure environment-separated staging credentials and run the joint A01 ITF Flow acceptance exercise.
+2. Exercise provisioning, launch, replay, role/assurance changes, immediate/duplicate revocation and outage/retry in staging to close A01 and Gate A.
 3. Resolve W05, W06 and W09 production gates.
 4. Start Phase 2 governance before onboarding more than ITF Flow.
 
-**Next best implementable slice:** A01 — joint ITF Flow staging integration reassessment, once Infrastructure supplies
-separate staging interoperability/worker credentials and an approved scheduler. If that external configuration is not
-yet available, prepare W05 by resolving D08-D11.
+**Next best implementable slice:** complete A01 through joint ITF Flow staging acceptance, once Infrastructure supplies
+separate staging launch/directory/interoperability/worker configuration and an approved scheduler. If that external
+configuration is not yet available, prepare W05 by resolving D08-D11.
 
-**Current child-app readiness:** The Workspace code foundation is mature enough for joint ITF Flow reassessment, but
-Gate A is not formally met. W04 and its cross-repository contract coverage are complete. Environment-separated staging
-credentials and staging outage/duplicate-delivery evidence remain; production signing additionally requires the
-approved KMS/HSM adapter.
+**Current child-app readiness:** The Workspace code foundation is mature enough for integrated ITF Flow staging, but
+Gate A is not formally met. A01's cross-repository code and contract coverage are complete. Environment-separated
+staging credentials and full staging lifecycle evidence remain; production signing additionally requires the approved
+KMS/HSM adapter.
 
 ## Cross-chat handoff protocol
 

@@ -4,7 +4,7 @@
 
 Workspace now has a fast, repeatable security test entry point that can run without a database or live child
 application. It protects authoritative-user, configuration, session, launch-v2, assurance, TOTP and versioned central
-child-app revocation boundaries.
+child-app provisioning/revocation boundaries.
 
 ## Scope implemented
 
@@ -29,8 +29,8 @@ retry-policy coverage. Live outage and duplicate-delivery behavior remains a sta
 
 ## Verification
 
-- `npm.cmd run test:security`: passed, 37 tests across 8 suites.
-- ITF Flow `npm.cmd run test:security`: passed, 11 tests.
+- `npm.cmd run test:security`: passed, 40 tests across 8 suites.
+- ITF Flow `npm.cmd run test:security`: passed, 21 tests.
 - `npx.cmd prisma validate`: passed.
 - `npm.cmd run lint`: passed.
 - `npm.cmd run build`: passed, including TypeScript and all 24 Workspace routes; ITF Flow build also passed.
@@ -60,6 +60,9 @@ Implementation commit: `444287a`.
 - W04 Workspace commits `c8d3605`, `6427f98` and ITF Flow commits `30ace13`, `7a3a849` add the versioned
   central-logout/entitlement contract, fail-closed event scope, receiver selectors, configuration and retry-boundary
   cases. The suites now contain 37 Workspace tests across eight suites and 11 ITF Flow security tests.
+- A01 Workspace commit `1a08a5b` and ITF Flow commit `02b433d` add upstream session-deadline, versioned directory,
+  immutable identity, payload-bound idempotency and role/status/assurance revocation cases. The suites now contain 40
+  Workspace tests across eight suites and 21 ITF Flow security tests.
 
 ## Rollback
 
