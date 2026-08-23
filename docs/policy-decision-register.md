@@ -11,13 +11,13 @@ Plain-language scenarios and the information needed to answer every question are
 
 | ID | Required decision | Status | Accountable owner | Approved outcome/evidence |
 |---|---|---|---|---|
-| D01 | Approved enterprise identity provider and whether Workspace is only an OIDC client or must also broker identities | Open | ITF ICT/security leadership | — |
-| D02 | Workspace idle-session lifetime by user risk level | Open | ITF security policy owner | — |
-| D03 | Workspace absolute-session lifetime and reauthentication conditions | Open | ITF security policy owner | — |
-| D04 | Concurrent-session/device policy and user-visible session termination | Open | ITF security policy owner | — |
-| D05 | Required MFA methods and roles/actions that require step-up authentication | Open | ITF security policy owner | — |
-| D06 | Maximum app-launch assertion lifetime and clock-skew allowance during migration | Open | ITF security architecture owner | — |
-| D07 | Production signing model, key custody, rotation interval and emergency rotation process | Open | ITF security/infrastructure owners | — |
+| D01 | Approved enterprise identity provider and whether Workspace is only an OIDC client or must also broker identities | Approved (interim) | Super administrator | Workspace directly authenticates staff during migration; HR master list is authoritative and ICT administers it; Workspace is not an identity broker. `2026-08-23`, project architecture directive |
+| D02 | Workspace idle-session lifetime by user risk level | Approved | Super administrator | Staff: 20 minutes; privileged Workspace administrators: 10 minutes; two-minute warning; deliberate Workspace activity only. `2026-08-23`, project architecture directive |
+| D03 | Workspace absolute-session lifetime and reauthentication conditions | Approved | Super administrator | Three hours for all roles; server-enforced full reauthentication; no trusted-device extension; preserve work outside the expired session. `2026-08-23`, project architecture directive |
+| D04 | Concurrent-session/device policy and user-visible session termination | Approved | Super administrator | Maximum two Workspace sessions; no device restriction; restricted recovery screen at the limit; users terminate their sessions and administrators may terminate any. `2026-08-23`, project architecture directive |
+| D05 | Required MFA methods and roles/actions that require step-up authentication | Open (partial direction) | ITF security policy owner | Random single-use temporary credentials, TOTP interim MFA and stronger authenticators accepted in principle; exact role/action coverage and step-up validity remain open. See the `2026-08-23` directive |
+| D06 | Maximum app-launch assertion lifetime and clock-skew allowance during migration | Approved | Super administrator | Balanced option: 120-second redemption, 30-second skew, atomic single use, audience binding, return to Workspace after expiry. `2026-08-23`, project architecture directive |
+| D07 | Production signing model, key custody, rotation interval and emergency rotation process | Open (partial direction) | ITF security/infrastructure owners | Asymmetric signing approved; custody/storage, rotation, overlap and emergency authority remain open. See the `2026-08-23` directive |
 | D08 | Login throttling thresholds and dimensions: account, IP, device and network | Open | ITF security operations | — |
 | D09 | Account lockout threshold, duration and unlock authority | Open | ITF security operations/HR | — |
 | D10 | Password recovery and identity-proofing process during the local-login migration period | Open | ITF ICT service desk/security | — |
@@ -66,3 +66,6 @@ Plain-language scenarios and the information needed to answer every question are
 
 For each decision, record the approved outcome, effective date, approving authority and policy/document reference.
 If a decision changes, retain the earlier outcome as dated history and identify affected slices, migrations and applications.
+
+Detailed evidence for the decisions above is retained in
+[`policies/2026-08-23-session-and-launch-directive.md`](policies/2026-08-23-session-and-launch-directive.md).

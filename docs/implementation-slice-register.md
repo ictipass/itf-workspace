@@ -36,8 +36,8 @@ result. Repository code, migrations and commits remain the final implementation 
 |---|---|---|---|
 | W00 | Production dependency advisory remediation | Implemented | `acf76c5`; runtime audit reports zero known vulnerabilities. See [`slices/W00-dependency-security-baseline.md`](slices/W00-dependency-security-baseline.md) |
 | W01 | Authoritative current-user validation | Implemented | `16dcefc`, regression evidence `444287a`; full verification passes. See [`slices/W01-authoritative-current-user.md`](slices/W01-authoritative-current-user.md) |
-| W02 | Revocable Workspace sessions and session inventory | Policy gate | D01-D04: IdP direction, idle/absolute lifetimes and concurrent-session policy |
-| W03 | Workspace launch v2 issuer aligned with ITF Flow | Policy gate | W02 plus D01, D05-D07: authentication assurance, token lifetime and key management |
+| W02 | Revocable Workspace sessions and session inventory | Ready | D01-D04 approved by the `2026-08-23` project architecture directive |
+| W03 | Workspace launch v2 issuer aligned with ITF Flow | Policy gate | W02 plus unresolved portions of D05 and D07; D01 and D06 are approved |
 | W04 | Immediate central logout and entitlement-revocation delivery to ITF Flow | Planned | W02-W03; transactional outbox and ITF Flow session-event contract |
 | W05 | Login abuse protection and authentication security events | Policy gate | D08-D11: throttling, lockout, recovery and alerting policy |
 | W06 | App URL and outbound-request SSRF protection | Policy gate | D12: permitted domains/networks and operational exception process |
@@ -95,19 +95,18 @@ result. Repository code, migrations and commits remain the final implementation 
 
 ## Current execution order
 
-1. Resolve D01-D07, then design W02 and W03 together so Workspace and ITF Flow share one approved contract.
-2. Implement W02 after D01-D04 are approved and record its session-policy regression coverage in W08.
-3. Implement W03 after D01 and D05-D07 are approved, then extend W08 with launch and replay behavior.
+1. Implement W02 against approved D01-D04 and record its session-policy regression coverage in W08.
+2. Resolve the remaining D05 and D07 details while keeping W02 compatible with the approved D06 launch policy.
+3. Implement W03 after W02 and full D05/D07 approval, then extend W08 with launch and replay behavior.
 4. Deliver W04 before treating Workspace logout or entitlement revocation as centralized.
 5. Resolve W05, W06 and W09 production gates.
 6. Start Phase 2 governance before onboarding more than ITF Flow.
 
-**Next best implementable work:** No further Gate A code slice is policy-safe yet. ITF must resolve D01-D07 using the
-policy decision guide. W02 becomes the next implementable slice after D01-D04 are approved; W02 and W03 must still be
-designed as one compatible session/launch architecture.
+**Next best implementable slice:** W02 — revocable Workspace sessions and session inventory. D01-D04 are approved and
+the implementation must remain compatible with the approved D06 launch timing while D05 and D07 remain gated.
 
 **Current child-app readiness:** Not yet integration-development-ready. W00, W01, W07 and the W08 foundation are
-complete. W02-W04, D01-D07, expanded session/entitlement/replay/revocation and cross-contract coverage, and
+complete. W02-W04, D05, D07, expanded session/entitlement/replay/revocation and cross-contract coverage, and
 environment-separated credentials remain on the ITF Flow reassessment gate.
 
 ## Cross-chat handoff protocol
