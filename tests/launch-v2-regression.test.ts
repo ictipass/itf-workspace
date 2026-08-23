@@ -157,6 +157,8 @@ describe("launch assurance and TOTP controls", () => {
     const ciphertext = encryptTotpSecret(secret, environment);
     assert.notEqual(ciphertext, secret);
     assert.equal(decryptTotpSecret(ciphertext, environment), secret);
-    assert.throws(() => decryptTotpSecret(`${ciphertext.slice(0, -1)}A`, environment));
+    const encryptedParts = ciphertext.split(".");
+    encryptedParts[1] = `${encryptedParts[1][0] === "A" ? "B" : "A"}${encryptedParts[1].slice(1)}`;
+    assert.throws(() => decryptTotpSecret(encryptedParts.join("."), environment));
   });
 });

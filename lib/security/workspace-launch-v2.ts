@@ -221,16 +221,23 @@ export function verifyWorkspaceLaunchV2Token(
     !payload.jti ||
     !payload.authentication?.workspaceSessionId ||
     payload.entitlement?.slug !== options.expectedAppSlug ||
-    !payload.entitlement?.role
+    !payload.entitlement?.role ||
+    !Object.values(AssuranceRequirement).includes(payload.entitlement.requiredAssurance) ||
+    !Array.isArray(payload.authentication.methods) ||
+    !Number.isInteger(payload.authentication.authenticatedAt)
   ) {
     throw new Error("Workspace launch v2 claims are invalid.");
   }
   if (
+    !Number.isInteger(payload.iat) ||
+    !Number.isInteger(payload.nbf) ||
+    !Number.isInteger(payload.exp) ||
     payload.iat > now + skew ||
     payload.nbf > now + skew ||
     payload.exp + skew < now ||
     payload.exp <= payload.iat ||
-    payload.exp - payload.iat > ttl
+    payload.exp - payload.iat > ttl ||
+    payload.authentication.authenticatedAt > payload.iat + skew
   ) {
     throw new Error("Workspace launch v2 timing is invalid.");
   }
