@@ -10,6 +10,7 @@ import {
 } from "../lib/security/workspace-launch-v2";
 import { effectiveLaunchAssurance, hasFreshMfa } from "../lib/security/launch-assurance";
 import { decryptTotpSecret, encryptTotpSecret, matchTotpCounter } from "../lib/security/totp";
+import { createTotpQrCodeDataUrl } from "../lib/security/totp-qr";
 
 const managedVariables = [
   "WORKSPACE_LAUNCH_ISSUER",
@@ -129,6 +130,20 @@ describe("Workspace launch v2 assertions", () => {
 });
 
 describe("launch assurance and TOTP controls", () => {
+  test("renders TOTP enrollment locally as a PNG data URL", async () => {
+    const uri = "otpauth://totp/ITF%20Workspace%3Astaff%40example.test?secret=GEZDGNBVGY3TQOJQ&issuer=ITF+Workspace&algorithm=SHA1&digits=6&period=30";
+    const dataUrl = await createTotpQrCodeDataUrl(uri);
+    assert.match(dataUrl, /^data:image\/png;base64,/);
+    assert.equal(
+      Buffer.from(dataUrl.split(",")[1], "base64").subarray(1, 4).toString("ascii"),
+      "PNG"
+    );
+    await assert.rejects(
+      () => createTotpQrCodeDataUrl("https://external.example.test/qr"),
+      /Only TOTP provisioning URIs/
+    );
+  });
+
   test("uses the most restrictive app, role or Workspace classification", () => {
     assert.equal(
       effectiveLaunchAssurance(WorkspaceRole.STAFF, AssuranceRequirement.STANDARD, AssuranceRequirement.STANDARD),

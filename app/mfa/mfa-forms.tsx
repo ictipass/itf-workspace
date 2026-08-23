@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useActionState } from "react";
 import {
   beginEnrollmentAction,
@@ -31,15 +32,35 @@ export function TotpEnrollmentForm({ returnTo }: { returnTo: string }) {
   return (
     <div className="mt-6 space-y-5">
       <div className="rounded-xl border bg-muted/40 p-4">
-        <p className="text-sm font-medium">Authenticator setup key</p>
-        <code className="mt-2 block break-all rounded bg-background p-3 text-sm">{challenge.secret}</code>
-        <p className="mt-3 text-xs text-muted-foreground">
-          Add an account manually in your authenticator app using this key, SHA-1, six digits and a 30-second period.
-          The setup challenge expires at {new Date(challenge.expiresAt!).toLocaleTimeString()}.
-        </p>
-        <details className="mt-3 text-xs">
-          <summary className="cursor-pointer font-medium">Show provisioning URI</summary>
-          <code className="mt-2 block break-all">{challenge.provisioningUri}</code>
+        <div className="text-center">
+          <p className="text-sm font-medium">Scan with your authenticator app</p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            The setup challenge expires at {new Date(challenge.expiresAt!).toLocaleTimeString()}.
+          </p>
+          {challenge.qrCodeDataUrl ? (
+            <Image
+              src={challenge.qrCodeDataUrl}
+              alt="QR code for adding ITF Workspace to an authenticator app"
+              width={240}
+              height={240}
+              unoptimized
+              className="mx-auto mt-4 rounded-lg border bg-white p-2"
+            />
+          ) : null}
+          <p className="mx-auto mt-3 max-w-sm text-xs leading-5 text-muted-foreground">
+            Treat this QR code like a password. Do not photograph, share or send it to another person.
+          </p>
+        </div>
+        <details className="mt-4 border-t pt-4 text-xs">
+          <summary className="cursor-pointer font-medium">
+            Cannot scan? Enter a setup key manually
+          </summary>
+          <code className="mt-3 block break-words rounded bg-background p-3 text-center text-sm tracking-wider">
+            {formatSetupKey(challenge.secret)}
+          </code>
+          <p className="mt-2 leading-5 text-muted-foreground">
+            Use SHA-1, six digits and a 30-second period. Spaces only improve readability and are not part of the key.
+          </p>
         </details>
       </div>
       <form action={confirm} className="space-y-4">
@@ -52,6 +73,10 @@ export function TotpEnrollmentForm({ returnTo }: { returnTo: string }) {
       </form>
     </div>
   );
+}
+
+function formatSetupKey(secret: string) {
+  return secret.match(/.{1,4}/g)?.join(" ") ?? secret;
 }
 
 export function TotpVerificationForm({ returnTo }: { returnTo: string }) {

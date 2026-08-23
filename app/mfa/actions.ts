@@ -7,11 +7,12 @@ import {
   confirmTotpEnrollment,
   verifyTotpStepUp,
 } from "@/lib/auth/workspace-mfa.service";
+import { createTotpQrCodeDataUrl } from "@/lib/security/totp-qr";
 
 export type MfaActionState = {
   error?: string;
   secret?: string;
-  provisioningUri?: string;
+  qrCodeDataUrl?: string;
   expiresAt?: string;
 };
 
@@ -30,9 +31,16 @@ export async function beginEnrollmentAction(
   if (!context) return { error: "Your Workspace session is no longer active." };
   try {
     const challenge = await beginTotpEnrollment(context.user.id);
+    let qrCodeDataUrl: string | undefined;
+    try {
+      qrCodeDataUrl = await createTotpQrCodeDataUrl(challenge.provisioningUri);
+    } catch {
+      // Enrollment remains possible through the manual key if local QR
+      // rendering is unexpectedly unavailable.
+    }
     return {
       secret: challenge.secret,
-      provisioningUri: challenge.provisioningUri,
+      qrCodeDataUrl,
       expiresAt: challenge.expiresAt.toISOString(),
     };
   } catch (error) {
