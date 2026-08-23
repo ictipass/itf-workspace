@@ -5,6 +5,7 @@ import { requireCurrentUser } from "@/lib/auth/current-user";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { effectiveLaunchAssurance } from "@/lib/security/launch-assurance";
 
 export default async function MyAppsPage() {
   const user = await requireCurrentUser();
@@ -20,6 +21,9 @@ export default async function MyAppsPage() {
           status: "ACTIVE",
         },
         take: 1,
+      },
+      rolePolicies: {
+        where: { isActive: true },
       },
     },
     orderBy: {
@@ -46,6 +50,16 @@ export default async function MyAppsPage() {
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {apps.map((app) => {
             const access = app.accessRules[0];
+            const rolePolicy = access
+              ? app.rolePolicies.find((policy) => policy.roleCode === access.appRole)
+              : undefined;
+            const assurance = access && rolePolicy
+              ? effectiveLaunchAssurance(
+                  user.workspaceRole,
+                  app.assuranceRequirement,
+                  rolePolicy.assuranceRequirement
+                )
+              : null;
             return (
               <Card
                 key={app.id}
@@ -66,11 +80,20 @@ export default async function MyAppsPage() {
                   <div className="flex flex-wrap gap-2">
                     <Badge variant="outline">{app.environment}</Badge>
                     {access?.appRole ? <Badge>{access.appRole}</Badge> : null}
+                    {assurance ? (
+                      <Badge variant={assurance === "SENSITIVE" ? "destructive" : "secondary"}>
+                        {assurance}
+                      </Badge>
+                    ) : null}
                   </div>
 
-                  {access ? (
+                  {access && rolePolicy ? (
                     <Button asChild className="w-full">
                       <Link href={`/dashboard/apps/${app.id}/launch`}>Launch App</Link>
+                    </Button>
+                  ) : access ? (
+                    <Button className="w-full" disabled>
+                      Role classification required
                     </Button>
                   ) : (
                     <Button className="w-full" disabled>

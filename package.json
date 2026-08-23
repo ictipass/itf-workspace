@@ -14,7 +14,7 @@
     "config:check": "tsx scripts/validate-environment.ts",
     "config:check:production": "tsx scripts/validate-environment.ts --environment=production",
     "test": "npm run test:security",
-    "test:security": "tsx --test tests/security-regression.test.ts tests/configuration-regression.test.ts tests/session-regression.test.ts",
+    "test:security": "tsx --test tests/security-regression.test.ts tests/configuration-regression.test.ts tests/session-regression.test.ts tests/launch-v2-regression.test.ts",
     "verify": "npm run config:check && prisma validate && npm run test:security && npm run lint && npm run build"
   },
   "dependencies": {

@@ -37,6 +37,7 @@ const appCategories = [
 const appEnvironments = ["PRODUCTION", "STAGING", "DEVELOPMENT"] as const;
 
 const appStatuses = ["ACTIVE", "INACTIVE", "MAINTENANCE"] as const;
+const assuranceRequirements = ["STANDARD", "SENSITIVE"] as const;
 
 export default function AppCreateForm() {
   const urlInputRef = useRef<HTMLInputElement>(null);
@@ -55,6 +56,12 @@ export default function AppCreateForm() {
 
       <Field label="Name" name="name" error={state.errors?.name?.[0]} />
       <Field label="Slug" name="slug" error={state.errors?.slug?.[0]} />
+      <Field
+        label="Launch Audience"
+        name="launchAudience"
+        error={state.errors?.launchAudience?.[0]}
+        description="Stable audience expected by the child app, for example itf-flow. It must not change with the URL."
+      />
       <Field
         label="Canonical Launch URL"
         name="url"
@@ -82,6 +89,27 @@ export default function AppCreateForm() {
         name="environment"
         values={appEnvironments}
         error={state.errors?.environment?.[0]}
+      />
+
+      <EnumSelect
+        label="Application Assurance"
+        name="assuranceRequirement"
+        values={assuranceRequirements}
+        error={state.errors?.assuranceRequirement?.[0]}
+      />
+
+      <Field
+        label="Initial App Role Code"
+        name="initialRoleCode"
+        error={state.errors?.initialRoleCode?.[0]}
+        description="Every active app needs at least one explicitly classified role, for example USER or OFFICER."
+      />
+
+      <EnumSelect
+        label="Initial Role Assurance"
+        name="initialRoleAssurance"
+        values={assuranceRequirements}
+        error={state.errors?.initialRoleAssurance?.[0]}
       />
 
       <EnumSelect

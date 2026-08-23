@@ -33,6 +33,16 @@ export default async function DashboardLayout({
     redirect("/login");
   }
 
+  const privileged =
+    user.workspaceRole === WorkspaceRole.SYSTEM_ADMIN ||
+    user.workspaceRole === WorkspaceRole.APP_ADMIN;
+  if (privileged && !user.totpEnrolledAt) {
+    redirect("/mfa/enroll?returnTo=/dashboard");
+  }
+  if (privileged && !context.session.mfaAuthenticatedAt) {
+    redirect("/mfa/verify?returnTo=/dashboard");
+  }
+
   const initials =
     user.name
       ?.split(" ")

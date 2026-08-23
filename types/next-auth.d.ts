@@ -13,6 +13,7 @@ declare module "next-auth" {
     divisionId?: string | null;
     unitId?: string | null;
     positionId?: string | null;
+    totpEnrolledAt?: Date | null;
     workspaceSessionId: string;
     workspaceSessionIdleExpiresAt: Date;
     workspaceSessionAbsoluteExpiresAt: Date;
@@ -30,6 +31,7 @@ declare module "next-auth" {
       divisionId?: string | null;
       unitId?: string | null;
       positionId?: string | null;
+      totpEnrolledAt?: string | null;
       workspaceSessionId: string;
       workspaceSessionIdleExpiresAt: string;
       workspaceSessionAbsoluteExpiresAt: string;
@@ -49,6 +51,7 @@ declare module "next-auth/jwt" {
     divisionId?: string | null;
     unitId?: string | null;
     positionId?: string | null;
+    totpEnrolledAt?: string | null;
     workspaceSessionId: string;
     workspaceSessionIdleExpiresAt: string;
     workspaceSessionAbsoluteExpiresAt: string;

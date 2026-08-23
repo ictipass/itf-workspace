@@ -80,6 +80,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.divisionId = user.divisionId;
         token.unitId = user.unitId;
         token.positionId = user.positionId;
+        token.totpEnrolledAt = user.totpEnrolledAt?.toISOString() ?? null;
         token.workspaceSessionId = user.workspaceSessionId;
         token.workspaceSessionIdleExpiresAt = user.workspaceSessionIdleExpiresAt.toISOString();
         token.workspaceSessionAbsoluteExpiresAt = user.workspaceSessionAbsoluteExpiresAt.toISOString();
@@ -99,6 +100,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           divisionId: token.divisionId as string | null,
           unitId: token.unitId as string | null,
           positionId: token.positionId as string | null,
+          totpEnrolledAt: token.totpEnrolledAt as string | null,
           workspaceSessionId: token.workspaceSessionId as string,
           workspaceSessionIdleExpiresAt: token.workspaceSessionIdleExpiresAt as string,
           workspaceSessionAbsoluteExpiresAt: token.workspaceSessionAbsoluteExpiresAt as string,

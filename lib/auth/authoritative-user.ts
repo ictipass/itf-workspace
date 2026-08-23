@@ -13,6 +13,7 @@ export type AuthoritativeWorkspaceUserRecord = {
   divisionId?: string | null;
   unitId?: string | null;
   positionId?: string | null;
+  totpEnrolledAt?: Date | null;
 };
 
 export type CurrentWorkspaceUser = {
@@ -28,6 +29,7 @@ export type CurrentWorkspaceUser = {
   divisionId?: string | null;
   unitId?: string | null;
   positionId?: string | null;
+  totpEnrolledAt?: Date | null;
 };
 
 export function resolveAuthoritativeWorkspaceUser(
@@ -48,5 +50,6 @@ export function resolveAuthoritativeWorkspaceUser(
     divisionId: user.divisionId,
     unitId: user.unitId,
     positionId: user.positionId,
+    totpEnrolledAt: user.totpEnrolledAt,
   };
 }

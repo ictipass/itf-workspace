@@ -8,12 +8,11 @@ import {
   WorkspaceRole,
 } from "@/lib/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
-import { requireCurrentUser } from "@/lib/auth/current-user";
+import { requireCurrentUser, requireFreshMfaContext } from "@/lib/auth/current-user";
 
 const grantAccessSchema = z.object({
   userId: z.string().min(1, "Please select a user."),
-  appId: z.string().min(1, "Please select an app."),
-  appRole: z.string().optional(),
+  entitlement: z.string().regex(/^[^:]+:[A-Z0-9_-]+$/, "Please select an application role."),
 });
 
 const revokeAccessSchema = z.object({
@@ -38,11 +37,15 @@ export async function grantAppAccessAction(
       message: "Only System Administrators can grant app access.",
     };
   }
+  try {
+    await requireFreshMfaContext();
+  } catch {
+    return { success: false, message: "Fresh TOTP verification is required to grant app access." };
+  }
 
   const parsed = grantAccessSchema.safeParse({
     userId: formData.get("userId"),
-    appId: formData.get("appId"),
-    appRole: formData.get("appRole") || undefined,
+    entitlement: formData.get("entitlement"),
   });
 
   if (!parsed.success) {
@@ -53,11 +56,17 @@ export async function grantAppAccessAction(
     };
   }
 
-  const { userId, appId, appRole } = parsed.data;
+  const { userId, entitlement } = parsed.data;
+  const separator = entitlement.indexOf(":");
+  const appId = entitlement.slice(0, separator);
+  const appRole = entitlement.slice(separator + 1);
 
-  const [targetUser, app] = await Promise.all([
+  const [targetUser, app, rolePolicy] = await Promise.all([
     prisma.user.findUnique({ where: { id: userId } }),
     prisma.app.findUnique({ where: { id: appId } }),
+    prisma.appRolePolicy.findUnique({
+      where: { appId_roleCode: { appId, roleCode: appRole } },
+    }),
   ]);
 
   if (!targetUser) {
@@ -66,6 +75,9 @@ export async function grantAppAccessAction(
 
   if (!app) {
     return { success: false, message: "Selected app does not exist." };
+  }
+  if (!rolePolicy?.isActive) {
+    return { success: false, message: "Selected app role is not active or classified." };
   }
 
   const access = await prisma.appAccess.upsert({
@@ -122,6 +134,7 @@ export async function revokeAppAccessAction(
   if (currentUser.workspaceRole !== WorkspaceRole.SYSTEM_ADMIN) {
     throw new Error("Unauthorized");
   }
+  await requireFreshMfaContext();
 
   const parsed = revokeAccessSchema.safeParse({
     accessId: formData.get("accessId"),

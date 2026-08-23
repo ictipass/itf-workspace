@@ -1,21 +1,10 @@
 import assert from "node:assert/strict";
-import { after, before, describe, test } from "node:test";
+import { describe, test } from "node:test";
 
 import { resolveAuthoritativeWorkspaceUser } from "../lib/auth/authoritative-user";
 import { normalizeAppLaunchUrl } from "../lib/apps/launch-url";
 import { UserStatus, WorkspaceRole } from "../lib/generated/prisma/client";
-import {
-  getWorkspaceLaunchTokenFromUrl,
-  removeWorkspaceLaunchTokenFromUrl,
-  verifyWorkspaceLaunchTokenForApp,
-} from "../lib/integrations/workspace-launch-token-receiver";
-import {
-  createWorkspaceLaunchToken,
-  verifyWorkspaceLaunchToken,
-} from "../lib/security/sso-launch-token";
-
-const TEST_SECRET = "w08-test-secret-with-at-least-32-characters";
-const originalLaunchTokenSecret = process.env.WORKSPACE_LAUNCH_TOKEN_SECRET;
+import { appendWorkspaceLaunchToken } from "../lib/apps/launch-url";
 
 const activeUser = {
   id: "user-1",
@@ -32,38 +21,6 @@ const activeUser = {
   positionId: "position-1",
 };
 
-const launchPayload = {
-  user: {
-    id: activeUser.id,
-    name: activeUser.fullName,
-    email: activeUser.email,
-    staffNumber: activeUser.staffNumber,
-    workspaceRole: activeUser.workspaceRole,
-    officeId: activeUser.officeId,
-    departmentId: activeUser.departmentId,
-    divisionId: activeUser.divisionId,
-    unitId: activeUser.unitId,
-    positionId: activeUser.positionId,
-  },
-  app: {
-    id: "app-1",
-    slug: "itf-flow",
-    name: "ITF Flow",
-    role: "STAFF",
-  },
-};
-
-before(() => {
-  process.env.WORKSPACE_LAUNCH_TOKEN_SECRET = TEST_SECRET;
-});
-
-after(() => {
-  if (originalLaunchTokenSecret === undefined) {
-    delete process.env.WORKSPACE_LAUNCH_TOKEN_SECRET;
-  } else {
-    process.env.WORKSPACE_LAUNCH_TOKEN_SECRET = originalLaunchTokenSecret;
-  }
-});
 
 describe("authoritative current-user policy", () => {
   test("rejects a missing or deleted user record", () => {
@@ -93,6 +50,7 @@ describe("authoritative current-user policy", () => {
       divisionId: activeUser.divisionId,
       unitId: activeUser.unitId,
       positionId: activeUser.positionId,
+      totpEnrolledAt: undefined,
     });
   });
 
@@ -108,90 +66,6 @@ describe("authoritative current-user policy", () => {
         workspaceRole
       );
     }
-  });
-});
-
-describe("Workspace launch token v1 boundary", () => {
-  test("issues a token that the app receiver accepts for its audience", () => {
-    const { token } = createWorkspaceLaunchToken(launchPayload);
-    const issuerPayload = verifyWorkspaceLaunchToken(token);
-    const receiverPayload = verifyWorkspaceLaunchTokenForApp(token, {
-      secret: TEST_SECRET,
-      expectedAppSlug: "itf-flow",
-    });
-
-    assert.equal(receiverPayload.tokenId, issuerPayload.tokenId);
-    assert.deepEqual(receiverPayload.user, launchPayload.user);
-    assert.deepEqual(receiverPayload.app, launchPayload.app);
-  });
-
-  test("rejects a tampered token", () => {
-    const { token } = createWorkspaceLaunchToken(launchPayload);
-    const finalCharacter = token.at(-1);
-    const tamperedToken = `${token.slice(0, -1)}${finalCharacter === "a" ? "b" : "a"}`;
-
-    assert.throws(
-      () =>
-        verifyWorkspaceLaunchTokenForApp(tamperedToken, {
-          secret: TEST_SECRET,
-          expectedAppSlug: "itf-flow",
-        }),
-      /signature/
-    );
-  });
-
-  test("rejects malformed tokens with extra segments", () => {
-    const { token } = createWorkspaceLaunchToken(launchPayload);
-
-    assert.throws(() => verifyWorkspaceLaunchToken(`${token}.extra`), /Invalid/);
-    assert.throws(
-      () =>
-        verifyWorkspaceLaunchTokenForApp(`${token}.extra`, {
-          secret: TEST_SECRET,
-          expectedAppSlug: "itf-flow",
-        }),
-      /Invalid/
-    );
-  });
-
-  test("rejects a token presented to another app", () => {
-    const { token } = createWorkspaceLaunchToken(launchPayload);
-
-    assert.throws(
-      () =>
-        verifyWorkspaceLaunchTokenForApp(token, {
-          secret: TEST_SECRET,
-          expectedAppSlug: "another-app",
-        }),
-      /another app/
-    );
-  });
-
-  test("rejects a token at its exact expiry boundary", () => {
-    const { token, expiresAt } = createWorkspaceLaunchToken(launchPayload);
-
-    assert.throws(
-      () =>
-        verifyWorkspaceLaunchTokenForApp(token, {
-          secret: TEST_SECRET,
-          expectedAppSlug: "itf-flow",
-          now: new Date(expiresAt * 1000),
-        }),
-      /expired/
-    );
-  });
-
-  test("requires the receiver secret", () => {
-    const { token } = createWorkspaceLaunchToken(launchPayload);
-
-    assert.throws(
-      () =>
-        verifyWorkspaceLaunchTokenForApp(token, {
-          secret: "",
-          expectedAppSlug: "itf-flow",
-        }),
-      /secret is required/
-    );
   });
 });
 
@@ -212,14 +86,10 @@ describe("app launch URL handling", () => {
     );
   });
 
-  test("extracts and removes a launch token without dropping other query values", () => {
-    const url =
-      "https://flow.example.test/start?mode=staff&workspace_launch_token=signed-token";
-
-    assert.equal(getWorkspaceLaunchTokenFromUrl(url), "signed-token");
+  test("appends the launch token without dropping configured query values", () => {
     assert.equal(
-      removeWorkspaceLaunchTokenFromUrl(url),
-      "https://flow.example.test/start?mode=staff"
+      appendWorkspaceLaunchToken("https://flow.example.test/start?mode=staff", "signed-token"),
+      "https://flow.example.test/start?mode=staff&workspace_launch_token=signed-token"
     );
   });
 });

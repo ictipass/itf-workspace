@@ -33,10 +33,26 @@ export type WorkspaceRuntimeConfiguration = {
   databaseUrl: string;
   authSecret?: string;
   authUrl?: string;
-  launchTokenSecret: string;
   emailConfigured: boolean;
   itfFlowDirectorySyncConfigured: boolean;
   sessionPolicy: WorkspaceSessionPolicyConfiguration;
+  launchV2: WorkspaceLaunchV2Configuration;
+  mfaConfigured: boolean;
+};
+
+export type WorkspaceLaunchSignerProvider = "ephemeral" | "software" | "kms";
+
+export type WorkspaceLaunchV2Configuration = {
+  mode: WorkspaceEnvironmentMode;
+  issuer: string;
+  signerProvider: WorkspaceLaunchSignerProvider;
+  activeKeyId?: string;
+  privateKeyPemBase64?: string;
+  kmsKeyId?: string;
+  additionalPublicJwks: readonly Record<string, unknown>[];
+  ttlSeconds: number;
+  clockSkewSeconds: number;
+  stepUpSeconds: number;
 };
 
 export type WorkspaceSessionPolicyConfiguration = {
@@ -48,10 +64,9 @@ export type WorkspaceSessionPolicyConfiguration = {
   recoveryGrantSeconds: number;
 };
 
-const DEVELOPMENT_LAUNCH_TOKEN_SECRET =
-  "development-only-workspace-launch-token-secret";
 const DEVELOPMENT_LOGIN_URL = "http://localhost:3000/login";
 const DEVELOPMENT_ITF_FLOW_URL = "http://localhost:3001/workspace/launch";
+const DEVELOPMENT_WORKSPACE_ISSUER = "http://localhost:3000";
 
 export class WorkspaceConfigurationError extends Error {
   readonly issues: readonly string[];
@@ -271,27 +286,114 @@ export function resolveWorkspaceSessionPolicy(
   };
 }
 
-export function resolveWorkspaceLaunchTokenSecret(
+export function resolveWorkspaceLaunchV2Configuration(
   environment: WorkspaceEnvironmentSource = process.env,
   options: ValidationOptions = {}
-) {
+): WorkspaceLaunchV2Configuration {
   const mode = resolveMode(environment, options);
   const issues: string[] = [];
-  const configuredSecret = readValue(environment, "WORKSPACE_LAUNCH_TOKEN_SECRET");
-
-  if (mode === "production" && !configuredSecret) {
-    issues.push("WORKSPACE_LAUNCH_TOKEN_SECRET is required in production.");
-  }
-
-  validateSecret(
-    "WORKSPACE_LAUNCH_TOKEN_SECRET",
-    configuredSecret,
-    mode,
+  const issuerValue =
+    readValue(environment, "WORKSPACE_LAUNCH_ISSUER") ??
+    (mode === "production" ? undefined : DEVELOPMENT_WORKSPACE_ISSUER);
+  const issuer = parseUrl(
+    "WORKSPACE_LAUNCH_ISSUER",
+    issuerValue,
+    mode === "production" ? ["https:"] : ["https:", "http:"],
     issues
   );
-  throwIfInvalid(issues);
+  if (!issuerValue) issues.push("WORKSPACE_LAUNCH_ISSUER is required in production.");
 
-  return configuredSecret ?? DEVELOPMENT_LAUNCH_TOKEN_SECRET;
+  const providerValue =
+    readValue(environment, "WORKSPACE_LAUNCH_SIGNER_PROVIDER") ??
+    (mode === "production" ? undefined : "ephemeral");
+  const signerProvider = ["ephemeral", "software", "kms"].includes(providerValue ?? "")
+    ? (providerValue as WorkspaceLaunchSignerProvider)
+    : undefined;
+  if (!providerValue) issues.push("WORKSPACE_LAUNCH_SIGNER_PROVIDER is required in production.");
+  else if (!signerProvider) {
+    issues.push("WORKSPACE_LAUNCH_SIGNER_PROVIDER must be ephemeral, software or kms.");
+  }
+  if (mode === "production" && signerProvider !== "kms") {
+    issues.push("Production WORKSPACE_LAUNCH_SIGNER_PROVIDER must be kms.");
+  }
+
+  const activeKeyId = readValue(environment, "WORKSPACE_LAUNCH_ACTIVE_KID");
+  const privateKeyPemBase64 = readValue(
+    environment,
+    "WORKSPACE_LAUNCH_PRIVATE_KEY_PEM_BASE64"
+  );
+  const kmsKeyId = readValue(environment, "WORKSPACE_LAUNCH_KMS_KEY_ID");
+  if (signerProvider === "software" && !privateKeyPemBase64) {
+    issues.push("WORKSPACE_LAUNCH_PRIVATE_KEY_PEM_BASE64 is required for the software signer.");
+  }
+  if ((signerProvider === "software" || signerProvider === "kms") && !activeKeyId) {
+    issues.push("WORKSPACE_LAUNCH_ACTIVE_KID is required for configured signing keys.");
+  }
+  if (signerProvider === "kms" && !kmsKeyId) {
+    issues.push("WORKSPACE_LAUNCH_KMS_KEY_ID is required for the KMS signer.");
+  }
+
+  const additionalPublicJwks: Record<string, unknown>[] = [];
+  const jwksValue = readValue(environment, "WORKSPACE_LAUNCH_ADDITIONAL_PUBLIC_JWKS_JSON");
+  if (jwksValue) {
+    try {
+      const parsed = JSON.parse(jwksValue) as { keys?: unknown };
+      if (!Array.isArray(parsed.keys)) throw new Error("keys must be an array");
+      for (const key of parsed.keys) {
+        if (!key || typeof key !== "object" || Array.isArray(key)) {
+          throw new Error("each key must be an object");
+        }
+        const value = key as Record<string, unknown>;
+        if (["d", "p", "q", "dp", "dq", "qi", "oth"].some((name) => name in value)) {
+          throw new Error("private key members are prohibited");
+        }
+        additionalPublicJwks.push(value);
+      }
+    } catch {
+      issues.push(
+        "WORKSPACE_LAUNCH_ADDITIONAL_PUBLIC_JWKS_JSON must be a public-only JWK Set."
+      );
+    }
+  }
+
+  const ttlSeconds = readInteger(
+    environment,
+    "WORKSPACE_LAUNCH_TTL_SECONDS",
+    120,
+    30,
+    300,
+    issues
+  );
+  const clockSkewSeconds = readInteger(
+    environment,
+    "WORKSPACE_LAUNCH_CLOCK_SKEW_SECONDS",
+    30,
+    0,
+    60,
+    issues
+  );
+  const stepUpSeconds = readInteger(
+    environment,
+    "WORKSPACE_MFA_STEP_UP_SECONDS",
+    600,
+    60,
+    3600,
+    issues
+  );
+
+  throwIfInvalid(issues);
+  return {
+    mode,
+    issuer: issuer!,
+    signerProvider: signerProvider!,
+    activeKeyId,
+    privateKeyPemBase64,
+    kmsKeyId,
+    additionalPublicJwks,
+    ttlSeconds,
+    clockSkewSeconds,
+    stepUpSeconds,
+  };
 }
 
 export function resolveWorkspaceDatabaseUrl(
@@ -415,6 +517,13 @@ export function validateWorkspaceRuntimeEnvironment(
     if (error instanceof WorkspaceConfigurationError) issues.push(...error.issues);
     else throw error;
   }
+  let launchV2: WorkspaceLaunchV2Configuration | undefined;
+  try {
+    launchV2 = resolveWorkspaceLaunchV2Configuration(environment, { mode });
+  } catch (error) {
+    if (error instanceof WorkspaceConfigurationError) issues.push(...error.issues);
+    else throw error;
+  }
   let databaseUrl: string | undefined;
   try {
     databaseUrl = resolveWorkspaceDatabaseUrl(environment);
@@ -448,17 +557,21 @@ export function validateWorkspaceRuntimeEnvironment(
 
   validateSecret("AUTH_SECRET", authSecret, mode, issues);
 
+  const mfaEncryptionKey = readValue(environment, "WORKSPACE_MFA_ENCRYPTION_KEY_BASE64");
+  if (mode === "production" && !mfaEncryptionKey) {
+    issues.push("WORKSPACE_MFA_ENCRYPTION_KEY_BASE64 is required in production.");
+  }
+  if (mfaEncryptionKey) {
+    try {
+      if (Buffer.from(mfaEncryptionKey, "base64").length !== 32) throw new Error();
+    } catch {
+      issues.push("WORKSPACE_MFA_ENCRYPTION_KEY_BASE64 must decode to exactly 32 bytes.");
+    }
+  }
+
   const trustHost = readValue(environment, "AUTH_TRUST_HOST");
   if (trustHost && !["true", "false", "1", "0"].includes(trustHost.toLowerCase())) {
     issues.push("AUTH_TRUST_HOST must be true, false, 1 or 0 when configured.");
-  }
-
-  let launchTokenSecret = DEVELOPMENT_LAUNCH_TOKEN_SECRET;
-  try {
-    launchTokenSecret = resolveWorkspaceLaunchTokenSecret(environment, { mode });
-  } catch (error) {
-    if (error instanceof WorkspaceConfigurationError) issues.push(...error.issues);
-    else throw error;
   }
 
   const emailValuesPresent = Boolean(
@@ -512,7 +625,6 @@ export function validateWorkspaceRuntimeEnvironment(
     databaseUrl: databaseUrl!,
     authSecret,
     authUrl,
-    launchTokenSecret,
     emailConfigured: emailRequired || emailValuesPresent,
     itfFlowDirectorySyncConfigured: Boolean(
       (readValue(environment, "ITF_FLOW_URL") ||
@@ -520,6 +632,8 @@ export function validateWorkspaceRuntimeEnvironment(
         readValue(environment, "WORKSPACE_DIRECTORY_SYNC_SECRET")
     ),
     sessionPolicy: sessionPolicy!,
+    launchV2: launchV2!,
+    mfaConfigured: Boolean(mfaEncryptionKey),
   };
 }
 

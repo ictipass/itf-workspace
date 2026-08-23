@@ -57,6 +57,7 @@ export default async function AdminAppsPage() {
                 <TableHead>App</TableHead>
                 <TableHead>Category</TableHead>
                 <TableHead>Environment</TableHead>
+                <TableHead>Assurance</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>URL</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
@@ -66,7 +67,7 @@ export default async function AdminAppsPage() {
             <TableBody>
               {apps.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="h-24 text-center">
+                  <TableCell colSpan={7} className="h-24 text-center">
                     No apps registered yet.
                   </TableCell>
                 </TableRow>
@@ -81,6 +82,7 @@ export default async function AdminAppsPage() {
                       <Badge variant="outline">{app.category}</Badge>
                     </TableCell>
                     <TableCell>{app.environment}</TableCell>
+                    <TableCell><Badge variant={app.assuranceRequirement === "SENSITIVE" ? "destructive" : "outline"}>{app.assuranceRequirement}</Badge></TableCell>
                     <TableCell>
                       <Badge variant={app.status === "ACTIVE" ? "default" : "secondary"}>
                         {app.status}

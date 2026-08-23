@@ -63,6 +63,11 @@ enum AppAccessStatus {
   PENDING
 }
 
+enum AssuranceRequirement {
+  STANDARD
+  SENSITIVE
+}
+
 enum AuditAction {
   LOGIN
   LOGOUT
@@ -74,6 +79,10 @@ enum AuditAction {
   USER_CREATED
   USER_UPDATED
   SESSION_TERMINATED
+  MFA_ENROLLED
+  MFA_VERIFIED
+  APP_ROLE_POLICY_CREATED
+  APP_ROLE_POLICY_UPDATED
 }
 
 enum WorkspaceSessionRevocationReason {
@@ -122,6 +131,12 @@ model User {
   workspaceSessions     WorkspaceSession[]
   sessionRecoveryGrants WorkspaceSessionRecoveryGrant[]
 
+  totpSecretCiphertext        String?
+  totpEnrolledAt              DateTime?
+  totpPendingSecretCiphertext String?
+  totpPendingExpiresAt        DateTime?
+  totpLastUsedCounter         BigInt?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -138,6 +153,9 @@ model WorkspaceSession {
   lastActivityAt    DateTime @default(now())
   idleExpiresAt     DateTime
   absoluteExpiresAt DateTime
+
+  mfaAuthenticatedAt    DateTime?
+  authenticationMethods String[]  @default(["pwd"])
 
   revokedAt    DateTime?
   revokeReason WorkspaceSessionRevocationReason?
@@ -252,7 +270,11 @@ model App {
   environment AppEnvironment @default(PRODUCTION)
   status      AppStatus      @default(ACTIVE)
 
-  accessRules AppAccess[]
+  assuranceRequirement AssuranceRequirement @default(STANDARD)
+  launchAudience       String               @unique
+
+  accessRules  AppAccess[]
+  rolePolicies AppRolePolicy[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -267,7 +289,7 @@ model AppAccess {
   appId String
   app   App    @relation(fields: [appId], references: [id], onDelete: Cascade)
 
-  appRole String?
+  appRole String
   status  AppAccessStatus @default(ACTIVE)
 
   grantedById String?
@@ -277,6 +299,23 @@ model AppAccess {
   @@unique([userId, appId])
   @@index([userId])
   @@index([appId])
+}
+
+model AppRolePolicy {
+  id String @id @default(cuid())
+
+  appId String
+  app   App    @relation(fields: [appId], references: [id], onDelete: Cascade)
+
+  roleCode             String
+  assuranceRequirement AssuranceRequirement @default(STANDARD)
+  isActive             Boolean              @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([appId, roleCode])
+  @@index([appId, isActive])
 }
 
 model AuditLog {

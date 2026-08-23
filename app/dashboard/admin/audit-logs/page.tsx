@@ -41,6 +41,10 @@ const AUDIT_COLORS: Record<AuditAction, "default" | "secondary" | "destructive" 
   USER_CREATED: "default",
   USER_UPDATED: "secondary",
   SESSION_TERMINATED: "destructive",
+  MFA_ENROLLED: "default",
+  MFA_VERIFIED: "secondary",
+  APP_ROLE_POLICY_CREATED: "default",
+  APP_ROLE_POLICY_UPDATED: "secondary",
 };
 
 export default async function AuditLogsPage({ searchParams }: Props) {

@@ -7,6 +7,7 @@ import {
   AppStatus,
   UserStatus,
   WorkspaceRole,
+  AssuranceRequirement,
 } from "@/lib/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { resolveWorkspaceSeedConfiguration } from "@/lib/config/workspace-environment";
@@ -46,6 +47,18 @@ async function main() {
       category: AppCategory.WORKFLOW,
       environment: AppEnvironment.DEVELOPMENT,
       status: AppStatus.ACTIVE,
+      assuranceRequirement: AssuranceRequirement.STANDARD,
+      launchAudience: "itf-flow",
+    },
+  });
+
+  await prisma.appRolePolicy.upsert({
+    where: { appId_roleCode: { appId: flow.id, roleCode: "SYSTEM_ADMIN" } },
+    update: { assuranceRequirement: AssuranceRequirement.SENSITIVE, isActive: true },
+    create: {
+      appId: flow.id,
+      roleCode: "SYSTEM_ADMIN",
+      assuranceRequirement: AssuranceRequirement.SENSITIVE,
     },
   });
 

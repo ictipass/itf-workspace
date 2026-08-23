@@ -8,9 +8,10 @@ import {
   AppStatus,
   AuditAction,
   WorkspaceRole,
+  AssuranceRequirement,
 } from "@/lib/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
-import { requireCurrentUser } from "@/lib/auth/current-user";
+import { requireCurrentUser, requireFreshMfaContext } from "@/lib/auth/current-user";
 import { normalizeAppLaunchUrl } from "@/lib/apps/launch-url";
 
 const appLaunchUrlSchema = z.string().trim().min(1).refine(
@@ -34,6 +35,10 @@ const appSchema = z.object({
   category: z.nativeEnum(AppCategory),
   environment: z.nativeEnum(AppEnvironment),
   status: z.nativeEnum(AppStatus),
+  assuranceRequirement: z.nativeEnum(AssuranceRequirement),
+  launchAudience: z.string().trim().min(2).max(200),
+  initialRoleCode: z.string().trim().min(2).max(64).regex(/^[A-Za-z0-9_-]+$/),
+  initialRoleAssurance: z.nativeEnum(AssuranceRequirement),
 });
 
 export type AppActionState = {
@@ -51,6 +56,11 @@ export async function createAppAction(
   if (user.workspaceRole !== WorkspaceRole.SYSTEM_ADMIN) {
     return { success: false, message: "Only System Administrators can create apps." };
   }
+  try {
+    await requireFreshMfaContext();
+  } catch {
+    return { success: false, message: "Fresh TOTP verification is required to create an application." };
+  }
 
   const parsed = appSchema.safeParse({
     name: formData.get("name"),
@@ -61,6 +71,10 @@ export async function createAppAction(
     category: formData.get("category"),
     environment: formData.get("environment"),
     status: formData.get("status"),
+    assuranceRequirement: formData.get("assuranceRequirement"),
+    launchAudience: formData.get("launchAudience"),
+    initialRoleCode: formData.get("initialRoleCode"),
+    initialRoleAssurance: formData.get("initialRoleAssurance"),
   });
 
   if (!parsed.success) {
@@ -82,22 +96,29 @@ export async function createAppAction(
     };
   }
 
-  const app = await prisma.app.create({
-    data: {
-      ...parsed.data,
-      url: normalizeAppLaunchUrl(parsed.data.url),
-    },
-  });
-
-  await prisma.auditLog.create({
-    data: {
-      actorId: user.id,
-      action: AuditAction.APP_CREATED,
-      metadata: {
-        appId: app.id,
-        appName: app.name,
+  const { initialRoleCode, initialRoleAssurance, ...appData } = parsed.data;
+  await prisma.$transaction(async (transaction) => {
+    const created = await transaction.app.create({
+      data: {
+        ...appData,
+        url: normalizeAppLaunchUrl(appData.url),
       },
-    },
+    });
+    await transaction.appRolePolicy.create({
+      data: {
+        appId: created.id,
+        roleCode: initialRoleCode.toUpperCase(),
+        assuranceRequirement: initialRoleAssurance,
+      },
+    });
+    await transaction.auditLog.create({
+      data: {
+        actorId: user.id,
+        action: AuditAction.APP_CREATED,
+        metadata: { appId: created.id, appName: created.name, assuranceRequirement: created.assuranceRequirement },
+      },
+    });
+    return created;
   });
 
   revalidatePath("/dashboard");
@@ -110,9 +131,7 @@ export async function createAppAction(
 }
 
 
-const updateAppSchema = appSchema.extend({
-  id: z.string().min(1),
-});
+const updateAppSchema = appSchema.omit({ initialRoleCode: true, initialRoleAssurance: true }).extend({ id: z.string().min(1) });
 
 export async function updateAppAction(
   _prevState: AppActionState,
@@ -122,6 +141,11 @@ export async function updateAppAction(
 
   if (user.workspaceRole !== WorkspaceRole.SYSTEM_ADMIN) {
     return { success: false, message: "Only System Administrators can update apps." };
+  }
+  try {
+    await requireFreshMfaContext();
+  } catch {
+    return { success: false, message: "Fresh TOTP verification is required to update an application." };
   }
 
   const parsed = updateAppSchema.safeParse({
@@ -134,6 +158,8 @@ export async function updateAppAction(
     category: formData.get("category"),
     environment: formData.get("environment"),
     status: formData.get("status"),
+    assuranceRequirement: formData.get("assuranceRequirement"),
+    launchAudience: formData.get("launchAudience"),
   });
 
   if (!parsed.success) {
@@ -179,6 +205,7 @@ export async function deactivateAppAction(formData: FormData) {
   if (user.workspaceRole !== WorkspaceRole.SYSTEM_ADMIN) {
     throw new Error("Unauthorized");
   }
+  await requireFreshMfaContext();
 
   const id = String(formData.get("id") || "");
 
@@ -208,4 +235,35 @@ export async function deactivateAppAction(formData: FormData) {
   revalidatePath("/dashboard");
   revalidatePath("/dashboard/apps");
   revalidatePath("/dashboard/admin/apps");
+}
+
+const rolePolicySchema = z.object({
+  appId: z.string().min(1),
+  roleCode: z.string().trim().min(2).max(64).regex(/^[A-Za-z0-9_-]+$/),
+  assuranceRequirement: z.nativeEnum(AssuranceRequirement),
+});
+
+export async function upsertAppRolePolicyAction(formData: FormData) {
+  const context = await requireFreshMfaContext();
+  if (context.user.workspaceRole !== WorkspaceRole.SYSTEM_ADMIN) throw new Error("Unauthorized");
+  const parsed = rolePolicySchema.safeParse(Object.fromEntries(formData));
+  if (!parsed.success) throw new Error("A valid role code and assurance classification are required.");
+  const roleCode = parsed.data.roleCode.toUpperCase();
+  const existing = await prisma.appRolePolicy.findUnique({
+    where: { appId_roleCode: { appId: parsed.data.appId, roleCode } },
+  });
+  const policy = await prisma.appRolePolicy.upsert({
+    where: { appId_roleCode: { appId: parsed.data.appId, roleCode } },
+    create: { appId: parsed.data.appId, roleCode, assuranceRequirement: parsed.data.assuranceRequirement },
+    update: { assuranceRequirement: parsed.data.assuranceRequirement, isActive: true },
+  });
+  await prisma.auditLog.create({
+    data: {
+      actorId: context.user.id,
+      action: existing ? AuditAction.APP_ROLE_POLICY_UPDATED : AuditAction.APP_ROLE_POLICY_CREATED,
+      metadata: { appId: policy.appId, roleCode, assuranceRequirement: policy.assuranceRequirement },
+    },
+  });
+  revalidatePath(`/dashboard/admin/apps/${policy.appId}/edit`);
+  revalidatePath("/dashboard/admin/access");
 }

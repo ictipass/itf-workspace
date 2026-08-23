@@ -5,6 +5,7 @@ import {
   AppCategory,
   AppEnvironment,
   AppStatus,
+  AssuranceRequirement,
 } from "@/lib/generated/prisma/enums";
 import { updateAppAction, AppActionState } from "./actions";
 import AppUrlTestButton from "./app-url-test-button";
@@ -28,6 +29,8 @@ type EditableApp = {
   category: AppCategory;
   environment: AppEnvironment;
   status: AppStatus;
+  assuranceRequirement: AssuranceRequirement;
+  launchAudience: string;
 };
 
 export default function AppEditForm({ app }: { app: EditableApp }) {
@@ -45,6 +48,7 @@ export default function AppEditForm({ app }: { app: EditableApp }) {
 
       <Field label="Name" name="name" defaultValue={app.name} />
       <Field label="Slug" name="slug" defaultValue={app.slug} />
+      <Field label="Launch Audience" name="launchAudience" defaultValue={app.launchAudience} description="Stable audience validated by the child app; independent of its URL." />
       <Field
         label="Canonical Launch URL"
         name="url"
@@ -65,6 +69,7 @@ export default function AppEditForm({ app }: { app: EditableApp }) {
 
       <EnumSelect name="category" label="Category" values={Object.values(AppCategory)} defaultValue={app.category} />
       <EnumSelect name="environment" label="Environment" values={Object.values(AppEnvironment)} defaultValue={app.environment} />
+      <EnumSelect name="assuranceRequirement" label="Application Assurance" values={Object.values(AssuranceRequirement)} defaultValue={app.assuranceRequirement} />
       <EnumSelect name="status" label="Status" values={Object.values(AppStatus)} defaultValue={app.status} />
 
       <Button type="submit" disabled={isPending}>

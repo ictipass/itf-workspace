@@ -15,7 +15,11 @@ const validProductionEnvironment = {
   AUTH_SECRET: "a".repeat(40),
   AUTH_URL: "https://workspace.example.test",
   AUTH_TRUST_HOST: "true",
-  WORKSPACE_LAUNCH_TOKEN_SECRET: "b".repeat(40),
+  WORKSPACE_LAUNCH_ISSUER: "https://workspace.example.test",
+  WORKSPACE_LAUNCH_SIGNER_PROVIDER: "kms",
+  WORKSPACE_LAUNCH_ACTIVE_KID: "workspace-2026-08",
+  WORKSPACE_LAUNCH_KMS_KEY_ID: "provider-key-reference",
+  WORKSPACE_MFA_ENCRYPTION_KEY_BASE64: Buffer.alloc(32, 1).toString("base64"),
   RESEND_API_KEY: `re_${"c".repeat(32)}`,
   RESEND_FROM_EMAIL: "ITF Workspace <workspace@example.test>",
   ITF_FLOW_URL: "https://flow.example.test/workspace/launch",
@@ -30,10 +34,7 @@ describe("Workspace runtime configuration", () => {
     });
 
     assert.equal(configuration.mode, "development");
-    assert.equal(
-      configuration.launchTokenSecret,
-      "development-only-workspace-launch-token-secret"
-    );
+    assert.equal(configuration.launchV2.signerProvider, "ephemeral");
     assert.equal(configuration.emailConfigured, false);
     assert.equal(configuration.itfFlowDirectorySyncConfigured, false);
   });
@@ -61,7 +62,9 @@ describe("Workspace runtime configuration", () => {
         assert.match(error.message, /DATABASE_URL/);
         assert.match(error.message, /AUTH_SECRET or NEXTAUTH_SECRET/);
         assert.match(error.message, /AUTH_URL or NEXTAUTH_URL/);
-        assert.match(error.message, /WORKSPACE_LAUNCH_TOKEN_SECRET/);
+        assert.match(error.message, /WORKSPACE_LAUNCH_ISSUER/);
+        assert.match(error.message, /WORKSPACE_LAUNCH_SIGNER_PROVIDER/);
+        assert.match(error.message, /WORKSPACE_MFA_ENCRYPTION_KEY_BASE64/);
         assert.match(error.message, /RESEND_API_KEY/);
         assert.match(error.message, /RESEND_FROM_EMAIL/);
         return true;

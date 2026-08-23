@@ -56,6 +56,11 @@ export default async function AppAccessPage() {
         id: true,
         name: true,
         slug: true,
+        rolePolicies: {
+          where: { isActive: true },
+          select: { roleCode: true, assuranceRequirement: true },
+          orderBy: { roleCode: "asc" },
+        },
       },
       orderBy: {
         name: "asc",
@@ -127,7 +132,7 @@ export default async function AppAccessPage() {
                       </div>
                     </TableCell>
 
-                    <TableCell>{access.appRole ?? "N/A"}</TableCell>
+                    <TableCell>{access.appRole}</TableCell>
 
                     <TableCell>
                       <Badge
