@@ -29,7 +29,7 @@ retry-policy coverage. Live outage and duplicate-delivery behavior remains a sta
 
 ## Verification
 
-- `npm.cmd run test:security`: passed, 42 tests across 8 suites.
+- `npm.cmd run test:security`: passed, 44 tests across 8 suites.
 - ITF Flow `npm.cmd run test:security`: passed, 21 tests.
 - `npx.cmd prisma validate`: passed.
 - `npm.cmd run lint`: passed.
@@ -41,7 +41,9 @@ Implementation commit: `444287a`.
 ## Data, configuration and UI effects
 
 - Database migration: none.
-- New environment variables: none. Tests use an isolated test secret and restore the process environment afterward.
+- Optional environment variable: `WORKSPACE_SERVER_ACTION_ALLOWED_ORIGINS` adds exact, approved `host[:port]` values
+  for reverse-proxy or development-tunnel Server Action requests. Schemes, paths, credentials and wildcards fail
+  configuration validation.
 - Runtime UI: no visible change.
 - Operational effect: maintainers can run `npm run test:security` for fast boundary checks or `npm run verify` for the
   full schema, security-test, lint and production-build gate.
@@ -65,6 +67,9 @@ Implementation commit: `444287a`.
   Workspace tests across eight suites and 21 ITF Flow security tests.
 - W25 increment `ce680e0` adds fail-closed HR master-list Workspace-role coverage. The Workspace suite now contains 42
   tests across eight suites.
+- W09 local proxy-origin increment `a6a90ab` adds two configuration tests for exact allowlisting and rejection of broad
+  or URL-shaped entries. The Workspace suite now contains 44 tests across eight suites. This increment does not resolve
+  the D13-D14 production deployment-policy gate.
 
 ## Rollback
 

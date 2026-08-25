@@ -46,17 +46,21 @@ Staging needs distinct values for:
   `WORKSPACE_OUTBOX_WORKER_SECRET`, its launch issuer/signing configuration, and the approved worker scheduler.
 - Flow: matching directory/interoperability credentials plus `WORKSPACE_LAUNCH_ISSUER`,
   `WORKSPACE_LAUNCH_AUDIENCE` and `WORKSPACE_LAUNCH_JWKS_URL`.
+- If Workspace is reached through a reverse proxy whose forwarded host differs from the browser origin, Workspace:
+  `WORKSPACE_SERVER_ACTION_ALLOWED_ORIGINS` containing only the specifically approved browser `host[:port]` values.
 
 Do not copy production credentials into development/staging or reuse one credential for directory and session-event
 APIs. Production launch signing remains blocked until the approved KMS/HSM adapter is available.
 
+The local development-tunnel allowance in `a6a90ab` is not staging acceptance evidence and does not approve a wildcard
+proxy domain. Changing the tunnel hostname requires an explicit configuration update and a Workspace restart.
+
 ## Verification evidence
 
-- Workspace: TypeScript and ESLint pass; production build passes; 40/40 security and contract tests pass.
+- Workspace: TypeScript and ESLint pass; production build passes; 44/44 security and contract tests pass.
 - ITF Flow: TypeScript and ESLint pass; production build passes; 21/21 security and contract tests pass.
 - Local databases: Workspace's 8 migrations and Flow's 28 migrations are applied and current.
-- Workspace environment validation passes development rules but reports Flow directory synchronization as not
-  configured.
+- Workspace environment validation passes development rules and reports Flow directory synchronization configured.
 - Flow reaches PostgreSQL but correctly fails environment readiness because launch issuer, audience and JWKS URL are
   absent.
 
