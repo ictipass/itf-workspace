@@ -8,7 +8,7 @@
     "dev:turbopack": "next dev",
     "postinstall": "prisma generate",
     "db:seed": "tsx prisma/seed.ts",
-    "build": "next build",
+    "build": "prisma generate && next build",
     "start": "next start",
     "lint": "eslint",
     "config:check": "tsx scripts/validate-environment.ts",
