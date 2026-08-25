@@ -80,6 +80,8 @@ export type WorkspaceSessionPolicyConfiguration = {
   recoveryGrantSeconds: number;
 };
 
+export type WorkspaceServerActionOriginConfiguration = readonly string[];
+
 const DEVELOPMENT_LOGIN_URL = "http://localhost:3000/login";
 const DEVELOPMENT_ITF_FLOW_URL = "http://localhost:3001/workspace/launch";
 const DEVELOPMENT_WORKSPACE_ISSUER = "http://localhost:3000";
@@ -228,6 +230,57 @@ function readInteger(
   }
 
   return parsed;
+}
+
+export function resolveWorkspaceServerActionAllowedOrigins(
+  environment: WorkspaceEnvironmentSource = process.env
+): WorkspaceServerActionOriginConfiguration {
+  const configured = readValue(
+    environment,
+    "WORKSPACE_SERVER_ACTION_ALLOWED_ORIGINS"
+  );
+  if (!configured) return [];
+
+  const issues: string[] = [];
+  const origins = new Set<string>();
+
+  for (const candidate of configured.split(",").map((value) => value.trim())) {
+    if (!candidate) {
+      issues.push(
+        "WORKSPACE_SERVER_ACTION_ALLOWED_ORIGINS must not contain empty entries."
+      );
+      continue;
+    }
+    if (
+      candidate.includes("://") ||
+      candidate.includes("/") ||
+      candidate.includes("@") ||
+      candidate.includes("*") ||
+      candidate.includes("?") ||
+      candidate.includes("#") ||
+      /\s/.test(candidate)
+    ) {
+      issues.push(
+        "WORKSPACE_SERVER_ACTION_ALLOWED_ORIGINS entries must be exact host[:port] values without schemes, paths, credentials or wildcards."
+      );
+      continue;
+    }
+
+    try {
+      const parsed = new URL(`https://${candidate}`);
+      if (!parsed.hostname || parsed.pathname !== "/" || parsed.search || parsed.hash) {
+        throw new Error("invalid origin");
+      }
+      origins.add(parsed.host.toLowerCase());
+    } catch {
+      issues.push(
+        "WORKSPACE_SERVER_ACTION_ALLOWED_ORIGINS contains an invalid host[:port] value."
+      );
+    }
+  }
+
+  throwIfInvalid(issues);
+  return [...origins];
 }
 
 export function resolveWorkspaceSessionPolicy(
@@ -605,6 +658,12 @@ export function validateWorkspaceRuntimeEnvironment(
 ): WorkspaceRuntimeConfiguration {
   const mode = resolveMode(environment, options);
   const issues: string[] = [];
+  try {
+    resolveWorkspaceServerActionAllowedOrigins(environment);
+  } catch (error) {
+    if (error instanceof WorkspaceConfigurationError) issues.push(...error.issues);
+    else throw error;
+  }
   let sessionPolicy: WorkspaceSessionPolicyConfiguration | undefined;
   try {
     sessionPolicy = resolveWorkspaceSessionPolicy(environment);

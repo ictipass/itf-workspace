@@ -5,6 +5,7 @@ import {
   resolveItfFlowDirectorySyncConfiguration,
   resolveItfFlowSessionEventConfiguration,
   resolveWorkspaceEmailConfiguration,
+  resolveWorkspaceServerActionAllowedOrigins,
   resolveWorkspaceSeedConfiguration,
   validateWorkspaceRuntimeEnvironment,
   WorkspaceConfigurationError,
@@ -30,6 +31,33 @@ const validProductionEnvironment = {
 };
 
 describe("Workspace runtime configuration", () => {
+  test("accepts only exact additional Server Action origins", () => {
+    assert.deepEqual(
+      resolveWorkspaceServerActionAllowedOrigins({
+        WORKSPACE_SERVER_ACTION_ALLOWED_ORIGINS:
+          "localhost:3000, M011SSFN-3000.UKS1.DEVTUNNELS.MS,localhost:3000",
+      }),
+      ["localhost:3000", "m011ssfn-3000.uks1.devtunnels.ms"]
+    );
+  });
+
+  test("rejects broad or URL-shaped Server Action origins", () => {
+    for (const value of [
+      "*.devtunnels.ms",
+      "https://workspace.example.test",
+      "workspace.example.test/login",
+      "user@workspace.example.test",
+    ]) {
+      assert.throws(
+        () =>
+          resolveWorkspaceServerActionAllowedOrigins({
+            WORKSPACE_SERVER_ACTION_ALLOWED_ORIGINS: value,
+          }),
+        /exact host\[:port\]/
+      );
+    }
+  });
+
   test("keeps explicit development defaults limited to development", () => {
     const configuration = validateWorkspaceRuntimeEnvironment({
       NODE_ENV: "development",
