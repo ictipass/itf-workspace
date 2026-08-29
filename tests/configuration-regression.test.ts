@@ -13,6 +13,7 @@ import {
 
 const validProductionEnvironment = {
   NODE_ENV: "production",
+  WORKSPACE_DEPLOYMENT_STAGE: "production",
   DATABASE_URL: "postgresql://workspace:password@database.example.test/workspace",
   AUTH_SECRET: "a".repeat(40),
   AUTH_URL: "https://workspace.example.test",
@@ -28,6 +29,23 @@ const validProductionEnvironment = {
   WORKSPACE_DIRECTORY_SYNC_SECRET: "d".repeat(40),
   WORKSPACE_INTEROP_SECRET: "e".repeat(40),
   WORKSPACE_OUTBOX_WORKER_SECRET: "f".repeat(40),
+};
+
+const validStagingEnvironment = {
+  ...validProductionEnvironment,
+  VERCEL: "1",
+  VERCEL_ENV: "preview",
+  VERCEL_TARGET_ENV: "preview",
+  WORKSPACE_DEPLOYMENT_STAGE: "staging",
+  AUTH_URL: "https://workspace-staging.example.test",
+  WORKSPACE_LAUNCH_ISSUER: "https://workspace-staging.example.test",
+  WORKSPACE_LAUNCH_SIGNER_PROVIDER: "software",
+  WORKSPACE_LAUNCH_ACTIVE_KID: "workspace-staging-2026-08",
+  WORKSPACE_LAUNCH_PRIVATE_KEY_PEM_BASE64: Buffer.from(
+    "staging-private-key-fixture"
+  ).toString("base64"),
+  WORKSPACE_LAUNCH_KMS_KEY_ID: undefined,
+  ITF_FLOW_URL: "https://flow-staging.example.test/workspace/launch",
 };
 
 describe("Workspace runtime configuration", () => {
@@ -68,6 +86,70 @@ describe("Workspace runtime configuration", () => {
     assert.equal(configuration.launchV2.signerProvider, "ephemeral");
     assert.equal(configuration.emailConfigured, false);
     assert.equal(configuration.itfFlowDirectorySyncConfigured, false);
+  });
+
+  test("treats an explicitly identified Vercel Preview branch as staging", () => {
+    const configuration = validateWorkspaceRuntimeEnvironment(
+      validStagingEnvironment
+    );
+
+    assert.equal(configuration.mode, "staging");
+    assert.equal(configuration.launchV2.signerProvider, "software");
+    assert.equal(
+      configuration.authUrl,
+      "https://workspace-staging.example.test/"
+    );
+  });
+
+  test("requires an explicit deployment stage on Vercel", () => {
+    assert.throws(
+      () =>
+        validateWorkspaceRuntimeEnvironment({
+          NODE_ENV: "production",
+          VERCEL: "1",
+          VERCEL_ENV: "preview",
+          VERCEL_TARGET_ENV: "preview",
+        }),
+      /WORKSPACE_DEPLOYMENT_STAGE is required for Vercel deployments/
+    );
+  });
+
+  test("prevents Vercel environment and Workspace stage mismatches", () => {
+    assert.throws(
+      () =>
+        validateWorkspaceRuntimeEnvironment({
+          ...validStagingEnvironment,
+          VERCEL_ENV: "production",
+        }),
+      /Vercel Production deployments require WORKSPACE_DEPLOYMENT_STAGE=production/
+    );
+    assert.throws(
+      () =>
+        validateWorkspaceRuntimeEnvironment({
+          ...validProductionEnvironment,
+          VERCEL: "1",
+          VERCEL_ENV: "preview",
+          VERCEL_TARGET_ENV: "preview",
+        }),
+      /Vercel Preview deployments cannot use WORKSPACE_DEPLOYMENT_STAGE=production/
+    );
+  });
+
+  test("rejects ephemeral signing and insecure URLs in staging", () => {
+    assert.throws(
+      () =>
+        validateWorkspaceRuntimeEnvironment({
+          ...validStagingEnvironment,
+          WORKSPACE_LAUNCH_SIGNER_PROVIDER: "ephemeral",
+          AUTH_URL: "http://workspace-staging.example.test",
+        }),
+      (error) => {
+        assert.ok(error instanceof WorkspaceConfigurationError);
+        assert.match(error.message, /Staging WORKSPACE_LAUNCH_SIGNER_PROVIDER/);
+        assert.match(error.message, /AUTH_URL must use https:/);
+        return true;
+      }
+    );
   });
 
   test("accepts complete production configuration without exposing secrets", () => {
@@ -125,6 +207,17 @@ describe("Workspace runtime configuration", () => {
           AUTH_SECRET: "replace-with-a-random-secret-of-at-least-32-characters",
         }),
       /AUTH_SECRET contains a documented placeholder value/
+    );
+  });
+
+  test("prohibits an exportable software private key in production", () => {
+    assert.throws(
+      () =>
+        validateWorkspaceRuntimeEnvironment({
+          ...validProductionEnvironment,
+          WORKSPACE_LAUNCH_PRIVATE_KEY_PEM_BASE64: "private-key-material",
+        }),
+      /WORKSPACE_LAUNCH_PRIVATE_KEY_PEM_BASE64 must be empty in production/
     );
   });
 

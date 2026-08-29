@@ -12,10 +12,10 @@ const requestedMode = environmentArgument?.split("=", 2)[1];
 
 if (
   requestedMode &&
-  !["development", "test", "production"].includes(requestedMode)
+  !["development", "test", "staging", "production"].includes(requestedMode)
 ) {
   throw new Error(
-    "--environment must be development, test or production when provided."
+    "--environment must be development, test, staging or production when provided."
   );
 }
 

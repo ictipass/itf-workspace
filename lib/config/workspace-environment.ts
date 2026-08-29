@@ -1,4 +1,8 @@
-export type WorkspaceEnvironmentMode = "development" | "test" | "production";
+export type WorkspaceEnvironmentMode =
+  | "development"
+  | "test"
+  | "staging"
+  | "production";
 
 export type WorkspaceEnvironmentSource = Readonly<
   Record<string, string | undefined>
@@ -90,10 +94,22 @@ export class WorkspaceConfigurationError extends Error {
   readonly issues: readonly string[];
 
   constructor(issues: readonly string[]) {
-    super(`Invalid Workspace configuration:\n- ${issues.join("\n- ")}`);
+    const uniqueIssues = [...new Set(issues)];
+    super(`Invalid Workspace configuration:\n- ${uniqueIssues.join("\n- ")}`);
     this.name = "WorkspaceConfigurationError";
-    this.issues = issues;
+    this.issues = uniqueIssues;
   }
+}
+
+const WORKSPACE_ENVIRONMENT_MODES: readonly WorkspaceEnvironmentMode[] = [
+  "development",
+  "test",
+  "staging",
+  "production",
+];
+
+function isDeployedMode(mode: WorkspaceEnvironmentMode) {
+  return mode === "staging" || mode === "production";
 }
 
 function resolveMode(
@@ -101,6 +117,42 @@ function resolveMode(
   options: ValidationOptions
 ): WorkspaceEnvironmentMode {
   if (options.mode) return options.mode;
+
+  const configuredStage = environment.WORKSPACE_DEPLOYMENT_STAGE?.trim();
+  if (
+    configuredStage &&
+    !WORKSPACE_ENVIRONMENT_MODES.includes(
+      configuredStage as WorkspaceEnvironmentMode
+    )
+  ) {
+    throw new WorkspaceConfigurationError([
+      "WORKSPACE_DEPLOYMENT_STAGE must be development, test, staging or production.",
+    ]);
+  }
+
+  const stage = configuredStage as WorkspaceEnvironmentMode | undefined;
+  const vercelEnvironment = environment.VERCEL_ENV?.trim();
+  const vercelTargetEnvironment = environment.VERCEL_TARGET_ENV?.trim();
+  const onVercel =
+    environment.VERCEL === "1" ||
+    Boolean(vercelEnvironment || vercelTargetEnvironment);
+
+  if (onVercel && !stage) {
+    throw new WorkspaceConfigurationError([
+      "WORKSPACE_DEPLOYMENT_STAGE is required for Vercel deployments.",
+    ]);
+  }
+  if (vercelEnvironment === "production" && stage !== "production") {
+    throw new WorkspaceConfigurationError([
+      "Vercel Production deployments require WORKSPACE_DEPLOYMENT_STAGE=production.",
+    ]);
+  }
+  if (vercelEnvironment === "preview" && stage === "production") {
+    throw new WorkspaceConfigurationError([
+      "Vercel Preview deployments cannot use WORKSPACE_DEPLOYMENT_STAGE=production.",
+    ]);
+  }
+  if (stage) return stage;
 
   const mode = environment.NODE_ENV;
   if (mode === "production" || mode === "test" || mode === "development") {
@@ -154,12 +206,14 @@ function validateSecret(
 ) {
   if (!value) return;
 
-  if (mode === "production" && value.length < minimumLength) {
-    issues.push(`${name} must contain at least ${minimumLength} characters in production.`);
+  if (isDeployedMode(mode) && value.length < minimumLength) {
+    issues.push(
+      `${name} must contain at least ${minimumLength} characters in staging and production.`
+    );
   }
 
   if (
-    mode === "production" &&
+    isDeployedMode(mode) &&
     /(replace[-_ ]?with|development[-_ ]?only|must[-_ ]?match|password123)/i.test(
       value
     )
@@ -361,29 +415,40 @@ export function resolveWorkspaceLaunchV2Configuration(
 ): WorkspaceLaunchV2Configuration {
   const mode = resolveMode(environment, options);
   const issues: string[] = [];
+  const deployed = isDeployedMode(mode);
   const issuerValue =
     readValue(environment, "WORKSPACE_LAUNCH_ISSUER") ??
-    (mode === "production" ? undefined : DEVELOPMENT_WORKSPACE_ISSUER);
+    (deployed ? undefined : DEVELOPMENT_WORKSPACE_ISSUER);
   const issuer = parseUrl(
     "WORKSPACE_LAUNCH_ISSUER",
     issuerValue,
-    mode === "production" ? ["https:"] : ["https:", "http:"],
+    deployed ? ["https:"] : ["https:", "http:"],
     issues
   );
-  if (!issuerValue) issues.push("WORKSPACE_LAUNCH_ISSUER is required in production.");
+  if (!issuerValue) {
+    issues.push("WORKSPACE_LAUNCH_ISSUER is required in staging and production.");
+  }
 
   const providerValue =
     readValue(environment, "WORKSPACE_LAUNCH_SIGNER_PROVIDER") ??
-    (mode === "production" ? undefined : "ephemeral");
+    (deployed ? undefined : "ephemeral");
   const signerProvider = ["ephemeral", "software", "kms"].includes(providerValue ?? "")
     ? (providerValue as WorkspaceLaunchSignerProvider)
     : undefined;
-  if (!providerValue) issues.push("WORKSPACE_LAUNCH_SIGNER_PROVIDER is required in production.");
-  else if (!signerProvider) {
+  if (!providerValue) {
+    issues.push(
+      "WORKSPACE_LAUNCH_SIGNER_PROVIDER is required in staging and production."
+    );
+  } else if (!signerProvider) {
     issues.push("WORKSPACE_LAUNCH_SIGNER_PROVIDER must be ephemeral, software or kms.");
   }
   if (mode === "production" && signerProvider !== "kms") {
     issues.push("Production WORKSPACE_LAUNCH_SIGNER_PROVIDER must be kms.");
+  }
+  if (mode === "staging" && signerProvider === "ephemeral") {
+    issues.push(
+      "Staging WORKSPACE_LAUNCH_SIGNER_PROVIDER must be software or kms."
+    );
   }
 
   const activeKeyId = readValue(environment, "WORKSPACE_LAUNCH_ACTIVE_KID");
@@ -400,6 +465,11 @@ export function resolveWorkspaceLaunchV2Configuration(
   }
   if (signerProvider === "kms" && !kmsKeyId) {
     issues.push("WORKSPACE_LAUNCH_KMS_KEY_ID is required for the KMS signer.");
+  }
+  if (mode === "production" && privateKeyPemBase64) {
+    issues.push(
+      "WORKSPACE_LAUNCH_PRIVATE_KEY_PEM_BASE64 must be empty in production."
+    );
   }
 
   const additionalPublicJwks: Record<string, unknown>[] = [];
@@ -486,6 +556,7 @@ export function resolveWorkspaceEmailConfiguration(
 ): WorkspaceEmailConfiguration {
   const mode = resolveMode(environment, options);
   const issues: string[] = [];
+  const deployed = isDeployedMode(mode);
   const apiKey = requireValue(environment, "RESEND_API_KEY", issues);
   const from = requireValue(environment, "RESEND_FROM_EMAIL", issues);
   const authUrlValue = resolveAlias(
@@ -497,7 +568,7 @@ export function resolveWorkspaceEmailConfiguration(
   const authUrl = parseUrl(
     "AUTH_URL",
     authUrlValue,
-    ["https:", "http:"],
+    deployed ? ["https:"] : ["https:", "http:"],
     issues
   );
   const configuredLoginUrl = readValue(environment, "APP_LOGIN_URL");
@@ -507,11 +578,11 @@ export function resolveWorkspaceEmailConfiguration(
   const loginUrlValue =
     configuredLoginUrl ??
     derivedLoginUrl ??
-    (mode === "production" ? undefined : DEVELOPMENT_LOGIN_URL);
+    (deployed ? undefined : DEVELOPMENT_LOGIN_URL);
 
   if (!loginUrlValue) {
     issues.push(
-      "APP_LOGIN_URL or AUTH_URL/NEXTAUTH_URL is required for production email delivery."
+      "APP_LOGIN_URL or AUTH_URL/NEXTAUTH_URL is required for staging and production email delivery."
     );
   }
 
@@ -520,7 +591,7 @@ export function resolveWorkspaceEmailConfiguration(
   const loginUrl = parseUrl(
     "APP_LOGIN_URL",
     loginUrlValue,
-    ["https:", "http:"],
+    deployed ? ["https:"] : ["https:", "http:"],
     issues
   );
   throwIfInvalid(issues);
@@ -537,6 +608,7 @@ export function resolveItfFlowDirectorySyncConfiguration(
   options: ValidationOptions = {}
 ): ItfFlowDirectorySyncConfiguration {
   const mode = resolveMode(environment, options);
+  const deployed = isDeployedMode(mode);
   const issues: string[] = [];
   const explicitEndpoint = readValue(environment, "ITF_FLOW_DIRECTORY_SYNC_URL");
   const launchUrlValue = readValue(environment, "ITF_FLOW_URL");
@@ -548,7 +620,7 @@ export function resolveItfFlowDirectorySyncConfiguration(
   const launchUrl = parseUrl(
     "ITF_FLOW_URL",
     launchUrlValue,
-    ["https:", "http:"],
+    deployed ? ["https:"] : ["https:", "http:"],
     issues
   );
   const endpointValue =
@@ -564,7 +636,7 @@ export function resolveItfFlowDirectorySyncConfiguration(
   const endpoint = parseUrl(
     "ITF_FLOW_DIRECTORY_SYNC_URL",
     endpointValue,
-    ["https:", "http:"],
+    deployed ? ["https:"] : ["https:", "http:"],
     issues
   );
   const appSlug = readValue(environment, "ITF_FLOW_APP_SLUG") ?? "itf-flow";
@@ -598,13 +670,14 @@ export function resolveItfFlowSessionEventConfiguration(
   options: ValidationOptions = {}
 ): ItfFlowSessionEventConfiguration {
   const mode = resolveMode(environment, options);
+  const deployed = isDeployedMode(mode);
   const issues: string[] = [];
   const explicitEndpoint = readValue(environment, "ITF_FLOW_SESSION_EVENTS_URL");
   const launchUrlValue = readValue(environment, "ITF_FLOW_URL");
   const launchUrl = parseUrl(
     "ITF_FLOW_URL",
     launchUrlValue,
-    mode === "production" ? ["https:"] : ["https:", "http:"],
+    deployed ? ["https:"] : ["https:", "http:"],
     issues
   );
   const endpointValue =
@@ -618,7 +691,7 @@ export function resolveItfFlowSessionEventConfiguration(
   const endpoint = parseUrl(
     "ITF_FLOW_SESSION_EVENTS_URL",
     endpointValue,
-    mode === "production" ? ["https:"] : ["https:", "http:"],
+    deployed ? ["https:"] : ["https:", "http:"],
     issues
   );
   const secret = requireValue(environment, "WORKSPACE_INTEROP_SECRET", issues);
@@ -657,6 +730,7 @@ export function validateWorkspaceRuntimeEnvironment(
   options: ValidationOptions = {}
 ): WorkspaceRuntimeConfiguration {
   const mode = resolveMode(environment, options);
+  const deployed = isDeployedMode(mode);
   const issues: string[] = [];
   try {
     resolveWorkspaceServerActionAllowedOrigins(environment);
@@ -700,20 +774,26 @@ export function validateWorkspaceRuntimeEnvironment(
   const authUrl = parseUrl(
     "AUTH_URL",
     authUrlValue,
-    ["https:", "http:"],
+    deployed ? ["https:"] : ["https:", "http:"],
     issues
   );
 
-  if (mode === "production") {
-    if (!authSecret) issues.push("AUTH_SECRET or NEXTAUTH_SECRET is required in production.");
-    if (!authUrlValue) issues.push("AUTH_URL or NEXTAUTH_URL is required in production.");
+  if (deployed) {
+    if (!authSecret) {
+      issues.push("AUTH_SECRET or NEXTAUTH_SECRET is required in staging and production.");
+    }
+    if (!authUrlValue) {
+      issues.push("AUTH_URL or NEXTAUTH_URL is required in staging and production.");
+    }
   }
 
   validateSecret("AUTH_SECRET", authSecret, mode, issues);
 
   const mfaEncryptionKey = readValue(environment, "WORKSPACE_MFA_ENCRYPTION_KEY_BASE64");
-  if (mode === "production" && !mfaEncryptionKey) {
-    issues.push("WORKSPACE_MFA_ENCRYPTION_KEY_BASE64 is required in production.");
+  if (deployed && !mfaEncryptionKey) {
+    issues.push(
+      "WORKSPACE_MFA_ENCRYPTION_KEY_BASE64 is required in staging and production."
+    );
   }
   if (mfaEncryptionKey) {
     try {
@@ -733,7 +813,7 @@ export function validateWorkspaceRuntimeEnvironment(
       readValue(environment, "RESEND_FROM_EMAIL") ||
       readValue(environment, "APP_LOGIN_URL")
   );
-  const emailRequired = mode === "production";
+  const emailRequired = deployed;
 
   if (emailRequired || emailValuesPresent) {
     try {
@@ -755,7 +835,7 @@ export function validateWorkspaceRuntimeEnvironment(
       readValue(environment, "WORKSPACE_INTEROP_SECRET")
   );
 
-  if (mode === "production" && itfFlowValuesPresent) {
+  if (deployed && itfFlowValuesPresent) {
     try {
       resolveItfFlowDirectorySyncConfiguration(environment, { mode });
     } catch (error) {
@@ -777,7 +857,7 @@ export function validateWorkspaceRuntimeEnvironment(
     );
   }
 
-  if (mode === "production" && (itfFlowValuesPresent || itfFlowSessionEventValuesPresent)) {
+  if (deployed && (itfFlowValuesPresent || itfFlowSessionEventValuesPresent)) {
     try {
       resolveItfFlowSessionEventConfiguration(environment, { mode });
     } catch (error) {
@@ -825,30 +905,36 @@ export function resolveWorkspaceSeedConfiguration(
 ): WorkspaceSeedConfiguration {
   const mode = resolveMode(environment, options);
   const issues: string[] = [];
-  const production = mode === "production";
+  const deployed = isDeployedMode(mode);
   const email =
     readValue(environment, "INITIAL_ADMIN_EMAIL") ??
-    (production ? undefined : "admin@itf.gov.ng");
+    (deployed ? undefined : "admin@itf.gov.ng");
   const password =
     readValue(environment, "INITIAL_ADMIN_PASSWORD") ??
-    (production ? undefined : "Password123!");
+    (deployed ? undefined : "Password123!");
   const fullName =
     readValue(environment, "INITIAL_ADMIN_NAME") ??
-    (production ? undefined : "System Administrator");
+    (deployed ? undefined : "System Administrator");
   const staffNumber =
     readValue(environment, "INITIAL_ADMIN_STAFF_NUMBER") ??
-    (production ? undefined : "ITF-SYS-001");
+    (deployed ? undefined : "ITF-SYS-001");
   const itfFlowUrlValue =
     readValue(environment, "ITF_FLOW_URL") ??
-    (production ? undefined : DEVELOPMENT_ITF_FLOW_URL);
+    (deployed ? undefined : DEVELOPMENT_ITF_FLOW_URL);
 
-  if (!email) issues.push("INITIAL_ADMIN_EMAIL is required in production.");
-  if (!password) issues.push("INITIAL_ADMIN_PASSWORD is required in production.");
-  if (!fullName) issues.push("INITIAL_ADMIN_NAME is required in production.");
-  if (!staffNumber) {
-    issues.push("INITIAL_ADMIN_STAFF_NUMBER is required in production.");
+  if (!email) issues.push("INITIAL_ADMIN_EMAIL is required in staging and production.");
+  if (!password) {
+    issues.push("INITIAL_ADMIN_PASSWORD is required in staging and production.");
   }
-  if (!itfFlowUrlValue) issues.push("ITF_FLOW_URL is required in production.");
+  if (!fullName) {
+    issues.push("INITIAL_ADMIN_NAME is required in staging and production.");
+  }
+  if (!staffNumber) {
+    issues.push("INITIAL_ADMIN_STAFF_NUMBER is required in staging and production.");
+  }
+  if (!itfFlowUrlValue) {
+    issues.push("ITF_FLOW_URL is required in staging and production.");
+  }
 
   if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     issues.push("INITIAL_ADMIN_EMAIL must be a valid email address.");
@@ -857,7 +943,7 @@ export function resolveWorkspaceSeedConfiguration(
   const itfFlowUrl = parseUrl(
     "ITF_FLOW_URL",
     itfFlowUrlValue,
-    ["https:", "http:"],
+    deployed ? ["https:"] : ["https:", "http:"],
     issues
   );
   throwIfInvalid(issues);

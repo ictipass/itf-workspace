@@ -12,6 +12,7 @@
     "start": "next start",
     "lint": "eslint",
     "config:check": "tsx scripts/validate-environment.ts",
+    "config:check:staging": "tsx scripts/validate-environment.ts --environment=staging",
     "config:check:production": "tsx scripts/validate-environment.ts --environment=production",
     "test": "npm run test:security",
     "test:security": "tsx --test tests/security-regression.test.ts tests/configuration-regression.test.ts tests/session-regression.test.ts tests/launch-v2-regression.test.ts tests/outbox-regression.test.ts tests/directory-contract.test.ts tests/staff-onboarding-policy.test.ts",
