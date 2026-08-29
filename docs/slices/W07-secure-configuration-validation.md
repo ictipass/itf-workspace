@@ -67,7 +67,22 @@ The complete W08 security suite now contains 25 passing tests across 6 suites.
 - Runtime smoke test: development server started with validation active and `/login` returned HTTP 200.
 - `git diff --check`: passed; only Git's existing LF-to-CRLF working-copy notices were emitted.
 
-Implementation commit: `2caeede`.
+Implementation commits: initial `2caeede`; Vercel staging separation `05153bb`.
+
+## Vercel staging increment
+
+Commit `05153bb` separates the organizational deployment stage from Next.js `NODE_ENV`, which is production for both
+optimized Vercel Preview and Production deployments. `WORKSPACE_DEPLOYMENT_STAGE=staging` now permits only stable
+software or KMS launch signing and requires HTTPS URLs and production-strength secrets. Vercel Production still
+requires `WORKSPACE_DEPLOYMENT_STAGE=production`, a KMS signer and no software private key in its environment.
+
+The runtime rejects missing stage identity on Vercel and rejects Preview/Production stage mismatches when Vercel system
+metadata is exposed. Configuration errors are deduplicated, so one malformed `AUTH_URL` produces one actionable issue.
+The staging command is `npm run config:check:staging`; deployment details are in
+[`Vercel deployment environments`](../vercel-deployment-environments.md).
+
+Latest verification passes all 49 Workspace tests across eight suites, Prisma validation, ESLint, TypeScript and the
+24-route production build. No database migration or visible UI change was introduced.
 
 ## Data, operational and UI effects
 

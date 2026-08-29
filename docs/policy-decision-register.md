@@ -28,7 +28,7 @@ Plain-language scenarios and the information needed to answer every question are
 | ID | Required decision | Status | Accountable owner | Approved outcome/evidence |
 |---|---|---|---|---|
 | D12 | Permitted application URL domains/networks and exception approval for reachability tests | Open | ITF network/security architecture | — |
-| D13 | Production hosting, reverse proxy/CDN, TLS termination and trusted forwarded-header topology | Open | ITF infrastructure | — |
+| D13 | Production hosting, reverse proxy/CDN, TLS termination and trusted forwarded-header topology | Open (partial topology recorded) | ITF infrastructure | Vercel is the selected host; staging is a Preview deployment tied to the `staging` branch and `itf-workspace-staging.vercel.app`. Production proxy/TLS ownership, deployment protection, regions, operational access and Vercel OIDC/external-KMS topology remain open. `2026-08-29`, [`Vercel deployment environments`](vercel-deployment-environments.md) |
 | D14 | Permitted framing, script, image, connection and integration origins for browser security policy | Open | ITF security architecture/application owners | — |
 
 ## Access governance

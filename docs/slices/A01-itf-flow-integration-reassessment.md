@@ -42,6 +42,7 @@ synchronize the directory, then exercise launch and revocation before enabling u
 
 Staging needs distinct values for:
 
+- Workspace: `WORKSPACE_DEPLOYMENT_STAGE=staging`, scoped to the Vercel Preview `staging` branch.
 - Workspace: `WORKSPACE_DIRECTORY_SYNC_SECRET`, `WORKSPACE_INTEROP_SECRET`,
   `WORKSPACE_OUTBOX_WORKER_SECRET`, its launch issuer/signing configuration, and the approved worker scheduler.
 - Flow: matching directory/interoperability credentials plus `WORKSPACE_LAUNCH_ISSUER`,
@@ -54,6 +55,8 @@ APIs. Production launch signing remains blocked until the approved KMS/HSM adapt
 
 The local development-tunnel allowance in `a6a90ab` is not staging acceptance evidence and does not approve a wildcard
 proxy domain. Changing the tunnel hostname requires an explicit configuration update and a Workspace restart.
+The branch-scoped Vercel staging configuration is governed by
+[`Vercel deployment environments`](../vercel-deployment-environments.md).
 
 ## Verification evidence
 

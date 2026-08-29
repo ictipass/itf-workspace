@@ -29,7 +29,7 @@ retry-policy coverage. Live outage and duplicate-delivery behavior remains a sta
 
 ## Verification
 
-- `npm.cmd run test:security`: passed, 44 tests across 8 suites.
+- `npm.cmd run test:security`: passed, 49 tests across 8 suites.
 - ITF Flow `npm.cmd run test:security`: passed, 21 tests.
 - `npx.cmd prisma validate`: passed.
 - `npm.cmd run lint`: passed.
@@ -70,6 +70,9 @@ Implementation commit: `444287a`.
 - W09 local proxy-origin increment `a6a90ab` adds two configuration tests for exact allowlisting and rejection of broad
   or URL-shaped entries. The Workspace suite now contains 44 tests across eight suites. This increment does not resolve
   the D13-D14 production deployment-policy gate.
+- W07/W09 Vercel staging increment `05153bb` adds five cases for explicit stage identity, Preview/Production binding,
+  stable staging signing, HTTPS-only deployed URLs and prohibition of production software keys. The Workspace suite now
+  contains 49 tests across eight suites.
 
 ## Rollback
 
