@@ -15,7 +15,10 @@ async function acquireBootstrapLock(
   transaction: Parameters<Parameters<typeof prisma.$transaction>[0]>[0]
 ) {
   // A transaction-scoped PostgreSQL advisory lock serializes concurrent bootstrap attempts.
-  await transaction.$queryRaw`SELECT pg_advisory_xact_lock(495446, 1)`;
+  // Cast PostgreSQL's void return to text because Prisma cannot deserialize void columns.
+  await transaction.$queryRaw<Array<{ lockResult: string }>>`
+    SELECT pg_advisory_xact_lock(495446, 1)::text AS "lockResult"
+  `;
 }
 
 export async function preparePendingInitialAdministrator(

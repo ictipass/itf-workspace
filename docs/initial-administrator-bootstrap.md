@@ -19,6 +19,7 @@ Implementation commits: initial bootstrap `37feab7`; remote transaction/input ha
 - A cryptographically random temporary password is generated internally, hashed with bcrypt and never printed or
   returned by the command.
 - The account is first persisted as `INACTIVE` under a transaction-scoped PostgreSQL advisory lock.
+- The advisory-lock query casts PostgreSQL's `void` result to a supported text value before Prisma deserializes it.
 - The account becomes `ACTIVE` only after the approved email provider accepts the welcome message.
 - If delivery fails, the pending account remains inactive. An exact rerun replaces the undelivered credential before
   retrying delivery; it cannot silently change the pending identity.
