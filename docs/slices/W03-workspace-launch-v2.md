@@ -4,7 +4,7 @@ Status: **Implemented**
 
 Implementation date: 2026-08-23
 
-Workspace commits: `9cbec46`, validation hardening `42c4f3b`, onboarding correction `4c88f89`, QR enrollment `ca8b88b`
+Workspace commits: `9cbec46`, validation hardening `42c4f3b`, onboarding correction `4c88f89`, QR enrollment `ca8b88b`, public JWKS routing `e9da2f9`
 
 ITF Flow commit: `f0696bc`
 
@@ -31,6 +31,8 @@ full SSO or claiming that existing child sessions are centrally revoked.
 - ITF Flow RSA/JWKS verification, five-minute public-key cache, exact issuer/audience/slug and role checks, sensitive
   TOTP validation, database-unique assertion redemption, and local session creation.
 - Removal of the obsolete Workspace HMAC issuer/receiver and production shared-launch-secret requirement.
+- Anonymous access to the exact version-2 JWKS endpoint so child applications can retrieve verification keys without
+  a Workspace session. Adjacent integration and internal endpoints remain behind the authentication proxy.
 
 ## Data migration
 
@@ -75,6 +77,11 @@ requires temporary-password replacement. It does not grant dashboard or administ
 - ITF Flow TypeScript, ESLint and production build: passed.
 - ITF Flow security regressions: 8/8 passed, including four launch-v2 contract tests.
 - Both repositories passed `git diff --check` for the committed implementation.
+- The public-route policy regression passes 4/4 cases, including exact anonymous JWKS access and denial of adjacent,
+  privileged and internal routes. TypeScript, full ESLint and the 24-route production build pass for this increment.
+- The combined Workspace security-suite rerun was attempted but could not start because the local Windows Node 24
+  runtime failed in `os.userInfo()` with an operating-system `ENOMEM` error before loading any test. This is retained
+  as an open verification rerun; it did not invalidate the focused test executed through Node's type-stripping runner.
 - The W00 production dependency audit command (`npm audit --omit=dev --omit=optional --audit-level=low`) reports zero
   known runtime vulnerabilities after adding the QR renderer. Default development-tree findings remain governed by
   W00's documented Prisma/scaffolding-tool interpretation and do not originate from `qrcode`.
@@ -89,6 +96,8 @@ requires temporary-password replacement. It does not grant dashboard or administ
   restoring compatible application binaries/schema through an approved change, and preserving audit/redemption data.
 - W03 does not terminate an ITF Flow session when the Workspace session or entitlement is revoked; W04 supplies that
   missing control.
+- Staging must be redeployed with `e9da2f9` (or a descendant) and the JWKS URL must return a public-only JWK Set to an
+  anonymous browser before joint launch acceptance proceeds.
 
 ## Readiness
 

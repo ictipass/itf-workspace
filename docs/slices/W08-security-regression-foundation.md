@@ -19,6 +19,8 @@ child-app provisioning/revocation boundaries.
 - Covered configured launch-URL normalization, injected token/fragment removal, non-HTTP rejection, token extraction and
   post-redemption URL cleanup.
 - Removed the obsolete shared-secret verifier after the asymmetric contract and receiving app agreed.
+- Covered the exact anonymous JWKS route and protected adjacent authentication, integration and internal route
+  boundaries through a pure proxy access-policy regression.
 - Added `test`, `test:security` and comprehensive `verify` package scripts.
 
 ## Test boundaries
@@ -35,6 +37,9 @@ retry-policy coverage. Live outage and duplicate-delivery behavior remains a sta
 - `npm.cmd run lint`: passed.
 - `npm.cmd run build`: passed, including TypeScript and all 24 Workspace routes; ITF Flow build also passed.
 - `git diff --check`: passed; only Git's existing LF-to-CRLF working-copy notices were emitted.
+- Public-JWKS increment `e9da2f9`: its four focused proxy-policy cases, TypeScript, full ESLint and the production build
+  passed. The combined suite rerun was blocked before test loading by a local Windows Node 24 `os.userInfo()` `ENOMEM`
+  failure and remains to be rerun in Vercel/CI or after correcting that host runtime condition.
 
 Implementation commit: `444287a`.
 
@@ -73,6 +78,9 @@ Implementation commit: `444287a`.
 - W07/W09 Vercel staging increment `05153bb` adds five cases for explicit stage identity, Preview/Production binding,
   stable staging signing, HTTPS-only deployed URLs and prohibition of production software keys. The Workspace suite now
   contains 49 tests across eight suites.
+- W03 public-JWKS routing increment `e9da2f9` registers four proxy-policy cases. The suite now contains 53 tests across
+  nine suites; the new cases pass independently and the combined 53-test rerun remains pending for the host-runtime
+  reason recorded above.
 
 ## Rollback
 
