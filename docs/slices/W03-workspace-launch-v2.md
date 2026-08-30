@@ -79,9 +79,9 @@ requires temporary-password replacement. It does not grant dashboard or administ
 - Both repositories passed `git diff --check` for the committed implementation.
 - The public-route policy regression passes 4/4 cases, including exact anonymous JWKS access and denial of adjacent,
   privileged and internal routes. TypeScript, full ESLint and the 24-route production build pass for this increment.
-- The combined Workspace security-suite rerun was attempted but could not start because the local Windows Node 24
-  runtime failed in `os.userInfo()` with an operating-system `ENOMEM` error before loading any test. This is retained
-  as an open verification rerun; it did not invalidate the focused test executed through Node's type-stripping runner.
+- The earlier Windows Node 24 `os.userInfo()` runner failure was isolated to test-runner temporary-directory discovery.
+  A temporary uncommitted preload supplied the unavailable Windows user identifier; the combined suite then passed all
+  60 tests and the preload was removed.
 - The W00 production dependency audit command (`npm audit --omit=dev --omit=optional --audit-level=low`) reports zero
   known runtime vulnerabilities after adding the QR renderer. Default development-tree findings remain governed by
   W00's documented Prisma/scaffolding-tool interpretation and do not originate from `qrcode`.

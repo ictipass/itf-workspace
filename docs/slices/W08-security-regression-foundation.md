@@ -38,8 +38,8 @@ retry-policy coverage. Live outage and duplicate-delivery behavior remains a sta
 - `npm.cmd run build`: passed, including TypeScript and all 24 Workspace routes; ITF Flow build also passed.
 - `git diff --check`: passed; only Git's existing LF-to-CRLF working-copy notices were emitted.
 - Public-JWKS increment `e9da2f9`: its four focused proxy-policy cases, TypeScript, full ESLint and the production build
-  passed. The combined suite rerun was blocked before test loading by a local Windows Node 24 `os.userInfo()` `ENOMEM`
-  failure and remains to be rerun in Vercel/CI or after correcting that host runtime condition.
+  passed. The subsequent 60-test combined run also passed using a temporary local Node 24/Windows test-runner preload;
+  the preload only supplied the unavailable Windows user identifier and was removed after execution.
 
 Implementation commit: `444287a`.
 
@@ -79,8 +79,10 @@ Implementation commit: `444287a`.
   stable staging signing, HTTPS-only deployed URLs and prohibition of production software keys. The Workspace suite now
   contains 49 tests across eight suites.
 - W03 public-JWKS routing increment `e9da2f9` registers four proxy-policy cases. The suite now contains 53 tests across
-  nine suites; the new cases pass independently and the combined 53-test rerun remains pending for the host-runtime
-  reason recorded above.
+  nine suites.
+- W25 controlled-bootstrap increment `37feab7` adds seven cases for explicit identity parsing, leading-zero staff
+  numbers, staging-only execution, existing/conflicting administrator rejection, email-before-activation ordering and
+  fail-closed delivery behavior. The Workspace suite now passes 60 tests across 11 suites.
 
 ## Rollback
 
