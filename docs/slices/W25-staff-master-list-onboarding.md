@@ -3,7 +3,7 @@
 Status: **In progress**
 
 Implementation commits: HR import boundary `ce680e0`; controlled initial administrator bootstrap `37feab7`; remote
-transaction/input hardening `2463277`
+transaction/input hardening `2463277`; Prisma advisory-lock correction `79aac76`
 
 ## Implemented increment
 
