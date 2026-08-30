@@ -2,7 +2,8 @@
 
 Status: **In progress**
 
-Implementation commits: HR import boundary `ce680e0`; controlled initial administrator bootstrap `37feab7`
+Implementation commits: HR import boundary `ce680e0`; controlled initial administrator bootstrap `37feab7`; remote
+transaction/input hardening `2463277`
 
 ## Implemented increment
 

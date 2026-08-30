@@ -9,7 +9,7 @@ operation, not the general privileged-role grant workflow.
 The operation is deliberately limited to `WORKSPACE_DEPLOYMENT_STAGE=staging`. Production bootstrap requires a
 separate approved operational procedure after production secret custody, KMS signing and change-control gates are met.
 
-Implementation commit: `37feab7`.
+Implementation commits: initial bootstrap `37feab7`; remote transaction/input hardening `2463277`.
 
 ## Security behavior
 
