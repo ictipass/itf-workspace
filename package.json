@@ -8,6 +8,7 @@
     "dev:turbopack": "next dev",
     "postinstall": "prisma generate",
     "db:seed": "tsx prisma/seed.ts",
+    "db:bootstrap-admin": "tsx scripts/bootstrap-initial-admin.ts",
     "build": "prisma generate && next build",
     "start": "next start",
     "lint": "eslint",
@@ -15,7 +16,7 @@
     "config:check:staging": "tsx scripts/validate-environment.ts --environment=staging",
     "config:check:production": "tsx scripts/validate-environment.ts --environment=production",
     "test": "npm run test:security",
-    "test:security": "tsx --test tests/security-regression.test.ts tests/configuration-regression.test.ts tests/session-regression.test.ts tests/launch-v2-regression.test.ts tests/outbox-regression.test.ts tests/directory-contract.test.ts tests/staff-onboarding-policy.test.ts tests/proxy-access-policy.test.ts",
+    "test:security": "tsx --test tests/security-regression.test.ts tests/configuration-regression.test.ts tests/session-regression.test.ts tests/launch-v2-regression.test.ts tests/outbox-regression.test.ts tests/directory-contract.test.ts tests/staff-onboarding-policy.test.ts tests/proxy-access-policy.test.ts tests/initial-admin-bootstrap.test.ts",
     "verify": "npm run config:check && prisma validate && npm run test:security && npm run lint && npm run build"
   },
   "dependencies": {
