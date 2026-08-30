@@ -38,7 +38,7 @@ retry-policy coverage. Live outage and duplicate-delivery behavior remains a sta
 - `npm.cmd run build`: passed, including TypeScript and all 24 Workspace routes; ITF Flow build also passed.
 - `git diff --check`: passed; only Git's existing LF-to-CRLF working-copy notices were emitted.
 - Public-JWKS increment `e9da2f9`: its four focused proxy-policy cases, TypeScript, full ESLint and the production build
-  passed. The subsequent 60-test combined run also passed using a temporary local Node 24/Windows test-runner preload;
+  passed. The subsequent combined run also passed using a temporary local Node 24/Windows test-runner preload;
   the preload only supplied the unavailable Windows user identifier and was removed after execution.
 
 Implementation commit: `444287a`.
@@ -82,7 +82,8 @@ Implementation commit: `444287a`.
   nine suites.
 - W25 controlled-bootstrap increment `37feab7` adds seven cases for explicit identity parsing, leading-zero staff
   numbers, staging-only execution, existing/conflicting administrator rejection, email-before-activation ordering and
-  fail-closed delivery behavior. The Workspace suite now passes 60 tests across 11 suites.
+  fail-closed delivery behavior. Its remote-database follow-up adds escaped-email rejection and bounded configurable
+  transaction timing. The Workspace suite now passes 62 tests across 11 suites.
 
 ## Rollback
 

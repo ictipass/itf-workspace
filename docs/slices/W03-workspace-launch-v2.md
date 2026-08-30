@@ -80,8 +80,8 @@ requires temporary-password replacement. It does not grant dashboard or administ
 - The public-route policy regression passes 4/4 cases, including exact anonymous JWKS access and denial of adjacent,
   privileged and internal routes. TypeScript, full ESLint and the 24-route production build pass for this increment.
 - The earlier Windows Node 24 `os.userInfo()` runner failure was isolated to test-runner temporary-directory discovery.
-  A temporary uncommitted preload supplied the unavailable Windows user identifier; the combined suite then passed all
-  60 tests and the preload was removed.
+  A temporary uncommitted preload supplied the unavailable Windows user identifier; the combined suite now passes all
+  62 tests and the preload was removed.
 - The W00 production dependency audit command (`npm audit --omit=dev --omit=optional --audit-level=low`) reports zero
   known runtime vulnerabilities after adding the QR renderer. Default development-tree findings remain governed by
   W00's documented Prisma/scaffolding-tool interpretation and do not originate from `qrcode`.

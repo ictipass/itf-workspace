@@ -7,6 +7,7 @@ import { sendWorkspaceWelcomeEmail } from "@/lib/email/send-workspace-welcome-em
 import {
   InitialAdministratorBootstrapError,
   parseInitialAdministratorArguments,
+  resolveInitialAdministratorBootstrapTransactionTiming,
 } from "@/lib/policies/initial-admin-bootstrap";
 import { generateTemporaryPassword } from "@/lib/security/password";
 import {
@@ -20,6 +21,8 @@ const USAGE =
 
 async function main() {
   const identity = parseInitialAdministratorArguments(process.argv.slice(2));
+  const transactionTiming =
+    resolveInitialAdministratorBootstrapTransactionTiming();
   const result = await bootstrapInitialAdministrator(identity, {
     deploymentStage: process.env.WORKSPACE_DEPLOYMENT_STAGE,
     assertEmailDeliveryConfigured: () => {
@@ -27,9 +30,15 @@ async function main() {
     },
     generateTemporaryPassword,
     hashPassword: (password) => bcrypt.hash(password, 10),
-    preparePendingAdministrator: preparePendingInitialAdministrator,
+    preparePendingAdministrator: (administrator, passwordHash) =>
+      preparePendingInitialAdministrator(
+        administrator,
+        passwordHash,
+        transactionTiming
+      ),
     sendWelcomeEmail: sendWorkspaceWelcomeEmail,
-    activatePendingAdministrator: activatePendingInitialAdministrator,
+    activatePendingAdministrator: (userId) =>
+      activatePendingInitialAdministrator(userId, transactionTiming),
   });
 
   console.log(

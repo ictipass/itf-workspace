@@ -5,6 +5,7 @@ import {
   decideInitialAdministratorPreparation,
   InitialAdministratorBootstrapError,
   parseInitialAdministratorArguments,
+  resolveInitialAdministratorBootstrapTransactionTiming,
 } from "../lib/policies/initial-admin-bootstrap";
 import { bootstrapInitialAdministrator } from "../lib/services/initial-admin-bootstrap.service";
 
@@ -47,6 +48,42 @@ describe("initial administrator bootstrap policy", () => {
     assert.throws(
       () => parseInitialAdministratorArguments(["--role", "SYSTEM_ADMIN"]),
       /Unknown bootstrap option/
+    );
+  });
+
+  test("rejects a shell-escaped email address", () => {
+    assert.throws(
+      () =>
+        parseInitialAdministratorArguments([
+          "--email",
+          "odukaye.abiodun\\@itf.gov.ng",
+          "--full-name",
+          identity.fullName,
+          "--staff-number",
+          identity.staffNumber,
+        ]),
+      /valid email address/
+    );
+  });
+
+  test("uses bounded configurable remote-transaction timing", () => {
+    assert.deepEqual(resolveInitialAdministratorBootstrapTransactionTiming({}), {
+      maxWait: 15_000,
+      timeout: 30_000,
+    });
+    assert.deepEqual(
+      resolveInitialAdministratorBootstrapTransactionTiming({
+        WORKSPACE_BOOTSTRAP_TRANSACTION_MAX_WAIT_MS: "20000",
+        WORKSPACE_BOOTSTRAP_TRANSACTION_TIMEOUT_MS: "45000",
+      }),
+      { maxWait: 20_000, timeout: 45_000 }
+    );
+    assert.throws(
+      () =>
+        resolveInitialAdministratorBootstrapTransactionTiming({
+          WORKSPACE_BOOTSTRAP_TRANSACTION_MAX_WAIT_MS: "200",
+        }),
+      /between 1000 and 120000/
     );
   });
 

@@ -14,6 +14,11 @@ export type InitialAdministratorPreparationDecision =
   | { action: "CREATE" }
   | { action: "RESUME"; userId: string };
 
+export type InitialAdministratorBootstrapTransactionTiming = {
+  maxWait: number;
+  timeout: number;
+};
+
 export class InitialAdministratorBootstrapError extends Error {
   constructor(message: string, options?: ErrorOptions) {
     super(message, options);
@@ -80,7 +85,11 @@ export function validateInitialAdministratorIdentity(
   const staffNumber = identity.staffNumber.trim();
   const issues: string[] = [];
 
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254) {
+  if (
+    !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ||
+    email.includes("\\") ||
+    email.length > 254
+  ) {
     issues.push("Administrator email must be a valid email address.");
   }
   if (fullName.length < 2 || fullName.length > 200 || /[\u0000-\u001f]/.test(fullName)) {
@@ -99,6 +108,40 @@ export function validateInitialAdministratorIdentity(
   }
 
   return { email, fullName, staffNumber };
+}
+
+function readBoundedDuration(
+  environment: Record<string, string | undefined>,
+  name: string,
+  defaultValue: number
+) {
+  const value = environment[name]?.trim();
+  if (!value) return defaultValue;
+
+  const parsed = Number(value);
+  if (!Number.isInteger(parsed) || parsed < 1_000 || parsed > 120_000) {
+    throw new InitialAdministratorBootstrapError(
+      `${name} must be an integer between 1000 and 120000 milliseconds.`
+    );
+  }
+  return parsed;
+}
+
+export function resolveInitialAdministratorBootstrapTransactionTiming(
+  environment: Record<string, string | undefined> = process.env
+): InitialAdministratorBootstrapTransactionTiming {
+  return {
+    maxWait: readBoundedDuration(
+      environment,
+      "WORKSPACE_BOOTSTRAP_TRANSACTION_MAX_WAIT_MS",
+      15_000
+    ),
+    timeout: readBoundedDuration(
+      environment,
+      "WORKSPACE_BOOTSTRAP_TRANSACTION_TIMEOUT_MS",
+      30_000
+    ),
+  };
 }
 
 export function requireStagingInitialAdministratorBootstrap(

@@ -32,7 +32,7 @@ The bulk-import introduction now states the ordinary-staff-only boundary. The do
 
 ## Verification
 
-- 60/60 Workspace security/regression tests pass, including two onboarding-role and seven controlled-bootstrap tests.
+- 62/62 Workspace security/regression tests pass, including two onboarding-role and nine controlled-bootstrap tests.
 - TypeScript, ESLint and the 24-route production build pass.
 - `git diff --check` passes apart from Git's existing LF-to-CRLF notices.
 
