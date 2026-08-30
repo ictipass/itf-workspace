@@ -1,19 +1,15 @@
 import { auth } from "@/auth";
+import {
+  isPasswordChangePath,
+  isPublicWorkspacePath,
+} from "@/lib/auth/route-access-policy";
 import { NextResponse } from "next/server";
-
-const publicRoutes = ["/", "/login", "/session-recovery", "/api/auth"];
-const passwordRoutes = ["/change-password"];
 
 export default auth((req) => {
   const { nextUrl } = req;
 
-  const isPublicRoute = publicRoutes.some((route) =>
-    route === "/" ? nextUrl.pathname === "/" : nextUrl.pathname.startsWith(route)
-  );
-
-  const isPasswordRoute = passwordRoutes.some((route) =>
-    nextUrl.pathname.startsWith(route)
-  );
+  const isPublicRoute = isPublicWorkspacePath(nextUrl.pathname);
+  const isPasswordRoute = isPasswordChangePath(nextUrl.pathname);
 
   if (isPublicRoute) {
     return NextResponse.next();
