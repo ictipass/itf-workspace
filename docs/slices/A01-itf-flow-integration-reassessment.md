@@ -6,7 +6,7 @@ Implementation date: 2026-08-23
 
 Workspace implementation commit: `1a08a5b`
 
-ITF Flow implementation commit: `02b433d`; Flow documentation: `49e4d95`
+ITF Flow implementation commit: `02b433d`; Flow documentation: `49e4d95`; staging configuration hygiene: `f48b702`
 
 ## Outcome
 
@@ -57,6 +57,38 @@ The local development-tunnel allowance in `a6a90ab` is not staging acceptance ev
 proxy domain. Changing the tunnel hostname requires an explicit configuration update and a Workspace restart.
 The branch-scoped Vercel staging configuration is governed by
 [`Vercel deployment environments`](../vercel-deployment-environments.md).
+
+## Approved staging profile
+
+Recorded 2026-09-04:
+
+- ITF Flow staging origin: `https://itf-flow-staging.vercel.app`;
+- the Flow staging database exists and its migrations are applied;
+- Flow application assurance: `STANDARD`; and
+- initial Flow `SYSTEM_ADMIN` role assurance: `SENSITIVE`.
+
+The more restrictive classification wins. Ordinary standard Flow roles may therefore use password-only launch, while
+the Flow `SYSTEM_ADMIN` role requires a fresh TOTP step-up even though the application itself is standard.
+
+Configure Workspace's staging branch with the following non-secret values:
+
+```dotenv
+ITF_FLOW_URL="https://itf-flow-staging.vercel.app/workspace/launch"
+ITF_FLOW_DIRECTORY_SYNC_URL="https://itf-flow-staging.vercel.app/api/integrations/workspace/directory-sync"
+ITF_FLOW_SESSION_EVENTS_URL="https://itf-flow-staging.vercel.app/api/integrations/workspace/session-events"
+ITF_FLOW_APP_SLUG="itf-flow"
+WORKSPACE_OUTBOX_RETRY_BASE_SECONDS="30"
+```
+
+The staging-only `WORKSPACE_DIRECTORY_SYNC_SECRET` and `WORKSPACE_INTEROP_SECRET` must match their respective Flow
+values. `WORKSPACE_OUTBOX_WORKER_SECRET` is a third independent credential protecting only Workspace's retry endpoint.
+
+Vercel Hobby cron cannot meet this integration's retry requirement. It runs at most once daily with hourly
+imprecision, and Vercel invokes cron routes only on Production deployments rather than the staging Preview deployment.
+Changing `WORKSPACE_OUTBOX_RETRY_BASE_SECONDS` to one day would delay recovery rather than solve scheduling. Retain the
+30-second base and use a scheduler that invokes the worker at least every 30 seconds. An authorized manual invocation
+is permitted solely for the finite A01 outage/retry acceptance scenario; it does not satisfy the continuous
+controlled-pilot gate.
 
 ## Verification evidence
 

@@ -75,7 +75,7 @@ result. Repository code, migrations and commits remain the final implementation 
 
 | ID | Application slice | Status | Dependency |
 |---|---|---|---|
-| A01 | ITF Flow launch v2, provisioning and revocation integration | In progress | Code complete: Workspace `1a08a5b`, Flow `02b433d`; bounded child sessions, immutable/versioned provisioning and lifecycle revocation pass 61 joint contract/security tests. Workspace-only staging prerequisites passed on 2026-09-04; ITF Flow staging configuration and joint lifecycle acceptance remain. See [`slices/A01-itf-flow-integration-reassessment.md`](slices/A01-itf-flow-integration-reassessment.md) |
+| A01 | ITF Flow launch v2, provisioning and revocation integration | In progress | Code complete: Workspace `1a08a5b`, Flow `02b433d`; Flow staging configuration template `f48b702`. Workspace authentication, stable Flow staging origin/database and assurance classifications were confirmed on 2026-09-04. Matching integration credentials, deployment verification, joint lifecycle acceptance and a continuous retry scheduler remain. See [`slices/A01-itf-flow-integration-reassessment.md`](slices/A01-itf-flow-integration-reassessment.md) |
 | A02 | Client Reimbursement staff integration | Planned | A01 lessons plus W17/W21 onboarding contract |
 | A03 | SIWES staff-facing integration | Policy gate | A01; D32 separates staff and external SIWES identities |
 | A04 | PromoIntel staff integration | Planned | A01 lessons plus W17/W21 onboarding contract |
@@ -101,14 +101,17 @@ result. Repository code, migrations and commits remain the final implementation 
 3. Resolve W05, W06 and W09 production gates.
 4. Start Phase 2 governance before onboarding more than ITF Flow.
 
-**Next best implementable slice:** complete A01 through joint ITF Flow staging acceptance, once Infrastructure supplies
-separate staging launch/directory/interoperability/worker configuration and an approved scheduler. If that external
-configuration is not yet available, prepare W05 by resolving D08-D11.
+**Next best implementable slice:** continue A01 by installing separate staging directory, interoperability and worker
+credentials in both Vercel projects, redeploying Flow and Workspace, registering/granting Flow, and executing the joint
+acceptance exercise. A manual authorized worker invocation may test outage recovery, but Gate A remains open until a
+continuous scheduler can meet the retry policy. If that external capability is unavailable, prepare W05 by resolving
+D08-D11.
 
 **Current child-app readiness:** The Workspace code foundation and its first-administrator authentication path are
 accepted for integrated ITF Flow staging, but Gate A is not formally met. A01's cross-repository code and contract
-coverage are complete. ITF Flow's environment-separated staging deployment, integration credentials and full joint
-lifecycle evidence remain; production signing additionally requires the approved KMS/HSM adapter.
+coverage are complete. The Flow staging origin/database and classifications are confirmed, but matching integration
+credentials, redeployment and full joint lifecycle evidence remain. Vercel Hobby cannot continuously schedule the
+staging retry worker; production signing additionally requires the approved KMS/HSM adapter.
 
 ## Cross-chat handoff protocol
 
