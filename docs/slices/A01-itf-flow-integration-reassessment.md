@@ -1,6 +1,6 @@
 # A01 - ITF Flow integration reassessment
 
-Status: **In progress - code complete; staging acceptance pending**
+Status: **In progress - code complete; Workspace prerequisite accepted; joint staging acceptance pending**
 
 Implementation date: 2026-08-23
 
@@ -67,7 +67,11 @@ The branch-scoped Vercel staging configuration is governed by
 - Flow reaches PostgreSQL but correctly fails environment readiness because launch issuer, audience and JWKS URL are
   absent.
 
-The required staging exercise must prove provisioning, successful launch, replay rejection, role mismatch/change,
+Workspace-only staging authentication was accepted on 2026-09-04, including public JWKS access, controlled
+administrator bootstrap, password replacement and QR/TOTP enrollment. This is a prerequisite, not joint integration
+evidence.
+
+The required joint staging exercise must prove provisioning, successful launch, replay rejection, role mismatch/change,
 assurance increase, central logout, entitlement revocation, duplicate delivery and outage/retry recovery.
 
 ## User interface effect

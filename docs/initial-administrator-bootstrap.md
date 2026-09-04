@@ -65,6 +65,10 @@ On success, securely remove `.env.staging.bootstrap`, confirm that the official 
 temporary-password replacement and TOTP enrollment. Never rerun the command after activation; it will refuse to modify
 an existing administrator.
 
+Staging acceptance was recorded on 2026-09-04: email delivery, temporary-password login, mandatory password
+replacement, QR-based authenticator enrollment and TOTP verification all succeeded. No administrator identity or
+credential material is retained in this evidence.
+
 Command Prompt does not use backslashes to escape `_` or `@`. Type `DOTENV_CONFIG_PATH` and the email address exactly;
 for example, `administrator@itf.gov.ng`, never `administrator\@itf.gov.ng`.
 

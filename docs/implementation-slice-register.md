@@ -37,14 +37,14 @@ result. Repository code, migrations and commits remain the final implementation 
 | W00 | Production dependency advisory remediation | Implemented | `acf76c5`; runtime audit reports zero known vulnerabilities. See [`slices/W00-dependency-security-baseline.md`](slices/W00-dependency-security-baseline.md) |
 | W01 | Authoritative current-user validation | Implemented | `16dcefc`, regression evidence `444287a`; full verification passes. See [`slices/W01-authoritative-current-user.md`](slices/W01-authoritative-current-user.md) |
 | W02 | Revocable Workspace sessions and session inventory | Implemented | `1483531`; DB-authoritative revocation, expiry, two-session recovery and inventory; 32-test suite passes. See [`slices/W02-revocable-workspace-sessions.md`](slices/W02-revocable-workspace-sessions.md) |
-| W03 | Workspace launch v2 issuer aligned with ITF Flow | Implemented | Workspace `9cbec46`, `42c4f3b`, `4c88f89`, QR enrollment `ca8b88b`, public JWKS routing `e9da2f9`; ITF Flow `f0696bc`; RS256/JWKS, assurance/TOTP, single-use receiver and contract tests. See [`slices/W03-workspace-launch-v2.md`](slices/W03-workspace-launch-v2.md) |
+| W03 | Workspace launch v2 issuer aligned with ITF Flow | Implemented | Workspace `9cbec46`, `42c4f3b`, `4c88f89`, QR enrollment `ca8b88b`, public JWKS routing `e9da2f9`; ITF Flow `f0696bc`; RS256/JWKS, assurance/TOTP, single-use receiver and contract tests. Staging QR/TOTP enrollment was accepted on 2026-09-04. See [`slices/W03-workspace-launch-v2.md`](slices/W03-workspace-launch-v2.md) |
 | W04 | Immediate central logout and entitlement-revocation delivery to ITF Flow | Implemented | Workspace `c8d3605`, `6427f98`; ITF Flow `30ace13`, `7a3a849`; transactional outbox, bounded immediate/retry delivery and atomic idempotent receiver. See [`slices/W04-central-revocation-delivery.md`](slices/W04-central-revocation-delivery.md) |
 | W05 | Login abuse protection and authentication security events | Policy gate | D08-D11: throttling, lockout, recovery and alerting policy |
 | W06 | App URL and outbound-request SSRF protection | Policy gate | D12: permitted domains/networks and operational exception process |
 | W07 | Secure configuration validation and removal of unsafe credential defaults | Implemented | Initial `2caeede`; Vercel stage separation `05153bb` adds an explicit staging policy without weakening the production KMS gate. See [`slices/W07-secure-configuration-validation.md`](slices/W07-secure-configuration-validation.md) |
 | W08 | Workspace security regression test foundation | Implemented | 62 Workspace regressions across 11 suites now cover authoritative users, configuration/stage binding, bounded sessions, launch v2, assurance/TOTP/QR, provisioning, revocation, onboarding roles, exact Server Action/public-route boundaries and controlled initial-administrator bootstrap. See [`slices/W08-security-regression-foundation.md`](slices/W08-security-regression-foundation.md) |
 | W09 | Security headers, browser policy and deployment trust boundary | Policy gate | Local proxy control `a6a90ab` and Vercel Preview/Production stage binding `05153bb` are implemented. Vercel hosting and the staging branch/domain are recorded; D13-D14 production topology and permitted origins remain open. See [`vercel-deployment-environments.md`](vercel-deployment-environments.md) |
-| W25 | Staff master-list onboarding and credential lifecycle | In progress | HR-import boundary `ce680e0`; staging-only controlled initial administrator bootstrap `37feab7`, remote hardening `2463277`, advisory-lock correction `79aac76`. HR imports remain `STAFF`-only; durable bulk-delivery/reissue, general privileged-role workflow and HR lifecycle reconciliation remain. See [`slices/W25-staff-master-list-onboarding.md`](slices/W25-staff-master-list-onboarding.md) |
+| W25 | Staff master-list onboarding and credential lifecycle | In progress | HR-import boundary `ce680e0`; staging-only controlled initial administrator bootstrap `37feab7`, remote hardening `2463277`, advisory-lock correction `79aac76`. Initial-admin email delivery, login, password replacement and privileged TOTP enrollment were accepted in staging on 2026-09-04. HR imports remain `STAFF`-only; durable bulk-delivery/reissue, general privileged-role workflow and HR lifecycle reconciliation remain. See [`slices/W25-staff-master-list-onboarding.md`](slices/W25-staff-master-list-onboarding.md) |
 
 ## Phase 2 — scalable access governance
 
@@ -75,7 +75,7 @@ result. Repository code, migrations and commits remain the final implementation 
 
 | ID | Application slice | Status | Dependency |
 |---|---|---|---|
-| A01 | ITF Flow launch v2, provisioning and revocation integration | In progress | Code complete: Workspace `1a08a5b`, Flow `02b433d`; bounded child sessions, immutable/versioned provisioning and lifecycle revocation pass 61 joint contract/security tests. Environment-separated staging configuration and acceptance remain. See [`slices/A01-itf-flow-integration-reassessment.md`](slices/A01-itf-flow-integration-reassessment.md) |
+| A01 | ITF Flow launch v2, provisioning and revocation integration | In progress | Code complete: Workspace `1a08a5b`, Flow `02b433d`; bounded child sessions, immutable/versioned provisioning and lifecycle revocation pass 61 joint contract/security tests. Workspace-only staging prerequisites passed on 2026-09-04; ITF Flow staging configuration and joint lifecycle acceptance remain. See [`slices/A01-itf-flow-integration-reassessment.md`](slices/A01-itf-flow-integration-reassessment.md) |
 | A02 | Client Reimbursement staff integration | Planned | A01 lessons plus W17/W21 onboarding contract |
 | A03 | SIWES staff-facing integration | Policy gate | A01; D32 separates staff and external SIWES identities |
 | A04 | PromoIntel staff integration | Planned | A01 lessons plus W17/W21 onboarding contract |
@@ -105,10 +105,10 @@ result. Repository code, migrations and commits remain the final implementation 
 separate staging launch/directory/interoperability/worker configuration and an approved scheduler. If that external
 configuration is not yet available, prepare W05 by resolving D08-D11.
 
-**Current child-app readiness:** The Workspace code foundation is mature enough for integrated ITF Flow staging, but
-Gate A is not formally met. A01's cross-repository code and contract coverage are complete. Environment-separated
-staging credentials and full staging lifecycle evidence remain; production signing additionally requires the approved
-KMS/HSM adapter.
+**Current child-app readiness:** The Workspace code foundation and its first-administrator authentication path are
+accepted for integrated ITF Flow staging, but Gate A is not formally met. A01's cross-repository code and contract
+coverage are complete. ITF Flow's environment-separated staging deployment, integration credentials and full joint
+lifecycle evidence remain; production signing additionally requires the approved KMS/HSM adapter.
 
 ## Cross-chat handoff protocol
 

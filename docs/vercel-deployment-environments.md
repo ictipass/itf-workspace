@@ -87,3 +87,19 @@ shows a controlled mismatch.
 Vercel may mark a deployment Ready after a successful build while the first request returns 500. Workspace intentionally
 validates injected secrets and runtime environment in its instrumentation hook. A runtime configuration failure is a
 fail-closed deployment, not proof that the settings used during the build were valid.
+
+## Workspace-only staging acceptance evidence
+
+Recorded 2026-09-04 from the super administrator's staging exercise:
+
+- the stable staging domain served the Workspace application without an HTTP 500;
+- the anonymous JWKS endpoint returned raw JSON rather than redirecting to login;
+- the login page loaded its styles, logo and form without a runtime configuration error;
+- the Workspace migrations were applied to the staging database;
+- the controlled initial-administrator email was delivered;
+- temporary-password login and mandatory password replacement succeeded; and
+- authenticator enrollment by QR code and verification of the generated TOTP succeeded.
+
+This evidence accepts the Workspace-only authentication prerequisite. It does not close A01: ITF Flow must still be
+configured in its own staging environment and the joint provisioning, launch, replay, assurance, revocation and
+outage/retry scenarios must pass.
