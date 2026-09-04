@@ -75,7 +75,7 @@ result. Repository code, migrations and commits remain the final implementation 
 
 | ID | Application slice | Status | Dependency |
 |---|---|---|---|
-| A01 | ITF Flow launch v2, provisioning and revocation integration | In progress | Code complete: Workspace `1a08a5b`, Flow `02b433d`; Flow staging configuration template `f48b702`. Workspace authentication, stable Flow staging origin/database and assurance classifications were confirmed on 2026-09-04. Matching integration credentials, deployment verification, joint lifecycle acceptance and a continuous retry scheduler remain. See [`slices/A01-itf-flow-integration-reassessment.md`](slices/A01-itf-flow-integration-reassessment.md) |
+| A01 | ITF Flow launch v2, provisioning and revocation integration | In progress | Code complete: Workspace `1a08a5b`, Flow `02b433d`; Flow staging configuration template `f48b702`. Workspace authentication, stable Flow staging origin/database and assurance classifications were confirmed on 2026-09-04; Flow staging health and database reachability were confirmed on 2026-09-05. Database credential rotation, matching integration credentials, joint lifecycle acceptance and a continuous retry scheduler remain. See [`slices/A01-itf-flow-integration-reassessment.md`](slices/A01-itf-flow-integration-reassessment.md) |
 | A02 | Client Reimbursement staff integration | Planned | A01 lessons plus W17/W21 onboarding contract |
 | A03 | SIWES staff-facing integration | Policy gate | A01; D32 separates staff and external SIWES identities |
 | A04 | PromoIntel staff integration | Planned | A01 lessons plus W17/W21 onboarding contract |
@@ -109,9 +109,11 @@ D08-D11.
 
 **Current child-app readiness:** The Workspace code foundation and its first-administrator authentication path are
 accepted for integrated ITF Flow staging, but Gate A is not formally met. A01's cross-repository code and contract
-coverage are complete. The Flow staging origin/database and classifications are confirmed, but matching integration
-credentials, redeployment and full joint lifecycle evidence remain. Vercel Hobby cannot continuously schedule the
-staging retry worker; production signing additionally requires the approved KMS/HSM adapter.
+coverage are complete. Flow staging origin, database, classifications, health and database reachability are confirmed,
+but the disclosed staging database credential must be rotated before matching integration credentials and full joint
+lifecycle evidence are exercised.
+Vercel Hobby cannot continuously schedule the staging retry worker; production signing additionally requires the
+approved KMS/HSM adapter.
 
 ## Cross-chat handoff protocol
 
