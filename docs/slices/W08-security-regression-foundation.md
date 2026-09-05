@@ -83,7 +83,8 @@ Implementation commit: `444287a`.
 - W25 controlled-bootstrap increment `37feab7` adds seven cases for explicit identity parsing, leading-zero staff
   numbers, staging-only execution, existing/conflicting administrator rejection, email-before-activation ordering and
   fail-closed delivery behavior. Its remote-database follow-up adds escaped-email rejection and bounded configurable
-  transaction timing. The Workspace suite now passes 62 tests across 11 suites.
+  transaction timing. W26 added curated application-icon key, label, injection-rejection and fallback coverage. The
+  Workspace suite now passes 65 tests across 12 suites.
 
 ## Rollback
 
