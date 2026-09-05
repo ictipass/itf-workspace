@@ -116,6 +116,11 @@ sessions can hide this deployment boundary. Ordinary staff and Workspace's backe
 cannot proceed until ITF approves a staging protection arrangement that supports browser launch and service calls
 without placing a bypass credential in launch URLs.
 
+ITF confirmed on 2026-09-05 that `itf-flow-staging` is dedicated exclusively to staging and the intended production
+deployment is the separate `itf-flow.vercel.app` project/domain. The recommended A01 correction is to disable Vercel
+Authentication only on the staging project. Flow's own session checks, signed single-use launch assertion and service
+credentials remain mandatory; the decision does not establish production deployment-protection policy.
+
 ## User interface effect
 
 No layout changed. After an administrator grants or changes ITF Flow access, the success message now explicitly says

@@ -75,7 +75,7 @@ result. Repository code, migrations and commits remain the final implementation 
 
 | ID | Application slice | Status | Dependency |
 |---|---|---|---|
-| A01 | ITF Flow launch v2, provisioning and revocation integration | External gate | Code complete: Workspace `1a08a5b`, Flow `02b433d`; Flow staging configuration `f48b702` and pooled/direct database hardening `d0199ce`. Workspace authentication and Flow database reachability are confirmed. On 2026-09-05, an unauthenticated probe found Flow staging behind Vercel Authentication, blocking ordinary browser launch and machine-to-machine provisioning. Database credential rotation, an approved staging protection boundary, matching integration credentials, joint lifecycle acceptance and a continuous retry scheduler remain. See [`slices/A01-itf-flow-integration-reassessment.md`](slices/A01-itf-flow-integration-reassessment.md) |
+| A01 | ITF Flow launch v2, provisioning and revocation integration | External gate | Code complete: Workspace `1a08a5b`, Flow `02b433d`; Flow staging configuration `f48b702` and pooled/direct database hardening `d0199ce`. Workspace authentication and Flow database reachability are confirmed. ITF confirmed that Flow staging is a dedicated Vercel project separate from the intended production project, allowing staging Vercel Authentication to be disabled without setting production policy. Database credential rotation, application of the staging protection change, matching integration credentials, joint lifecycle acceptance and a continuous retry scheduler remain. See [`slices/A01-itf-flow-integration-reassessment.md`](slices/A01-itf-flow-integration-reassessment.md) |
 | A02 | Client Reimbursement staff integration | Planned | A01 lessons plus W17/W21 onboarding contract |
 | A03 | SIWES staff-facing integration | Policy gate | A01; D32 separates staff and external SIWES identities |
 | A04 | PromoIntel staff integration | Planned | A01 lessons plus W17/W21 onboarding contract |
@@ -101,10 +101,10 @@ result. Repository code, migrations and commits remain the final implementation 
 3. Resolve W05, W06 and W09 production gates.
 4. Start Phase 2 governance before onboarding more than ITF Flow.
 
-**Next best implementable slice:** continue A01 after ITF approves a Flow staging deployment-protection boundary that
-permits ordinary browser launch and authenticated machine-to-machine integration without exposing a bypass credential
-in URLs. Then install separate staging directory, interoperability and worker credentials, redeploy, register/grant
-Flow, and execute joint acceptance. If that external decision is unavailable, prepare W05 by resolving D08-D11.
+**Next best implementable slice:** continue A01 by disabling Vercel Authentication on the dedicated Flow staging
+project, verifying anonymous reachability of the launch boundary, then installing separate staging directory,
+interoperability and worker credentials. Redeploy, register/grant Flow, and execute joint acceptance. If that external
+change is unavailable, prepare W05 by resolving D08-D11.
 
 **Current child-app readiness:** The Workspace code foundation and its first-administrator authentication path are
 accepted for integrated ITF Flow staging, but Gate A is not formally met. A01's cross-repository code and contract
