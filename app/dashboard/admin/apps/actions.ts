@@ -13,6 +13,7 @@ import {
 import { prisma } from "@/lib/prisma";
 import { requireCurrentUser, requireFreshMfaContext } from "@/lib/auth/current-user";
 import { normalizeAppLaunchUrl } from "@/lib/apps/launch-url";
+import { APP_ICON_KEYS } from "@/lib/apps/app-icons";
 import {
   deliverItfFlowSessionEvents,
   enqueueCentralLogoutForWorkspaceUsers,
@@ -37,7 +38,9 @@ const appSchema = z.object({
   slug: z.string().min(2).regex(/^[a-z0-9-]+$/),
   description: z.string().optional(),
   url: appLaunchUrlSchema,
-  icon: z.string().optional(),
+  icon: z.enum(APP_ICON_KEYS, {
+    message: "Choose an icon from the approved application icon catalogue.",
+  }),
   category: z.nativeEnum(AppCategory),
   environment: z.nativeEnum(AppEnvironment),
   status: z.nativeEnum(AppStatus),
@@ -73,7 +76,7 @@ export async function createAppAction(
     slug: formData.get("slug"),
     description: formData.get("description") || undefined,
     url: formData.get("url"),
-    icon: formData.get("icon") || undefined,
+    icon: formData.get("icon"),
     category: formData.get("category"),
     environment: formData.get("environment"),
     status: formData.get("status"),
@@ -160,7 +163,7 @@ export async function updateAppAction(
     slug: formData.get("slug"),
     description: formData.get("description") || undefined,
     url: formData.get("url"),
-    icon: formData.get("icon") || undefined,
+    icon: formData.get("icon"),
     category: formData.get("category"),
     environment: formData.get("environment"),
     status: formData.get("status"),

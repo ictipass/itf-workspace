@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AppIconPicker } from "@/components/apps/app-icon-picker";
 
 const initialState: AppActionState = {
   success: false,
@@ -56,7 +57,10 @@ export default function AppEditForm({ app }: { app: EditableApp }) {
         description="Use the exact reachable host. Workspace adds workspace_launch_token during launch."
       />
       <AppUrlTestButton url={app.url} />
-      <Field label="Icon" name="icon" defaultValue={app.icon ?? ""} />
+      <AppIconPicker
+        defaultValue={app.icon}
+        error={state.errors?.icon?.[0]}
+      />
 
       <div className="space-y-2">
         <Label>Description</Label>

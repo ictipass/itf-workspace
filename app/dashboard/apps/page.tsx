@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { effectiveLaunchAssurance } from "@/lib/security/launch-assurance";
+import { AppIcon } from "@/components/apps/app-icon";
 
 export default async function MyAppsPage() {
   const user = await requireCurrentUser();
@@ -67,7 +68,12 @@ export default async function MyAppsPage() {
               >
                 <CardHeader>
                   <div className="flex items-start justify-between gap-4">
-                    <CardTitle>{app.name}</CardTitle>
+                    <div className="flex min-w-0 items-center gap-3">
+                      <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                        <AppIcon icon={app.icon} className="size-6" strokeWidth={1.8} />
+                      </span>
+                      <CardTitle className="truncate">{app.name}</CardTitle>
+                    </div>
                     <Badge variant="secondary">{app.category}</Badge>
                   </div>
                 </CardHeader>

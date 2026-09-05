@@ -22,6 +22,7 @@ import Link from "next/link";
 import { deactivateAppAction } from "./actions";
 import { Button } from "@/components/ui/button";
 import AppUrlTestButton from "./app-url-test-button";
+import { AppIcon } from "@/components/apps/app-icon";
 
 export default async function AdminAppsPage() {
   const user = await requireCurrentUser();
@@ -75,8 +76,15 @@ export default async function AdminAppsPage() {
                 apps.map((app) => (
                   <TableRow key={app.id}>
                     <TableCell>
-                      <div className="font-medium">{app.name}</div>
-                      <div className="text-xs text-muted-foreground">{app.slug}</div>
+                      <div className="flex items-center gap-3">
+                        <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted text-foreground">
+                          <AppIcon icon={app.icon} className="size-5" strokeWidth={1.8} />
+                        </span>
+                        <div className="min-w-0">
+                          <div className="truncate font-medium">{app.name}</div>
+                          <div className="truncate text-xs text-muted-foreground">{app.slug}</div>
+                        </div>
+                      </div>
                     </TableCell>
                     <TableCell>
                       <Badge variant="outline">{app.category}</Badge>

@@ -38,11 +38,12 @@ async function main() {
 
   const flow = await prisma.app.upsert({
     where: { slug: "itf-flow" },
-    update: {},
+    update: { icon: "workflow" },
     create: {
       name: "ITF Flow",
       slug: "itf-flow",
       description: "Correspondence intake, hierarchical routing, minutes and accountable action.",
+      icon: "workflow",
       url: configuration.itfFlowUrl,
       category: AppCategory.WORKFLOW,
       environment: AppEnvironment.DEVELOPMENT,

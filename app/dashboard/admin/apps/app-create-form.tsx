@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AppIconPicker } from "@/components/apps/app-icon-picker";
 import {
   Select,
   SelectContent,
@@ -70,7 +71,7 @@ export default function AppCreateForm() {
         description="Use the exact reachable host, for example https://itfpromotel.itf.gov.ng. Do not add Workspace token parameters manually."
       />
       <AppUrlTestButton getUrl={() => urlInputRef.current?.value ?? ""} />
-      <Field label="Icon" name="icon" error={state.errors?.icon?.[0]} />
+      <AppIconPicker error={state.errors?.icon?.[0]} />
 
       <div className="space-y-2">
         <Label>Description</Label>
