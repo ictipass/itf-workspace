@@ -6,7 +6,8 @@ Implementation date: 2026-08-23
 
 Workspace implementation commit: `1a08a5b`
 
-ITF Flow implementation commit: `02b433d`; Flow documentation: `49e4d95`; staging configuration hygiene: `f48b702`
+ITF Flow implementation commit: `02b433d`; Flow documentation: `49e4d95`; staging configuration hygiene: `f48b702`;
+pooled runtime/direct migration database hardening: `d0199ce`
 
 ## Outcome
 
@@ -31,6 +32,8 @@ ready for joint staging configuration and acceptance testing, but this is not co
   sessions. Users must satisfy the stronger TOTP requirement on their next launch.
 - Flow launch resolves the immutable identity in the same transaction that consumes the one-time assertion. Unknown,
   inactive, conflicting or role-mismatched identities fail closed.
+- Flow accepts both provider-supported `postgres://` and `postgresql://` URLs, uses pooled `DATABASE_URL` for runtime
+  traffic, and selects `DIRECT_URL` for migrations and administrative tooling when configured.
 
 No database migration was needed in either repository.
 
@@ -93,7 +96,8 @@ controlled-pilot gate.
 ## Verification evidence
 
 - Workspace: TypeScript and ESLint pass; production build passes; 44/44 security and contract tests pass.
-- ITF Flow: TypeScript and ESLint pass; production build passes; 21/21 security and contract tests pass.
+- ITF Flow: TypeScript and ESLint pass; production build passes; 24/24 security, database-configuration and contract
+  tests pass.
 - Local databases: Workspace's 8 migrations and Flow's 28 migrations are applied and current.
 - Workspace environment validation passes development rules and reports Flow directory synchronization configured.
 - Flow reaches PostgreSQL but correctly fails environment readiness because launch issuer, audience and JWKS URL are
