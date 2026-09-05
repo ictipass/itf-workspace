@@ -121,6 +121,12 @@ deployment is the separate `itf-flow.vercel.app` project/domain. The recommended
 Authentication only on the staging project. Flow's own session checks, signed single-use launch assertion and service
 credentials remain mandatory; the decision does not establish production deployment-protection policy.
 
+ITF then confirmed the staging database credential rotation and disabled Vercel Authentication on the dedicated Flow
+staging project. An independent probe returned HTTP 200 JSON from Flow readiness, and an unsigned launch reached
+Flow's own missing-token response rather than Vercel login. Authenticated, deliberately invalid empty requests reached
+the Flow directory and session-event receivers and returned HTTP 400 rather than HTTP 401, confirming that both
+Flow-side staging service credentials are installed without creating data. Workspace sender configuration remains.
+
 ## User interface effect
 
 No layout changed. After an administrator grants or changes ITF Flow access, the success message now explicitly says
