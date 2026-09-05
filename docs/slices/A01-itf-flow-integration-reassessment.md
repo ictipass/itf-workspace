@@ -110,6 +110,12 @@ evidence.
 The required joint staging exercise must prove provisioning, successful launch, replay rejection, role mismatch/change,
 assurance increase, central logout, entitlement revocation, duplicate delivery and outage/retry recovery.
 
+An unauthenticated external probe on 2026-09-05 confirmed that Workspace's JWKS endpoint returns its public key set,
+but Flow staging redirects both readiness and `/workspace/launch` to Vercel Authentication. Existing Vercel browser
+sessions can hide this deployment boundary. Ordinary staff and Workspace's backend do not have those sessions, so A01
+cannot proceed until ITF approves a staging protection arrangement that supports browser launch and service calls
+without placing a bypass credential in launch URLs.
+
 ## User interface effect
 
 No layout changed. After an administrator grants or changes ITF Flow access, the success message now explicitly says
