@@ -1,6 +1,6 @@
 # A01 - ITF Flow integration reassessment
 
-Status: **In progress - code complete; Workspace prerequisite accepted; joint staging acceptance pending**
+Status: **In progress - provisioning and first launch accepted; lifecycle acceptance pending**
 
 Implementation date: 2026-08-23
 
@@ -127,6 +127,12 @@ Flow's own missing-token response rather than Vercel login. Authenticated, delib
 the Flow directory and session-event receivers and returned HTTP 400 rather than HTTP 401, confirming that both
 Flow-side staging service credentials are installed without creating data. Workspace sender configuration remains.
 
+On 2026-09-06, ITF confirmed that all eight Workspace staging integration values were installed and Workspace was
+successfully redeployed. ITF Flow was registered as a Workspace application, the administrator received the
+`SYSTEM_ADMIN` entitlement, the entitled user synchronized successfully to Flow, and a genuine Workspace-to-Flow
+launch completed. This accepts the joint provisioning and launch happy path. Replay rejection, role and assurance
+changes, central logout, entitlement revocation, duplicate delivery and outage/retry recovery remain to be exercised.
+
 ## User interface effect
 
 No layout changed. After an administrator grants or changes ITF Flow access, the success message now explicitly says
@@ -135,9 +141,10 @@ after a role, status or assurance increase and must relaunch through Workspace.
 
 ## Readiness and next action
 
-A01's code implementation is complete, but the slice remains In progress until environment-separated staging
-credentials, scheduler and joint acceptance evidence exist. Gate A is therefore not formally met, and Workspace is
-not yet approved for an ITF Flow pilot.
+A01's code implementation, environment-separated staging configuration, provisioning and first launch are accepted.
+The slice remains In progress until the remaining lifecycle scenarios and a continuous retry scheduler are accepted.
+Gate A is therefore not formally met, and Workspace is not yet approved for an ITF Flow pilot.
 
-Next best implementable action: configure and execute the A01 joint staging acceptance exercise. If Infrastructure
-cannot yet provide that environment, resolve D08-D11 so W05 login abuse protection can begin.
+Next best implementable action: complete the A01 lifecycle exercise, beginning with launch replay rejection and
+central logout/entitlement-revocation delivery. If Infrastructure cannot yet provide a continuous scheduler, the finite
+outage/retry case may use the approved manual invocation while the controlled-pilot scheduler gate remains.
