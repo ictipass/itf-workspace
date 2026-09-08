@@ -53,5 +53,9 @@ also safe for the earlier single-button behavior.
 
 ## Next action
 
-Complete staging acceptance for local logout, cancellation and confirmed global logout. The confirmed global action
-also supplies the remaining A01 central-logout acceptance evidence when Flow revocation is observed.
+Staging acceptance passed on 2026-09-08. Flow-only exit returned to the Workspace catalogue without ending the central
+session; cancellation preserved the active sessions; confirmed global logout ended the current Workspace session and
+its exact Flow session while preserving a separate Workspace device session. This also accepts A01-04.
+
+Continue with A01-02 role-change/mismatch acceptance using a dedicated staging identity and approved old/new Flow
+roles.

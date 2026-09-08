@@ -1,6 +1,6 @@
 # A01 - ITF Flow integration reassessment
 
-Status: **In progress - provisioning and first launch accepted; lifecycle acceptance pending**
+Status: **In progress - provisioning, launch, replay rejection and central logout accepted; lifecycle acceptance pending**
 
 Implementation date: 2026-08-23
 
@@ -130,8 +130,13 @@ Flow-side staging service credentials are installed without creating data. Works
 On 2026-09-06, ITF confirmed that all eight Workspace staging integration values were installed and Workspace was
 successfully redeployed. ITF Flow was registered as a Workspace application, the administrator received the
 `SYSTEM_ADMIN` entitlement, the entitled user synchronized successfully to Flow, and a genuine Workspace-to-Flow
-launch completed. This accepts the joint provisioning and launch happy path. Replay rejection, role and assurance
-changes, central logout, entitlement revocation, duplicate delivery and outage/retry recovery remain to be exercised.
+launch completed. This accepts the joint provisioning and launch happy path.
+
+On 2026-09-08, ITF confirmed W28/W29 staging behavior and the A01 replay exercise worked as expected. A consumed
+assertion produced only Flow's generic invalid-token result in a separate unauthenticated browser context and did not
+create a Flow session; no token value was retained. Confirmed global logout revoked the current Workspace session and
+its exact Flow session while preserving a separate Workspace device session. A01-01 and A01-04 are accepted. Role and
+assurance changes, entitlement revocation, duplicate delivery and outage/retry recovery remain.
 
 ## User interface effect
 
@@ -141,12 +146,14 @@ after a role, status or assurance increase and must relaunch through Workspace.
 
 ## Readiness and next action
 
-A01's code implementation, environment-separated staging configuration, provisioning and first launch are accepted.
+A01's code implementation, environment-separated staging configuration, provisioning, first launch, replay rejection
+and confirmed central logout are accepted.
 The slice remains In progress until the remaining lifecycle scenarios and a continuous retry scheduler are accepted.
 Gate A is therefore not formally met, and Workspace is not yet approved for an ITF Flow pilot.
 
-Next best implementable action: complete the A01 lifecycle exercise, beginning with launch replay rejection and
-central logout/entitlement-revocation delivery. If Infrastructure cannot yet provide a continuous scheduler, the finite
-outage/retry case may use the approved manual invocation while the controlled-pilot scheduler gate remains. Use the
+Next best implementable action: execute A01-02 role-change/mismatch acceptance with a dedicated staging identity and
+explicitly approved old/new Flow roles. Do not alter the only recoverable Workspace administrator. If Infrastructure
+cannot yet provide a continuous scheduler, the finite outage/retry case may use the approved manual invocation while
+the controlled-pilot scheduler gate remains. Use the
 [`A01 staging lifecycle acceptance runbook`](../acceptance/A01-staging-lifecycle-acceptance.md) and do not retain launch
 assertions as evidence.

@@ -47,8 +47,8 @@ result. Repository code, migrations and commits remain the final implementation 
 | W25 | Staff master-list onboarding and credential lifecycle | In progress | HR-import boundary `ce680e0`; staging-only controlled initial administrator bootstrap `37feab7`, remote hardening `2463277`, advisory-lock correction `79aac76`. Initial-admin email delivery, login, password replacement and privileged TOTP enrollment were accepted in staging on 2026-09-04. HR imports remain `STAFF`-only; durable bulk-delivery/reissue, general privileged-role workflow and HR lifecycle reconciliation remain. See [`slices/W25-staff-master-list-onboarding.md`](slices/W25-staff-master-list-onboarding.md) |
 | W26 | Curated application icon catalogue | Implemented | `2965023`; 16 centrally controlled icon keys, server-side allow-list validation, accessible create/edit selection, safe legacy fallback and consistent staff/admin rendering. No migration or environment configuration is required. See [`slices/W26-curated-application-icons.md`](slices/W26-curated-application-icons.md) |
 | W27 | Entitlement-aware child-app switcher | Implemented | Workspace `bc03856`, ITF Flow `4747f67`; live Workspace-session validation, active entitlement/role-policy filtering, protected versioned navigation contract, same-tab launch routing, four Flow UI variants and responsive Glass-header correction. Joint staging deployment and steps 1-9 were accepted on 2026-09-08. See [`slices/W27-entitled-child-app-switcher.md`](slices/W27-entitled-child-app-switcher.md) |
-| W28 | Split child-app and global Workspace sign-out | Implemented | Workspace `453a0d3`, ITF Flow `515e94c`; Flow-only logout returns to the catalogue, an adjacent chevron offers global logout, and Workspace uses a confirmation POST to revoke the current central session and propagate W04 events. Staging acceptance remains. See [`slices/W28-session-exit-scope.md`](slices/W28-session-exit-scope.md) |
-| W29 | Child-app staff entry through Workspace | Implemented | ITF Flow `8ff3202`; its public landing and staff-login pages now link directly to the environment-bound Workspace login while local demo credentials remain flag-controlled. No Workspace runtime change, migration or new configuration. Staging acceptance remains. See [`slices/W29-child-app-staff-entry.md`](slices/W29-child-app-staff-entry.md) |
+| W28 | Split child-app and global Workspace sign-out | Implemented and staging accepted | Workspace `453a0d3`, ITF Flow `515e94c`; Flow-only logout returns to the catalogue, an adjacent chevron offers global logout, and Workspace uses a confirmation POST to revoke the current central session and propagate W04 events. Local exit, cancellation, confirmed global exit, Flow-session rejection and separate-device preservation were accepted on 2026-09-08. See [`slices/W28-session-exit-scope.md`](slices/W28-session-exit-scope.md) |
+| W29 | Child-app staff entry through Workspace | Implemented and staging accepted | ITF Flow `8ff3202`; its public landing and staff-login pages link directly to the environment-bound Workspace login while local demo credentials remain flag-controlled. The public links and entitled launch path were accepted on 2026-09-08. No Workspace runtime change, migration or new configuration. See [`slices/W29-child-app-staff-entry.md`](slices/W29-child-app-staff-entry.md) |
 
 ## Phase 2 — scalable access governance
 
@@ -79,7 +79,7 @@ result. Repository code, migrations and commits remain the final implementation 
 
 | ID | Application slice | Status | Dependency |
 |---|---|---|---|
-| A01 | ITF Flow launch v2, provisioning and revocation integration | In progress | Code complete: Workspace `1a08a5b`, Flow `02b433d`; Flow staging configuration `f48b702` and pooled/direct database hardening `d0199ce`. Database credential rotation, dedicated staging boundary, Workspace sender configuration, app registration, administrator entitlement, directory synchronization and first genuine launch are accepted. Replay, role/assurance change, central logout, entitlement revocation, duplicate delivery, outage/retry and a continuous retry scheduler remain. See [`slices/A01-itf-flow-integration-reassessment.md`](slices/A01-itf-flow-integration-reassessment.md) |
+| A01 | ITF Flow launch v2, provisioning and revocation integration | In progress | Code complete: Workspace `1a08a5b`, Flow `02b433d`; Flow staging configuration `f48b702` and pooled/direct database hardening `d0199ce`. Database credential rotation, dedicated staging boundary, Workspace sender configuration, app registration, administrator entitlement, directory synchronization, first genuine launch, replay rejection and confirmed central logout are accepted. Role/assurance change, entitlement revocation, duplicate delivery, outage/retry and a continuous retry scheduler remain. See [`slices/A01-itf-flow-integration-reassessment.md`](slices/A01-itf-flow-integration-reassessment.md) |
 | A02 | Client Reimbursement staff integration | Planned | A01 lessons plus W17/W21 onboarding contract |
 | A03 | SIWES staff-facing integration | Policy gate | A01; D32 separates staff and external SIWES identities |
 | A04 | PromoIntel staff integration | Planned | A01 lessons plus W17/W21 onboarding contract |
@@ -100,23 +100,26 @@ result. Repository code, migrations and commits remain the final implementation 
 
 ## Current execution order
 
-1. Deploy and accept W28 split Flow/global sign-out and W29 staff-entry links in Workspace and ITF Flow staging.
-2. Complete the joint A01 ITF Flow lifecycle acceptance exercise; staging configuration, provisioning, first launch and W27 navigation are accepted.
-3. Exercise replay, role/assurance changes, immediate/duplicate revocation and outage/retry in staging to close A01 and Gate A.
-4. Resolve W05, W06 and W09 production gates.
+1. Complete A01-02 role-change/mismatch acceptance with a dedicated staging test identity and approved old/new Flow roles.
+2. Exercise the A01-03 assurance increase and A01-05 entitlement revocation cases in staging.
+3. Exercise A01-06 duplicate delivery and A01-07 outage/retry recovery to close the finite lifecycle evidence.
+4. Establish continuous outbox retry operation and resolve W05, W06 and W09 before a controlled pilot.
 5. Start Phase 2 governance before onboarding more than ITF Flow.
 
-**Next best implementable slice:** complete W28/W29 joint staging deployment and acceptance, including Flow-only return,
-confirmed global logout delivery and direct public-to-Workspace staff entry, then continue A01 with replay rejection, role/assurance change,
-entitlement-revocation, duplicate-delivery and outage/retry acceptance. The continuous retry scheduler remains a
-controlled-pilot gate. Execute and retain evidence through the
+**Next best implementable slice:** execute A01-02 role-change/mismatch acceptance. Its practical purpose is to prove
+that an old or forged Flow role cannot survive an authoritative Workspace role change: the existing Flow session must
+end, launch must fail while Workspace and Flow disagree, and launch may succeed only after directory reconciliation
+with the newly approved role. Use a dedicated staging identity and explicitly approved old/new Flow roles; do not
+alter the only recoverable Workspace administrator. Then continue A01-03 and A01-05 through A01-07. The continuous
+retry scheduler remains a controlled-pilot gate. Execute and retain evidence through the
 [`A01 staging lifecycle acceptance runbook`](acceptance/A01-staging-lifecycle-acceptance.md).
 
 **Current child-app readiness:** The Workspace code foundation and its first-administrator authentication path are
 accepted for integrated ITF Flow staging, but Gate A is not formally met. A01's cross-repository code and contract
 coverage are complete. Flow staging origin, database, classifications, credential rotation, public application
-boundary, receiver credentials, Workspace sender configuration, registry/access records, provisioning and first
-launch are confirmed. The remaining joint lifecycle evidence and continuous retry operation remain.
+boundary, receiver credentials, Workspace sender configuration, registry/access records, provisioning, first launch,
+replay rejection, W28/W29 behavior and confirmed central logout are accepted. Role/assurance change, entitlement
+revocation, duplicate delivery, outage/retry recovery and continuous retry operation remain.
 Vercel Hobby cannot continuously schedule the staging retry worker; production signing additionally requires the
 approved KMS/HSM adapter.
 

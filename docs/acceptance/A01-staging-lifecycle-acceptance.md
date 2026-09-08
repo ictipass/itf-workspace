@@ -1,6 +1,6 @@
 # A01 staging lifecycle acceptance runbook
 
-Status: In progress — provisioning, first launch and W27 navigation accepted; remaining scenarios pending  
+Status: In progress — provisioning, launch, W27-W29, replay rejection and central logout accepted; remaining scenarios pending
 Environment: Dedicated ITF Workspace and ITF Flow staging only
 
 ## Purpose
@@ -38,8 +38,10 @@ used. Reusing it must not create a second Flow session even while its two-minute
 7. Retain only: test time, deployed commits, expected/actual redirect, tester identity, and a redacted reference showing
    one successful redemption/session rather than the assertion value.
 
-Acceptance: **Pending live staging execution.** Repository evidence already passes the unique-redemption and concurrent
-transaction regression cases.
+Acceptance: **Passed on 2026-09-08.** Reusing the consumed launch request in a separate unauthenticated browser context
+reached Flow's generic invalid-token response and did not create an authenticated Flow session. No assertion or token
+value was retained as evidence. Repository evidence also passes the unique-redemption and concurrent-transaction
+regression cases.
 
 ## Remaining lifecycle cases
 
@@ -47,7 +49,7 @@ transaction regression cases.
 |---|---|---|
 | A01-02 role change/mismatch | Old or forged child role outlives its approved assignment | Existing Flow session ends; launch before directory reconciliation fails; synchronized approved role launches |
 | A01-03 assurance increase | A standard session survives after app/role becomes sensitive | Existing session ends and the next launch requires fresh TOTP |
-| A01-04 confirmed central logout | Leaving a shared device leaves Flow usable | W28 confirmation revokes the current Workspace session and its exact Flow sessions; another device session remains |
+| A01-04 confirmed central logout — accepted 2026-09-08 | Leaving a shared device leaves Flow usable | W28 confirmation revoked the current Workspace session and its exact Flow session; the separately authenticated Workspace device session remained available |
 | A01-05 entitlement revocation | Removed staff retains child access | All active Flow sessions for that entitlement end and relaunch is denied |
 | A01-06 duplicate delivery | Retry applies the same security transition twice or errors | The same event is accepted idempotently and produces one effective revocation |
 | A01-07 receiver outage/retry | Flow outage loses a revocation or restores access | Workspace revocation remains final; outbox enters retry and later delivers after recovery |
@@ -58,6 +60,6 @@ not manipulate application tables directly.
 
 ## Completion rule
 
-Gate A remains **Not met** until every case has accepted evidence. Vercel Hobby's daily cron remains insufficient for
-continuous retry operation; a successful authorized manual A01-07 invocation proves only finite staging recovery, not
-the controlled-pilot scheduler gate.
+Gate A remains **Not met** until A01-02, A01-03 and A01-05 through A01-07 have accepted evidence. Vercel Hobby's daily
+cron remains insufficient for continuous retry operation; a successful authorized manual A01-07 invocation proves
+only finite staging recovery, not the controlled-pilot scheduler gate.

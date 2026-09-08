@@ -32,9 +32,12 @@ Two public Flow pages gain direct Workspace calls to action. There is no Workspa
 Deploy Flow `8ff3202` after or with the existing W28/S23B deployment. In a private browser, open `/` and `/login`, use
 each Workspace link, authenticate if required and confirm the user can choose/launch only entitled applications.
 
+Staging acceptance passed on 2026-09-08: both public Flow entry points reached Workspace login, and the resulting
+Workspace catalogue and Flow launch retained entitlement enforcement.
+
 ## Next action and practical use
 
-After W28/W29 staging acceptance, continue A01 lifecycle acceptance. Its practical purpose is to prove the complete
-security lifecycle rather than only the successful launch: a one-time assertion cannot be replayed; role or assurance
-changes force the correct new authorization; central logout and entitlement revocation end existing access; duplicate
-events are harmless; and a temporary receiver outage leaves durable retry evidence and eventually converges.
+Continue with A01-02 role-change/mismatch acceptance. Its practical purpose is to prove that an existing or asserted
+Flow role cannot outlive the authoritative Workspace assignment. The old Flow session must end, a launch while the two
+directories disagree must fail, and only the reconciled approved role may launch. Assurance increase, entitlement
+revocation, duplicate delivery and outage/retry recovery follow.
