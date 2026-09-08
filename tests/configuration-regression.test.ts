@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { describe, test } from "node:test";
 
 import {
+  resolveItfFlowAppNavigationConfiguration,
   resolveItfFlowDirectorySyncConfiguration,
   resolveItfFlowSessionEventConfiguration,
   resolveWorkspaceEmailConfiguration,
@@ -28,6 +29,7 @@ const validProductionEnvironment = {
   ITF_FLOW_URL: "https://flow.example.test/workspace/launch",
   WORKSPACE_DIRECTORY_SYNC_SECRET: "d".repeat(40),
   WORKSPACE_INTEROP_SECRET: "e".repeat(40),
+  ITF_FLOW_APP_NAVIGATION_SECRET: "n".repeat(40),
   WORKSPACE_OUTBOX_WORKER_SECRET: "f".repeat(40),
 };
 
@@ -162,6 +164,7 @@ describe("Workspace runtime configuration", () => {
     assert.equal(configuration.emailConfigured, true);
     assert.equal(configuration.itfFlowDirectorySyncConfigured, true);
     assert.equal(configuration.itfFlowSessionEventsConfigured, true);
+    assert.equal(configuration.itfFlowAppNavigationConfigured, true);
   });
 
   test("reports every missing production requirement in one redacted error", () => {
@@ -240,6 +243,26 @@ describe("Workspace runtime configuration", () => {
 });
 
 describe("feature configuration", () => {
+  test("binds Flow navigation to its credential and the Workspace origin", () => {
+    const configuration = resolveItfFlowAppNavigationConfiguration(
+      validStagingEnvironment
+    );
+    assert.deepEqual(configuration, {
+      workspaceOrigin: "https://workspace-staging.example.test/",
+      secret: "n".repeat(40),
+      appSlug: "itf-flow",
+    });
+
+    assert.throws(
+      () =>
+        resolveItfFlowAppNavigationConfiguration({
+          ...validStagingEnvironment,
+          ITF_FLOW_APP_NAVIGATION_SECRET: undefined,
+        }),
+      /ITF_FLOW_APP_NAVIGATION_SECRET/
+    );
+  });
+
   test("derives the email login URL from the configured Auth.js origin", () => {
     const configuration = resolveWorkspaceEmailConfiguration({
       RESEND_API_KEY: `re_${"a".repeat(32)}`,

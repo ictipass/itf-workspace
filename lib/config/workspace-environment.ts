@@ -38,6 +38,12 @@ export type ItfFlowSessionEventConfiguration = {
   leaseSeconds: number;
 };
 
+export type ItfFlowAppNavigationConfiguration = {
+  workspaceOrigin: string;
+  secret: string;
+  appSlug: string;
+};
+
 export type WorkspaceSeedConfiguration = {
   mode: WorkspaceEnvironmentMode;
   email: string;
@@ -55,6 +61,7 @@ export type WorkspaceRuntimeConfiguration = {
   emailConfigured: boolean;
   itfFlowDirectorySyncConfigured: boolean;
   itfFlowSessionEventsConfigured: boolean;
+  itfFlowAppNavigationConfigured: boolean;
   sessionPolicy: WorkspaceSessionPolicyConfiguration;
   launchV2: WorkspaceLaunchV2Configuration;
   mfaConfigured: boolean;
@@ -725,6 +732,36 @@ export function resolveItfFlowSessionEventConfiguration(
   };
 }
 
+export function resolveItfFlowAppNavigationConfiguration(
+  environment: WorkspaceEnvironmentSource = process.env,
+  options: ValidationOptions = {}
+): ItfFlowAppNavigationConfiguration {
+  const mode = resolveMode(environment, options);
+  const deployed = isDeployedMode(mode);
+  const issues: string[] = [];
+  const workspaceOriginValue =
+    resolveAlias(environment, "AUTH_URL", "NEXTAUTH_URL", issues) ??
+    (deployed ? undefined : DEVELOPMENT_WORKSPACE_ISSUER);
+  const workspaceOrigin = parseUrl(
+    "AUTH_URL",
+    workspaceOriginValue,
+    deployed ? ["https:"] : ["https:", "http:"],
+    issues
+  );
+  const secret = requireValue(
+    environment,
+    "ITF_FLOW_APP_NAVIGATION_SECRET",
+    issues
+  );
+  validateSecret("ITF_FLOW_APP_NAVIGATION_SECRET", secret, mode, issues);
+  const appSlug = readValue(environment, "ITF_FLOW_APP_SLUG") ?? "itf-flow";
+  if (!/^[a-z0-9-]{2,64}$/.test(appSlug)) {
+    issues.push("ITF_FLOW_APP_SLUG must be a lowercase application slug.");
+  }
+  throwIfInvalid(issues);
+  return { workspaceOrigin: workspaceOrigin!, secret: secret!, appSlug };
+}
+
 export function validateWorkspaceRuntimeEnvironment(
   environment: WorkspaceEnvironmentSource = process.env,
   options: ValidationOptions = {}
@@ -834,6 +871,9 @@ export function validateWorkspaceRuntimeEnvironment(
     readValue(environment, "ITF_FLOW_SESSION_EVENTS_URL") ||
       readValue(environment, "WORKSPACE_INTEROP_SECRET")
   );
+  const itfFlowAppNavigationValuesPresent = Boolean(
+    readValue(environment, "ITF_FLOW_APP_NAVIGATION_SECRET")
+  );
 
   if (deployed && itfFlowValuesPresent) {
     try {
@@ -875,6 +915,15 @@ export function validateWorkspaceRuntimeEnvironment(
     );
   }
 
+  if (deployed && (itfFlowValuesPresent || itfFlowAppNavigationValuesPresent)) {
+    try {
+      resolveItfFlowAppNavigationConfiguration(environment, { mode });
+    } catch (error) {
+      if (error instanceof WorkspaceConfigurationError) issues.push(...error.issues);
+      else throw error;
+    }
+  }
+
   throwIfInvalid(issues);
 
   return {
@@ -892,6 +941,9 @@ export function validateWorkspaceRuntimeEnvironment(
       (readValue(environment, "ITF_FLOW_URL") ||
         readValue(environment, "ITF_FLOW_SESSION_EVENTS_URL")) &&
         readValue(environment, "WORKSPACE_INTEROP_SECRET")
+    ),
+    itfFlowAppNavigationConfigured: Boolean(
+      readValue(environment, "ITF_FLOW_APP_NAVIGATION_SECRET")
     ),
     sessionPolicy: sessionPolicy!,
     launchV2: launchV2!,

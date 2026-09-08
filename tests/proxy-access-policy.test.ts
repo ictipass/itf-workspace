@@ -20,6 +20,10 @@ describe("Workspace proxy access policy", () => {
       isPublicWorkspacePath("/api/integrations/workspace/v2/jwks"),
       true
     );
+    assert.equal(
+      isPublicWorkspacePath("/api/integrations/workspace/v1/app-navigation"),
+      true
+    );
   });
 
   test("does not expose adjacent or privileged integration routes", () => {
@@ -29,6 +33,7 @@ describe("Workspace proxy access policy", () => {
       "/api/authentication",
       "/api/integrations/workspace/v2/jwks/private",
       "/api/integrations/workspace/v2/launch",
+      "/api/integrations/workspace/v1/app-navigation/private",
       "/api/internal/integration-outbox",
     ]) {
       assert.equal(isPublicWorkspacePath(pathname), false, pathname);

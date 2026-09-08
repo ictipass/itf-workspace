@@ -3,6 +3,7 @@ const EXACT_PUBLIC_PATHS = new Set([
   "/login",
   "/session-recovery",
   "/api/integrations/workspace/v2/jwks",
+  "/api/integrations/workspace/v1/app-navigation",
 ]);
 
 const PUBLIC_PATH_PREFIXES = ["/api/auth"];
