@@ -299,3 +299,16 @@ spreadsheet error or unauthorized alteration could create a privileged account w
 roles are granted separately by an approved super administrator through a governed action requiring fresh TOTP and
 audit evidence. Privileged role values in a file are rejected rather than silently converted. See D36 in the decision
 register and the staff onboarding role-boundary directive.
+
+### D37 — Child-application switcher visibility and navigation
+
+**Use case:** A staff member working in ITF Flow needs to open another assigned application without signing out or
+manually returning to the Workspace catalogue. Showing every registered application inside each child app would expose
+irrelevant catalogue information and create disabled controls in a compact menu.
+
+**Approved interim outcome (2026-09-08):** A child-app switcher shows only the user's currently entitled active
+applications. Workspace remains the complete application registry and continues to show unauthorized applications as
+disabled. Selecting an app replaces the current tab by default; standard browser actions such as Ctrl/Cmd-click or the
+context menu may open it in another tab. Links must return through Workspace's launch authorization so the current
+session, entitlement and MFA requirement are re-evaluated. See D37 in the decision register and the child-app
+navigation directive.

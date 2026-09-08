@@ -42,10 +42,11 @@ result. Repository code, migrations and commits remain the final implementation 
 | W05 | Login abuse protection and authentication security events | Policy gate | D08-D11: throttling, lockout, recovery and alerting policy |
 | W06 | App URL and outbound-request SSRF protection | Policy gate | D12: permitted domains/networks and operational exception process |
 | W07 | Secure configuration validation and removal of unsafe credential defaults | Implemented | Initial `2caeede`; Vercel stage separation `05153bb` adds an explicit staging policy without weakening the production KMS gate. See [`slices/W07-secure-configuration-validation.md`](slices/W07-secure-configuration-validation.md) |
-| W08 | Workspace security regression test foundation | Implemented | 65 Workspace regressions across 12 suites now cover authoritative users, configuration/stage binding, bounded sessions, launch v2, assurance/TOTP/QR, provisioning, revocation, onboarding roles, exact Server Action/public-route boundaries, controlled initial-administrator bootstrap and curated app-icon validation. See [`slices/W08-security-regression-foundation.md`](slices/W08-security-regression-foundation.md) |
+| W08 | Workspace security regression test foundation | Implemented | 68 Workspace regressions across 13 suites now cover authoritative users, configuration/stage binding, bounded sessions, launch v2, assurance/TOTP/QR, provisioning, revocation, onboarding roles, exact Server Action/public-route boundaries, controlled initial-administrator bootstrap, curated app icons and entitled navigation contracts. See [`slices/W08-security-regression-foundation.md`](slices/W08-security-regression-foundation.md) |
 | W09 | Security headers, browser policy and deployment trust boundary | Policy gate | Local proxy control `a6a90ab` and Vercel Preview/Production stage binding `05153bb` are implemented. Vercel hosting and the staging branch/domain are recorded; D13-D14 production topology and permitted origins remain open. See [`vercel-deployment-environments.md`](vercel-deployment-environments.md) |
 | W25 | Staff master-list onboarding and credential lifecycle | In progress | HR-import boundary `ce680e0`; staging-only controlled initial administrator bootstrap `37feab7`, remote hardening `2463277`, advisory-lock correction `79aac76`. Initial-admin email delivery, login, password replacement and privileged TOTP enrollment were accepted in staging on 2026-09-04. HR imports remain `STAFF`-only; durable bulk-delivery/reissue, general privileged-role workflow and HR lifecycle reconciliation remain. See [`slices/W25-staff-master-list-onboarding.md`](slices/W25-staff-master-list-onboarding.md) |
 | W26 | Curated application icon catalogue | Implemented | `2965023`; 16 centrally controlled icon keys, server-side allow-list validation, accessible create/edit selection, safe legacy fallback and consistent staff/admin rendering. No migration or environment configuration is required. See [`slices/W26-curated-application-icons.md`](slices/W26-curated-application-icons.md) |
+| W27 | Entitlement-aware child-app switcher | Implemented | Workspace `bc03856`, ITF Flow `4747f67`; live Workspace-session validation, active entitlement/role-policy filtering, protected versioned navigation contract, same-tab launch routing, four Flow UI variants and responsive Glass-header correction. Staging configuration/acceptance remains. See [`slices/W27-entitled-child-app-switcher.md`](slices/W27-entitled-child-app-switcher.md) |
 
 ## Phase 2 — scalable access governance
 
@@ -97,14 +98,15 @@ result. Repository code, migrations and commits remain the final implementation 
 
 ## Current execution order
 
-1. Complete the joint A01 ITF Flow lifecycle acceptance exercise; staging configuration, provisioning and first launch are accepted.
-2. Exercise replay, role/assurance changes, immediate/duplicate revocation and outage/retry in staging to close A01 and Gate A.
-3. Resolve W05, W06 and W09 production gates.
-4. Start Phase 2 governance before onboarding more than ITF Flow.
+1. Deploy and accept W27 in Workspace and ITF Flow staging using a new environment-specific navigation credential.
+2. Complete the joint A01 ITF Flow lifecycle acceptance exercise; staging configuration, provisioning and first launch are accepted.
+3. Exercise replay, role/assurance changes, immediate/duplicate revocation and outage/retry in staging to close A01 and Gate A.
+4. Resolve W05, W06 and W09 production gates.
+5. Start Phase 2 governance before onboarding more than ITF Flow.
 
-**Next best implementable slice:** continue A01 with replay rejection, role/assurance change, central logout,
-entitlement-revocation, duplicate-delivery and outage/retry acceptance. The continuous retry scheduler remains a
-controlled-pilot gate.
+**Next best implementable slice:** complete W27 joint staging deployment and acceptance, then continue A01 with replay
+rejection, role/assurance change, central logout, entitlement-revocation, duplicate-delivery and outage/retry
+acceptance. The continuous retry scheduler remains a controlled-pilot gate.
 
 **Current child-app readiness:** The Workspace code foundation and its first-administrator authentication path are
 accepted for integrated ITF Flow staging, but Gate A is not formally met. A01's cross-repository code and contract

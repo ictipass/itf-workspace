@@ -62,6 +62,7 @@ Plain-language scenarios and the information needed to answer every question are
 | D34 | Personal data allowed in launch claims, provisioning payloads and central logs | Open | ITF privacy/legal/security | — |
 | D35 | Availability targets, recovery time objective and recovery point objective | Open | ITF service owner/infrastructure | — |
 | D36 | Whether the HR master list may assign privileged Workspace roles | Approved (interim) | Super administrator | HR imports create `STAFF` only; `APP_ADMIN` and `SYSTEM_ADMIN` are granted separately by an approved super administrator through a governed, fresh-TOTP and audited process. `2026-08-23`, [`staff onboarding role-boundary directive`](policies/2026-08-23-staff-onboarding-role-boundary.md) |
+| D37 | Child-application switcher visibility and browser navigation behavior | Approved (interim) | Super administrator | Child-app switchers display only the user's currently entitled active applications; Workspace continues to display the complete registry and disabled unauthorized applications. Selection uses the current tab by default while preserving native browser new-tab actions. Every child-app selection returns through Workspace launch authorization. `2026-09-08`, [`child-app navigation directive`](policies/2026-09-08-child-app-navigation-directive.md) |
 
 ## Decision procedure
 
