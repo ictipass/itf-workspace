@@ -1,4 +1,3 @@
-import { signOut } from "@/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import {
@@ -15,11 +14,10 @@ import { WorkspaceRole } from "@/lib/generated/prisma/client";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
-import { prisma } from "@/lib/prisma";
-import { AuditAction } from "@/lib/generated/prisma/client";
-import { getCurrentSessionContext, getCurrentUser } from "@/lib/auth/current-user";
+import { getCurrentSessionContext } from "@/lib/auth/current-user";
 import { resolveWorkspaceSessionPolicy } from "@/lib/config/workspace-environment";
 import { SessionActivityMonitor } from "@/components/session-activity-monitor";
+import { signOutWorkspaceAndAppsAction } from "@/app/logout/actions";
 
 export default async function DashboardLayout({
   children,
@@ -133,23 +131,7 @@ export default async function DashboardLayout({
 
           <form
             className="mt-3"
-            action={async () => {
-              "use server";
-
-
-              const currentUser = await getCurrentUser();
-
-              if (currentUser) {
-                await prisma.auditLog.create({
-                  data: {
-                    actorId: currentUser.id,
-                    action: AuditAction.LOGOUT,
-                  },
-                });
-              }
-
-              await signOut({ redirectTo: "/login" });
-            }}
+            action={signOutWorkspaceAndAppsAction}
           >
             <Button
               type="submit"

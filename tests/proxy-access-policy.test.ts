@@ -8,7 +8,7 @@ import {
 
 describe("Workspace proxy access policy", () => {
   test("allows the exact anonymous browser routes", () => {
-    for (const pathname of ["/", "/login", "/session-recovery"]) {
+    for (const pathname of ["/", "/login", "/logout", "/session-recovery"]) {
       assert.equal(isPublicWorkspacePath(pathname), true, pathname);
     }
   });
@@ -29,6 +29,8 @@ describe("Workspace proxy access policy", () => {
   test("does not expose adjacent or privileged integration routes", () => {
     for (const pathname of [
       "/login-admin",
+      "/logout/export",
+      "/logout-admin",
       "/session-recovery-export",
       "/api/authentication",
       "/api/integrations/workspace/v2/jwks/private",

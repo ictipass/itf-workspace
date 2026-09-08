@@ -1,6 +1,7 @@
 const EXACT_PUBLIC_PATHS = new Set([
   "/",
   "/login",
+  "/logout",
   "/session-recovery",
   "/api/integrations/workspace/v2/jwks",
   "/api/integrations/workspace/v1/app-navigation",
