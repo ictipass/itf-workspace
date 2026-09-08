@@ -147,4 +147,6 @@ Gate A is therefore not formally met, and Workspace is not yet approved for an I
 
 Next best implementable action: complete the A01 lifecycle exercise, beginning with launch replay rejection and
 central logout/entitlement-revocation delivery. If Infrastructure cannot yet provide a continuous scheduler, the finite
-outage/retry case may use the approved manual invocation while the controlled-pilot scheduler gate remains.
+outage/retry case may use the approved manual invocation while the controlled-pilot scheduler gate remains. Use the
+[`A01 staging lifecycle acceptance runbook`](../acceptance/A01-staging-lifecycle-acceptance.md) and do not retain launch
+assertions as evidence.

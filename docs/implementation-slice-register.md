@@ -109,7 +109,8 @@ result. Repository code, migrations and commits remain the final implementation 
 **Next best implementable slice:** complete W28/W29 joint staging deployment and acceptance, including Flow-only return,
 confirmed global logout delivery and direct public-to-Workspace staff entry, then continue A01 with replay rejection, role/assurance change,
 entitlement-revocation, duplicate-delivery and outage/retry acceptance. The continuous retry scheduler remains a
-controlled-pilot gate.
+controlled-pilot gate. Execute and retain evidence through the
+[`A01 staging lifecycle acceptance runbook`](acceptance/A01-staging-lifecycle-acceptance.md).
 
 **Current child-app readiness:** The Workspace code foundation and its first-administrator authentication path are
 accepted for integrated ITF Flow staging, but Gate A is not formally met. A01's cross-repository code and contract
