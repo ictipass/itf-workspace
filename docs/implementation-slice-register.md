@@ -48,6 +48,7 @@ result. Repository code, migrations and commits remain the final implementation 
 | W26 | Curated application icon catalogue | Implemented | `2965023`; 16 centrally controlled icon keys, server-side allow-list validation, accessible create/edit selection, safe legacy fallback and consistent staff/admin rendering. No migration or environment configuration is required. See [`slices/W26-curated-application-icons.md`](slices/W26-curated-application-icons.md) |
 | W27 | Entitlement-aware child-app switcher | Implemented | Workspace `bc03856`, ITF Flow `4747f67`; live Workspace-session validation, active entitlement/role-policy filtering, protected versioned navigation contract, same-tab launch routing, four Flow UI variants and responsive Glass-header correction. Joint staging deployment and steps 1-9 were accepted on 2026-09-08. See [`slices/W27-entitled-child-app-switcher.md`](slices/W27-entitled-child-app-switcher.md) |
 | W28 | Split child-app and global Workspace sign-out | Implemented | Workspace `453a0d3`, ITF Flow `515e94c`; Flow-only logout returns to the catalogue, an adjacent chevron offers global logout, and Workspace uses a confirmation POST to revoke the current central session and propagate W04 events. Staging acceptance remains. See [`slices/W28-session-exit-scope.md`](slices/W28-session-exit-scope.md) |
+| W29 | Child-app staff entry through Workspace | Implemented | ITF Flow `8ff3202`; its public landing and staff-login pages now link directly to the environment-bound Workspace login while local demo credentials remain flag-controlled. No Workspace runtime change, migration or new configuration. Staging acceptance remains. See [`slices/W29-child-app-staff-entry.md`](slices/W29-child-app-staff-entry.md) |
 
 ## Phase 2 — scalable access governance
 
@@ -99,14 +100,14 @@ result. Repository code, migrations and commits remain the final implementation 
 
 ## Current execution order
 
-1. Deploy and accept W28 split Flow/global sign-out behavior in Workspace and ITF Flow staging.
+1. Deploy and accept W28 split Flow/global sign-out and W29 staff-entry links in Workspace and ITF Flow staging.
 2. Complete the joint A01 ITF Flow lifecycle acceptance exercise; staging configuration, provisioning, first launch and W27 navigation are accepted.
 3. Exercise replay, role/assurance changes, immediate/duplicate revocation and outage/retry in staging to close A01 and Gate A.
 4. Resolve W05, W06 and W09 production gates.
 5. Start Phase 2 governance before onboarding more than ITF Flow.
 
-**Next best implementable slice:** complete W28 joint staging deployment and acceptance, including Flow-only return and
-confirmed global logout delivery, then continue A01 with replay rejection, role/assurance change,
+**Next best implementable slice:** complete W28/W29 joint staging deployment and acceptance, including Flow-only return,
+confirmed global logout delivery and direct public-to-Workspace staff entry, then continue A01 with replay rejection, role/assurance change,
 entitlement-revocation, duplicate-delivery and outage/retry acceptance. The continuous retry scheduler remains a
 controlled-pilot gate.
 

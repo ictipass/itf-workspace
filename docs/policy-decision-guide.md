@@ -325,3 +325,15 @@ confirmation screen; confirmation revokes the current Workspace session and prop
 child apps bound to that session. Other Workspace sessions on the user's devices remain active. The app switcher is
 used to move between eligible apps without ending the current child-app session. See D38 in the decision register and
 the session exit-scope directive.
+
+### D39 — Staff entry from child-app public pages
+
+**Use case:** A staff member follows a bookmark or search result directly to ITF Flow rather than starting in
+Workspace. Production Flow does not accept a separate staff password, so text that merely says "open Workspace" leaves
+the user without a direct recovery path.
+
+**Approved interim outcome (2026-09-08):** A deployed child application's public landing page and staff-access/login
+route provide a prominent link to the configured Workspace login page. The link is derived from the validated
+environment-specific Workspace origin. Local development/demo credentials remain available only when their existing
+policy flag permits them, and external stakeholder login remains a separate identity boundary. See D39 in the decision
+register and the child-app staff-entry directive.
