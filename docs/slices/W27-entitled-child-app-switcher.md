@@ -64,8 +64,8 @@ or seed is required.
 - Flow `npm run lint`, `npm run typecheck` and `npm run build`: pass; `/api/workspace/apps` is present in the route
   manifest.
 
-Joint staging acceptance remains until the two matching secrets are installed, both commits are deployed and the UI,
-entitlement refresh and responsive Glass layout are exercised.
+ITF confirmed on 2026-09-08 that staging deployment steps 1-9 completed successfully: both credentials and commits
+were deployed, and the UI, entitlement behavior, same/new-tab behavior and responsive Glass layout were exercised.
 
 ## Rollback
 
@@ -75,6 +75,5 @@ to fail closed with its temporary-unavailable state; it does not expose registry
 
 ## Next action
 
-Complete the W27 staging procedure, then resume A01 lifecycle acceptance beginning with replay rejection and central
-logout/revocation behavior. A separate policy decision is required before changing child-app logout into a global
-sign-out control.
+W27 is accepted in staging. Deploy and accept W28's split child/global sign-out behavior, then resume A01 lifecycle
+acceptance beginning with replay rejection and revocation behavior.

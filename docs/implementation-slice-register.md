@@ -46,7 +46,8 @@ result. Repository code, migrations and commits remain the final implementation 
 | W09 | Security headers, browser policy and deployment trust boundary | Policy gate | Local proxy control `a6a90ab` and Vercel Preview/Production stage binding `05153bb` are implemented. Vercel hosting and the staging branch/domain are recorded; D13-D14 production topology and permitted origins remain open. See [`vercel-deployment-environments.md`](vercel-deployment-environments.md) |
 | W25 | Staff master-list onboarding and credential lifecycle | In progress | HR-import boundary `ce680e0`; staging-only controlled initial administrator bootstrap `37feab7`, remote hardening `2463277`, advisory-lock correction `79aac76`. Initial-admin email delivery, login, password replacement and privileged TOTP enrollment were accepted in staging on 2026-09-04. HR imports remain `STAFF`-only; durable bulk-delivery/reissue, general privileged-role workflow and HR lifecycle reconciliation remain. See [`slices/W25-staff-master-list-onboarding.md`](slices/W25-staff-master-list-onboarding.md) |
 | W26 | Curated application icon catalogue | Implemented | `2965023`; 16 centrally controlled icon keys, server-side allow-list validation, accessible create/edit selection, safe legacy fallback and consistent staff/admin rendering. No migration or environment configuration is required. See [`slices/W26-curated-application-icons.md`](slices/W26-curated-application-icons.md) |
-| W27 | Entitlement-aware child-app switcher | Implemented | Workspace `bc03856`, ITF Flow `4747f67`; live Workspace-session validation, active entitlement/role-policy filtering, protected versioned navigation contract, same-tab launch routing, four Flow UI variants and responsive Glass-header correction. Staging configuration/acceptance remains. See [`slices/W27-entitled-child-app-switcher.md`](slices/W27-entitled-child-app-switcher.md) |
+| W27 | Entitlement-aware child-app switcher | Implemented | Workspace `bc03856`, ITF Flow `4747f67`; live Workspace-session validation, active entitlement/role-policy filtering, protected versioned navigation contract, same-tab launch routing, four Flow UI variants and responsive Glass-header correction. Joint staging deployment and steps 1-9 were accepted on 2026-09-08. See [`slices/W27-entitled-child-app-switcher.md`](slices/W27-entitled-child-app-switcher.md) |
+| W28 | Split child-app and global Workspace sign-out | Implemented | Workspace `453a0d3`, ITF Flow `515e94c`; Flow-only logout returns to the catalogue, an adjacent chevron offers global logout, and Workspace uses a confirmation POST to revoke the current central session and propagate W04 events. Staging acceptance remains. See [`slices/W28-session-exit-scope.md`](slices/W28-session-exit-scope.md) |
 
 ## Phase 2 — scalable access governance
 
@@ -98,15 +99,16 @@ result. Repository code, migrations and commits remain the final implementation 
 
 ## Current execution order
 
-1. Deploy and accept W27 in Workspace and ITF Flow staging using a new environment-specific navigation credential.
-2. Complete the joint A01 ITF Flow lifecycle acceptance exercise; staging configuration, provisioning and first launch are accepted.
+1. Deploy and accept W28 split Flow/global sign-out behavior in Workspace and ITF Flow staging.
+2. Complete the joint A01 ITF Flow lifecycle acceptance exercise; staging configuration, provisioning, first launch and W27 navigation are accepted.
 3. Exercise replay, role/assurance changes, immediate/duplicate revocation and outage/retry in staging to close A01 and Gate A.
 4. Resolve W05, W06 and W09 production gates.
 5. Start Phase 2 governance before onboarding more than ITF Flow.
 
-**Next best implementable slice:** complete W27 joint staging deployment and acceptance, then continue A01 with replay
-rejection, role/assurance change, central logout, entitlement-revocation, duplicate-delivery and outage/retry
-acceptance. The continuous retry scheduler remains a controlled-pilot gate.
+**Next best implementable slice:** complete W28 joint staging deployment and acceptance, including Flow-only return and
+confirmed global logout delivery, then continue A01 with replay rejection, role/assurance change,
+entitlement-revocation, duplicate-delivery and outage/retry acceptance. The continuous retry scheduler remains a
+controlled-pilot gate.
 
 **Current child-app readiness:** The Workspace code foundation and its first-administrator authentication path are
 accepted for integrated ITF Flow staging, but Gate A is not formally met. A01's cross-repository code and contract

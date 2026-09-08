@@ -312,3 +312,16 @@ disabled. Selecting an app replaces the current tab by default; standard browser
 context menu may open it in another tab. Links must return through Workspace's launch authorization so the current
 session, entitlement and MFA requirement are re-evaluated. See D37 in the decision register and the child-app
 navigation directive.
+
+### D38 — Child-app and global sign-out scope
+
+**Use case:** A staff member may want to stop using Flow but remain signed into Workspace to open another application.
+At other times, such as leaving a shared computer, the staff member needs to terminate the current Workspace session
+and every connected child-app session created from it.
+
+**Approved interim outcome (2026-09-08):** The main child-app sign-out terminates only that child session and returns
+to Workspace's app catalogue. Its adjacent chevron offers **Sign out of Workspace and all apps**. Workspace presents a
+confirmation screen; confirmation revokes the current Workspace session and propagates central logout to connected
+child apps bound to that session. Other Workspace sessions on the user's devices remain active. The app switcher is
+used to move between eligible apps without ending the current child-app session. See D38 in the decision register and
+the session exit-scope directive.
