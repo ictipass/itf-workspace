@@ -11,7 +11,7 @@ export const setupEntitySchema = z.enum([
 
 export type SetupEntity = z.infer<typeof setupEntitySchema>;
 
-const referenceCodeSchema = z
+export const referenceCodeSchema = z
   .string()
   .trim()
   .min(2, "Code must be at least 2 characters.")

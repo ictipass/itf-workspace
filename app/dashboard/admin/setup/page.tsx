@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/table";
 import SetupRecordStatusButton from "./setup-record-status-button";
 import SetupRecordEditDialog from "./setup-record-edit-dialog";
+import OrganizationImportForm from "./organization-import-form";
 
 export default async function OrganizationSetupPage() {
   const user = await requireCurrentUser();
@@ -76,6 +77,15 @@ export default async function OrganizationSetupPage() {
         </Link>
       </Button>
     </div>
+
+    <Card className="rounded-2xl">
+      <CardHeader>
+        <CardTitle>Bulk organization setup</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <OrganizationImportForm />
+      </CardContent>
+    </Card>
 
     <div>
       <Tabs defaultValue="offices">

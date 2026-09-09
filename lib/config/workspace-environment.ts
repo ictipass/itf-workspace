@@ -63,6 +63,7 @@ export type WorkspaceRuntimeConfiguration = {
   itfFlowSessionEventsConfigured: boolean;
   itfFlowAppNavigationConfigured: boolean;
   sessionPolicy: WorkspaceSessionPolicyConfiguration;
+  organizationImport: WorkspaceOrganizationImportConfiguration;
   launchV2: WorkspaceLaunchV2Configuration;
   mfaConfigured: boolean;
 };
@@ -92,6 +93,12 @@ export type WorkspaceSessionPolicyConfiguration = {
 };
 
 export type WorkspaceServerActionOriginConfiguration = readonly string[];
+
+export type WorkspaceOrganizationImportConfiguration = {
+  maxFileBytes: number;
+  maxRowsPerSheet: number;
+  validationReceiptSeconds: number;
+};
 
 const DEVELOPMENT_LOGIN_URL = "http://localhost:3000/login";
 const DEVELOPMENT_ITF_FLOW_URL = "http://localhost:3001/workspace/launch";
@@ -342,6 +349,39 @@ export function resolveWorkspaceServerActionAllowedOrigins(
 
   throwIfInvalid(issues);
   return [...origins];
+}
+
+export function resolveWorkspaceOrganizationImportConfiguration(
+  environment: WorkspaceEnvironmentSource = process.env
+): WorkspaceOrganizationImportConfiguration {
+  const issues: string[] = [];
+  const maxFileBytes = readInteger(
+    environment,
+    "WORKSPACE_ORG_IMPORT_MAX_FILE_BYTES",
+    5 * 1024 * 1024,
+    64 * 1024,
+    20 * 1024 * 1024,
+    issues
+  );
+  const maxRowsPerSheet = readInteger(
+    environment,
+    "WORKSPACE_ORG_IMPORT_MAX_ROWS_PER_SHEET",
+    1000,
+    1,
+    5000,
+    issues
+  );
+  const validationReceiptSeconds = readInteger(
+    environment,
+    "WORKSPACE_ORG_IMPORT_VALIDATION_RECEIPT_SECONDS",
+    600,
+    60,
+    1800,
+    issues
+  );
+
+  throwIfInvalid(issues);
+  return { maxFileBytes, maxRowsPerSheet, validationReceiptSeconds };
 }
 
 export function resolveWorkspaceSessionPolicy(
@@ -782,6 +822,13 @@ export function validateWorkspaceRuntimeEnvironment(
     if (error instanceof WorkspaceConfigurationError) issues.push(...error.issues);
     else throw error;
   }
+  let organizationImport: WorkspaceOrganizationImportConfiguration | undefined;
+  try {
+    organizationImport = resolveWorkspaceOrganizationImportConfiguration(environment);
+  } catch (error) {
+    if (error instanceof WorkspaceConfigurationError) issues.push(...error.issues);
+    else throw error;
+  }
   let launchV2: WorkspaceLaunchV2Configuration | undefined;
   try {
     launchV2 = resolveWorkspaceLaunchV2Configuration(environment, { mode });
@@ -946,6 +993,7 @@ export function validateWorkspaceRuntimeEnvironment(
       readValue(environment, "ITF_FLOW_APP_NAVIGATION_SECRET")
     ),
     sessionPolicy: sessionPolicy!,
+    organizationImport: organizationImport!,
     launchV2: launchV2!,
     mfaConfigured: Boolean(mfaEncryptionKey),
   };
