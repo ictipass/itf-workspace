@@ -2,7 +2,8 @@
 
 import { useActionState, useState } from "react";
 import { Pencil } from "lucide-react";
-import { updateSetupDisplayNameAction } from "./actions";
+import { OfficeType } from "@/lib/generated/prisma/enums";
+import { updateSetupRecordAction } from "./actions";
 import type { SetupActionState } from "./actions";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,13 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 type Entity = "office" | "department" | "division" | "unit" | "position";
 
@@ -30,15 +38,17 @@ export default function SetupRecordEditDialog({
   entity,
   code,
   displayName,
+  officeType,
 }: {
   id: string;
   entity: Entity;
   code: string;
   displayName: string;
+  officeType?: OfficeType;
 }) {
   const [open, setOpen] = useState(false);
   const [state, formAction, isPending] = useActionState(
-    updateSetupDisplayNameAction,
+    updateSetupRecordAction,
     initialState
   );
 
@@ -52,9 +62,11 @@ export default function SetupRecordEditDialog({
       </DialogTrigger>
       <DialogContent className="rounded-2xl sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Edit display name</DialogTitle>
+          <DialogTitle>Edit reference data</DialogTitle>
           <DialogDescription>
-            Only the visible name changes. Codes and hierarchy remain unchanged.
+            Correct the display name and code
+            {entity === "office" ? ", or office type" : ""}. Existing linked records
+            remain attached by their internal identifiers.
           </DialogDescription>
         </DialogHeader>
 
@@ -67,11 +79,6 @@ export default function SetupRecordEditDialog({
               <AlertDescription>{state.message}</AlertDescription>
             </Alert>
           ) : null}
-
-          <div className="space-y-1 rounded-xl border bg-muted/40 p-3 text-sm">
-            <div className="font-medium">{code}</div>
-            <div className="text-muted-foreground">{displayName}</div>
-          </div>
 
           <div className="space-y-2">
             <Label htmlFor={`${entity}-${id}-display-name`}>Display name</Label>
@@ -89,9 +96,49 @@ export default function SetupRecordEditDialog({
             ) : null}
           </div>
 
+          <div className="space-y-2">
+            <Label htmlFor={`${entity}-${id}-code`}>Code</Label>
+            <Input
+              id={`${entity}-${id}-code`}
+              name="code"
+              defaultValue={code}
+              minLength={2}
+              maxLength={64}
+              pattern="[A-Za-z0-9][A-Za-z0-9_-]*"
+              required
+            />
+            <p className="text-xs text-muted-foreground">
+              Saved in uppercase. Existing spreadsheets using the old code must be corrected.
+            </p>
+            {state.errors?.code?.[0] ? (
+              <p className="text-xs text-destructive">{state.errors.code[0]}</p>
+            ) : null}
+          </div>
+
+          {entity === "office" ? (
+            <div className="space-y-2">
+              <Label htmlFor={`${entity}-${id}-office-type`}>Office type</Label>
+              <Select name="officeType" defaultValue={officeType} required>
+                <SelectTrigger id={`${entity}-${id}-office-type`}>
+                  <SelectValue placeholder="Select office type" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.values(OfficeType).map((type) => (
+                    <SelectItem key={type} value={type}>
+                      {type.replaceAll("_", " ")}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {state.errors?.officeType?.[0] ? (
+                <p className="text-xs text-destructive">{state.errors.officeType[0]}</p>
+              ) : null}
+            </div>
+          ) : null}
+
           <DialogFooter>
             <Button type="submit" disabled={isPending}>
-              {isPending ? "Saving..." : "Save change"}
+              {isPending ? "Saving..." : "Save changes"}
             </Button>
           </DialogFooter>
         </form>

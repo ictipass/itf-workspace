@@ -126,6 +126,7 @@ export default async function OrganizationSetupPage() {
                           entity="office"
                           code={office.code}
                           displayName={office.name}
+                          officeType={office.type}
                         />
                         <SetupRecordStatusButton
                           id={office.id}

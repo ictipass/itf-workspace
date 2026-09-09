@@ -9,22 +9,11 @@ import {
 } from "@/lib/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { requireCurrentUser } from "@/lib/auth/current-user";
+import {
+  updateSetupRecordSchema,
+  type SetupEntity,
+} from "@/lib/policies/organization-setup";
 
-
-type SetupEntity =
-  | "office"
-  | "department"
-  | "division"
-  | "unit"
-  | "position";
-
-const setupEntitySchema = z.enum([
-  "office",
-  "department",
-  "division",
-  "unit",
-  "position",
-]);
 
 async function toggleSetupRecord(params: {
   entity: SetupEntity;
@@ -117,128 +106,156 @@ export async function activateSetupRecordAction(formData: FormData) {
   });
 }
 
-const updateSetupDisplayNameSchema = z.object({
-  entity: setupEntitySchema,
-  id: z.string().min(1),
-  displayName: z.string().trim().min(2, "Display name must be at least 2 characters."),
-});
-
-export async function updateSetupDisplayNameAction(
+export async function updateSetupRecordAction(
   _prevState: SetupActionState,
   formData: FormData
 ): Promise<SetupActionState> {
   try {
     const user = await requireSystemAdmin();
-    const parsed = updateSetupDisplayNameSchema.safeParse({
+    const parsed = updateSetupRecordSchema.safeParse({
       entity: formData.get("entity"),
       id: formData.get("id"),
       displayName: formData.get("displayName"),
+      code: formData.get("code"),
+      officeType: formData.get("officeType") || undefined,
     });
 
     if (!parsed.success) {
       return {
         success: false,
-        message: "Please provide a valid display name.",
+        message: "Please correct the highlighted fields.",
         errors: parsed.error.flatten().fieldErrors,
       };
     }
 
-    const { entity, id, displayName } = parsed.data;
-    let record:
-      | { id: string; code: string; name?: string; title?: string; isActive: boolean }
-      | null = null;
-    let previousDisplayName = "";
+    const { entity, id, displayName, code, officeType } = parsed.data;
 
-    if (entity === "office") {
-      const existing = await prisma.office.findUnique({
-        where: { id },
-        select: { name: true },
-      });
-      previousDisplayName = existing?.name ?? "";
-      record = await prisma.office.update({
-        where: { id },
-        data: { name: displayName },
-        select: { id: true, code: true, name: true, isActive: true },
-      });
-    }
+    await prisma.$transaction(async (transaction) => {
+      let previousDisplayName: string;
+      let previousCode: string;
+      let previousOfficeType: OfficeType | undefined = undefined;
 
-    if (entity === "department") {
-      const existing = await prisma.department.findUnique({
-        where: { id },
-        select: { name: true },
-      });
-      previousDisplayName = existing?.name ?? "";
-      record = await prisma.department.update({
-        where: { id },
-        data: { name: displayName },
-        select: { id: true, code: true, name: true, isActive: true },
-      });
-    }
+      if (entity === "office") {
+        const existing = await transaction.office.findUnique({
+          where: { id },
+          select: { name: true, code: true, type: true },
+        });
+        if (!existing) throw new Error("Office record was not found.");
+        const duplicate = await transaction.office.findFirst({
+          where: { code, id: { not: id } },
+          select: { id: true },
+        });
+        if (duplicate) throw new Error("Office code already exists.");
+        previousDisplayName = existing.name;
+        previousCode = existing.code;
+        previousOfficeType = existing.type;
+        await transaction.office.update({
+          where: { id },
+          data: { name: displayName, code, type: officeType! },
+        });
+      } else if (entity === "department") {
+        const existing = await transaction.department.findUnique({
+          where: { id },
+          select: { name: true, code: true, officeId: true },
+        });
+        if (!existing) throw new Error("Department record was not found.");
+        const duplicate = await transaction.department.findFirst({
+          where: { code, officeId: existing.officeId, id: { not: id } },
+          select: { id: true },
+        });
+        if (duplicate) throw new Error("Department code already exists for this office.");
+        previousDisplayName = existing.name;
+        previousCode = existing.code;
+        await transaction.department.update({
+          where: { id },
+          data: { name: displayName, code },
+        });
+      } else if (entity === "division") {
+        const existing = await transaction.division.findUnique({
+          where: { id },
+          select: { name: true, code: true, departmentId: true },
+        });
+        if (!existing) throw new Error("Division record was not found.");
+        const duplicate = await transaction.division.findFirst({
+          where: { code, departmentId: existing.departmentId, id: { not: id } },
+          select: { id: true },
+        });
+        if (duplicate) throw new Error("Division code already exists for this department.");
+        previousDisplayName = existing.name;
+        previousCode = existing.code;
+        await transaction.division.update({
+          where: { id },
+          data: { name: displayName, code },
+        });
+      } else if (entity === "unit") {
+        const existing = await transaction.unit.findUnique({
+          where: { id },
+          select: { name: true, code: true, divisionId: true },
+        });
+        if (!existing) throw new Error("Unit record was not found.");
+        const duplicate = await transaction.unit.findFirst({
+          where: { code, divisionId: existing.divisionId, id: { not: id } },
+          select: { id: true },
+        });
+        if (duplicate) throw new Error("Unit code already exists for this division.");
+        previousDisplayName = existing.name;
+        previousCode = existing.code;
+        await transaction.unit.update({
+          where: { id },
+          data: { name: displayName, code },
+        });
+      } else {
+        const existing = await transaction.position.findUnique({
+          where: { id },
+          select: { title: true, code: true },
+        });
+        if (!existing) throw new Error("Position record was not found.");
+        const duplicate = await transaction.position.findFirst({
+          where: { code, id: { not: id } },
+          select: { id: true },
+        });
+        if (duplicate) throw new Error("Position code already exists.");
+        previousDisplayName = existing.title;
+        previousCode = existing.code;
+        await transaction.position.update({
+          where: { id },
+          data: { title: displayName, code },
+        });
+      }
 
-    if (entity === "division") {
-      const existing = await prisma.division.findUnique({
-        where: { id },
-        select: { name: true },
-      });
-      previousDisplayName = existing?.name ?? "";
-      record = await prisma.division.update({
-        where: { id },
-        data: { name: displayName },
-        select: { id: true, code: true, name: true, isActive: true },
-      });
-    }
-
-    if (entity === "unit") {
-      const existing = await prisma.unit.findUnique({
-        where: { id },
-        select: { name: true },
-      });
-      previousDisplayName = existing?.name ?? "";
-      record = await prisma.unit.update({
-        where: { id },
-        data: { name: displayName },
-        select: { id: true, code: true, name: true, isActive: true },
-      });
-    }
-
-    if (entity === "position") {
-      const existing = await prisma.position.findUnique({
-        where: { id },
-        select: { title: true },
-      });
-      previousDisplayName = existing?.title ?? "";
-      record = await prisma.position.update({
-        where: { id },
-        data: { title: displayName },
-        select: { id: true, code: true, title: true, isActive: true },
-      });
-    }
-
-    await prisma.auditLog.create({
-      data: {
-        actorId: user.id,
-        action: AuditAction.APP_UPDATED,
-        metadata: {
-          module: "ORGANIZATION_SETUP",
-          action: "SETUP_RECORD_DISPLAY_NAME_UPDATED",
-          entity,
-          recordId: id,
-          code: record?.code,
-          previousDisplayName,
-          displayName,
+      await transaction.auditLog.create({
+        data: {
+          actorId: user.id,
+          action: AuditAction.APP_UPDATED,
+          metadata: {
+            module: "ORGANIZATION_SETUP",
+            action: "SETUP_RECORD_UPDATED",
+            entity,
+            recordId: id,
+            previousDisplayName,
+            displayName,
+            previousCode,
+            code,
+            previousOfficeType,
+            officeType: entity === "office" ? officeType : undefined,
+          },
         },
-      },
+      });
     });
 
     revalidatePath("/dashboard/admin/setup");
     revalidatePath("/dashboard/admin/users/import");
 
-    return { success: true, message: "Display name updated successfully." };
+    return {
+      success: true,
+      message:
+        "Reference data updated. Download fresh reference codes before the next import and synchronize affected child apps.",
+    };
   } catch (error) {
     return {
       success: false,
       message:
-        error instanceof Error ? error.message : "Failed to update display name.",
+        error instanceof Error ? error.message : "Failed to update reference data.",
     };
   }
 }
