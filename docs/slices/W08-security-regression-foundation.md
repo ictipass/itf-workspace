@@ -86,6 +86,9 @@ Implementation commit: `444287a`.
   transaction timing. W26 added curated application-icon key, label, injection-rejection and fallback coverage. W27
   adds entitled-app filtering, safe icon fallback and protected exact-route/configuration coverage. The Workspace suite
   now passes 68 tests across 13 suites.
+- W30 commit `01d74d8` adds four organization reference-data correction policy cases for normalization, required
+  office type, non-office updates and invalid-code rejection. The Workspace suite now passes 72 tests across 14
+  suites.
 
 ## Rollback
 
