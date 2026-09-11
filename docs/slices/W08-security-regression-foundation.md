@@ -89,6 +89,9 @@ Implementation commit: `444287a`.
 - W30 commit `01d74d8` adds four organization reference-data correction policy cases for normalization, required
   office type, non-office updates and invalid-code rejection. The Workspace suite now passes 72 tests across 14
   suites.
+- W31 commit `449b8b9` adds six organization bulk-import cases covering the exact hierarchy contract, duplicate and
+  active-state rejection, sheet/row/configuration bounds, receipt administrator/digest binding, tamper/expiry failure,
+  and mandatory receipt/fresh-MFA/transaction controls. The Workspace suite now passes 78 tests across 15 suites.
 
 ## Rollback
 

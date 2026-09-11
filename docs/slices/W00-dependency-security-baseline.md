@@ -20,7 +20,7 @@ was applied.
 
 ## Implemented changes
 
-- Next.js and `eslint-config-next`: `16.2.4` to `16.3.2`.
+- Next.js and `eslint-config-next`: `16.2.4` to `16.3.2`; W31 maintenance later patches both to `16.3.4`.
 - Auth.js: `next-auth` `5.0.0-beta.31` to `5.0.0-beta.32`; `@auth/core` resolves to `0.41.3`.
 - Prisma client, PostgreSQL adapter and CLI: `7.8.0` to matched version `7.9.1`.
 - Resend: `6.12.2` to `6.22.0`, removing the vulnerable older Svix dependency chain.
@@ -75,7 +75,7 @@ the complete development tree into the runtime image, that packaging must be cor
 - `npm audit --omit=dev --omit=optional --audit-level=low`: passed, zero vulnerabilities.
 - Full ESLint: passed with zero warnings/errors.
 - Prisma schema validation and client generation: passed.
-- Next.js 16.3.2 production build and TypeScript validation: passed.
+- Next.js 16.3.4 production build and TypeScript validation: passed after W31 maintenance commit `449b8b9`.
 - Runtime smoke test: `/login` returned 200, `/api/auth/providers` returned 200 and unauthenticated `/dashboard`
   returned a 307 login redirect.
 - `git diff --check`: passed.

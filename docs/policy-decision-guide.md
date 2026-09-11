@@ -337,3 +337,15 @@ route provide a prominent link to the configured Workspace login page. The link 
 environment-specific Workspace origin. Local development/demo credentials remain available only when their existing
 policy flag permits them, and external stakeholder login remains a separate identity boundary. See D39 in the decision
 register and the child-app staff-entry directive.
+
+### D40 — Organization reference-data bulk import
+
+**Use case:** ICT may need to establish hundreds of offices, departments, divisions, units and positions. Manual entry
+is slow and error-prone, while an unrestricted spreadsheet could accidentally delete records, move staff between
+hierarchies or bypass privileged change controls.
+
+**Approved interim outcome (2026-09-09):** Workspace accepts either one workbook containing the exact five controlled
+sheets or five correspondingly named CSV files. Blank `recordId` values create records and exported immutable IDs
+authorize updates. Explicit active-state changes are allowed; deletion, deactivate-by-omission and hierarchy movement
+are not. A mandatory dry run, unchanged-file receipt, fresh TOTP, atomic transaction and before/after audit trail guard
+the final apply operation. See D40 in the decision register and the organization reference-data bulk-import directive.
