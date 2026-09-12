@@ -3,7 +3,7 @@
 Status: **In progress**
 
 Implementation commits: HR import boundary `ce680e0`; controlled initial administrator bootstrap `37feab7`; remote
-transaction/input hardening `2463277`; Prisma advisory-lock correction `79aac76`
+transaction/input hardening `2463277`; Prisma advisory-lock correction `79aac76`; registry role enforcement `e8c3477`
 
 ## Implemented increment
 
@@ -13,6 +13,10 @@ transaction/input hardening `2463277`; Prisma advisory-lock correction `79aac76`
 - The import page explains that privileged Workspace roles are outside the HR workflow.
 - Actual imports require fresh TOTP; non-mutating dry runs retain ordinary System Administrator authorization.
 - The policy is centralized in a pure server-side rule with regression coverage.
+- Optional ITF Flow roles are normalized and must match an active, explicitly classified app-registry role; the
+  previous hard-coded role allow-list has been removed.
+- Flow directory synchronization fails before external delivery when any active entitlement has an unclassified role,
+  and no longer substitutes `OFFICER` for an invalid empty role.
 - A separate staging-only command bootstraps the first `SYSTEM_ADMIN` without using the HR spreadsheet or creating a
   child-app entitlement. It generates and emails a single-use temporary password, activates only after delivery, uses
   an advisory lock to serialize attempts, refuses existing/conflicting administrators and records audit transitions.
@@ -29,11 +33,13 @@ still require a separate future workflow with explicit authorization and audit.
 ## Visible UI change
 
 The bulk-import introduction now states the ordinary-staff-only boundary. The downloadable example no longer shows an
-`APP_ADMIN` row. An actual import attempted without fresh TOTP returns a clear verification requirement.
+`APP_ADMIN` row. An actual import attempted without fresh TOTP returns a clear verification requirement. The import
+page explains that Flow roles must first be active and classified, and directory synchronization reports the roles
+blocking it.
 
 ## Verification
 
-- 62/62 Workspace security/regression tests pass, including two onboarding-role and nine controlled-bootstrap tests.
+- 84/84 Workspace security/regression tests pass across 15 suites, including four onboarding-policy checks.
 - TypeScript, ESLint and the 24-route production build pass.
 - `git diff --check` passes apart from Git's existing LF-to-CRLF notices.
 

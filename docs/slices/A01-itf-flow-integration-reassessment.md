@@ -138,6 +138,13 @@ create a Flow session; no token value was retained. Confirmed global logout revo
 its exact Flow session while preserving a separate Workspace device session. A01-01 and A01-04 are accepted. Role and
 assurance changes, entitlement revocation, duplicate delivery and outage/retry recovery remain.
 
+On 2026-09-12, ITF created a dedicated ordinary staging identity through the governed HR CSV path. Welcome-email
+delivery, first login, temporary-password replacement and subsequent Workspace login succeeded. Its imported
+`OFFICER` entitlement correctly remained launch-disabled because staging had no active policy for that exact role.
+ITF then approved `OFFICER = STANDARD` under D42. W35 makes future imports and directory synchronization fail closed
+against the live role-policy registry; staging still requires the administrator to add that approved policy and run
+directory synchronization before this identity's first Flow launch.
+
 ## User interface effect
 
 No layout changed. After an administrator grants or changes ITF Flow access, the success message now explicitly says

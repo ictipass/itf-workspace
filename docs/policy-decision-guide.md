@@ -360,3 +360,14 @@ division or unit. Workspace preserves the record ID, requires an active target a
 checks uniqueness in the new parent, and audits the previous and new parent IDs atomically with the update. Bulk
 imports continue to reject hierarchy moves. See D41 in the decision register and the organization
 hierarchy-correction directive.
+
+### D42 — ITF Flow `OFFICER` assurance classification
+
+**Use case:** An ordinary staff member is granted the ITF Flow `OFFICER` role through the HR import. Workspace must
+know whether that exact child-app role requires password-only launch assurance or TOTP step-up before it can enable
+the launch control or provision the identity to Flow.
+
+**Approved interim outcome (2026-09-12):** The exact ITF Flow role code `OFFICER` is `STANDARD`. The existing D05
+more-restrictive-wins rule remains: a future `SENSITIVE` application classification would still require TOTP. This
+approval does not classify `UNIT_HEAD`, `DIVISION_HEAD`, `DIRECTOR`, `DG`, `DG_SECRETARY`, `RECORDS_ADMIN`,
+`SYSTEM_ADMIN` or any future role. See D42 in the decision register and the ITF Flow OFFICER assurance directive.
