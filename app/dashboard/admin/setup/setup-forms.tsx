@@ -33,6 +33,12 @@ type SelectOption = {
   code: string;
 };
 
+const creationFormClassName =
+  "grid gap-4 md:grid-cols-2 xl:grid-cols-[repeat(3,minmax(0,1fr))_auto] xl:items-end";
+const positionFormClassName =
+  "grid gap-4 md:grid-cols-2 xl:grid-cols-[repeat(2,minmax(0,1fr))_auto] xl:items-end";
+const submitButtonClassName = "w-full self-end md:w-auto";
+
 export function OfficeForm() {
   const [state, formAction, isPending] = useActionState(
     createOfficeAction,
@@ -41,7 +47,7 @@ export function OfficeForm() {
 
   return (
     <BaseForm state={state}>
-      <form action={formAction} className="space-y-4">
+      <form action={formAction} className={creationFormClassName}>
         <Field label="Office Name" name="name" error={state.errors?.name?.[0]} />
         <Field label="Office Code" name="code" error={state.errors?.code?.[0]} />
 
@@ -61,7 +67,11 @@ export function OfficeForm() {
           </Select>
         </div>
 
-        <Button type="submit" disabled={isPending}>
+        <Button
+          type="submit"
+          disabled={isPending}
+          className={submitButtonClassName}
+        >
           {isPending ? "Saving..." : "Create Office"}
         </Button>
       </form>
@@ -77,7 +87,7 @@ export function DepartmentForm({ offices }: { offices: SelectOption[] }) {
 
   return (
     <BaseForm state={state}>
-      <form action={formAction} className="space-y-4">
+      <form action={formAction} className={creationFormClassName}>
         <Field label="Department Name" name="name" error={state.errors?.name?.[0]} />
         <Field label="Department Code" name="code" error={state.errors?.code?.[0]} />
 
@@ -97,7 +107,11 @@ export function DepartmentForm({ offices }: { offices: SelectOption[] }) {
           </Select>
         </div>
 
-        <Button type="submit" disabled={isPending}>
+        <Button
+          type="submit"
+          disabled={isPending}
+          className={submitButtonClassName}
+        >
           {isPending ? "Saving..." : "Create Department"}
         </Button>
       </form>
@@ -117,7 +131,7 @@ export function DivisionForm({
 
   return (
     <BaseForm state={state}>
-      <form action={formAction} className="space-y-4">
+      <form action={formAction} className={creationFormClassName}>
         <Field label="Division Name" name="name" error={state.errors?.name?.[0]} />
         <Field label="Division Code" name="code" error={state.errors?.code?.[0]} />
 
@@ -137,7 +151,11 @@ export function DivisionForm({
           </Select>
         </div>
 
-        <Button type="submit" disabled={isPending}>
+        <Button
+          type="submit"
+          disabled={isPending}
+          className={submitButtonClassName}
+        >
           {isPending ? "Saving..." : "Create Division"}
         </Button>
       </form>
@@ -153,7 +171,7 @@ export function UnitForm({ divisions }: { divisions: SelectOption[] }) {
 
   return (
     <BaseForm state={state}>
-      <form action={formAction} className="space-y-4">
+      <form action={formAction} className={creationFormClassName}>
         <Field label="Unit Name" name="name" error={state.errors?.name?.[0]} />
         <Field label="Unit Code" name="code" error={state.errors?.code?.[0]} />
 
@@ -173,7 +191,11 @@ export function UnitForm({ divisions }: { divisions: SelectOption[] }) {
           </Select>
         </div>
 
-        <Button type="submit" disabled={isPending}>
+        <Button
+          type="submit"
+          disabled={isPending}
+          className={submitButtonClassName}
+        >
           {isPending ? "Saving..." : "Create Unit"}
         </Button>
       </form>
@@ -189,11 +211,15 @@ export function PositionForm() {
 
   return (
     <BaseForm state={state}>
-      <form action={formAction} className="space-y-4">
+      <form action={formAction} className={positionFormClassName}>
         <Field label="Position Title" name="title" error={state.errors?.title?.[0]} />
         <Field label="Position Code" name="code" error={state.errors?.code?.[0]} />
 
-        <Button type="submit" disabled={isPending}>
+        <Button
+          type="submit"
+          disabled={isPending}
+          className={submitButtonClassName}
+        >
           {isPending ? "Saving..." : "Create Position"}
         </Button>
       </form>

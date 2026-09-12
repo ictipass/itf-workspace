@@ -96,4 +96,25 @@ describe("organization setup correction policy", () => {
     assert.match(source, /previousParentId/);
     assert.match(source, /confirmHierarchyMove/);
   });
+
+  test("stacks compact creation forms above full-width reference tables", async () => {
+    const { readFile } = await import("node:fs/promises");
+    const [page, forms] = await Promise.all([
+      readFile(
+        new URL("../app/dashboard/admin/setup/page.tsx", import.meta.url),
+        "utf8"
+      ),
+      readFile(
+        new URL("../app/dashboard/admin/setup/setup-forms.tsx", import.meta.url),
+        "utf8"
+      ),
+    ]);
+
+    assert.match(page, /function SetupSection/);
+    assert.match(page, /className="flex flex-col gap-6"/);
+    assert.doesNotMatch(page, /xl:grid-cols-\[420px_1fr\]/);
+    assert.doesNotMatch(page, /<div className="overflow-x-auto">/);
+    assert.match(forms, /const creationFormClassName =/);
+    assert.match(forms, /xl:grid-cols-\[repeat\(3,minmax\(0,1fr\)\)_auto\]/);
+  });
 });

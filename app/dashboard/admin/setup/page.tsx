@@ -98,13 +98,12 @@ export default async function OrganizationSetupPage() {
         </TabsList>
 
         <TabsContent value="offices" className="mt-6">
-          <Grid>
+          <SetupSection>
             <SetupCard title="Create Office">
               <OfficeForm />
             </SetupCard>
 
             <SetupCard title="Offices">
-              <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -149,19 +148,17 @@ export default async function OrganizationSetupPage() {
                   ))}
                 </TableBody>
               </Table>
-              </div>
             </SetupCard>
-          </Grid>
+          </SetupSection>
         </TabsContent>
 
         <TabsContent value="departments" className="mt-6">
-          <Grid>
+          <SetupSection>
             <SetupCard title="Create Department">
               <DepartmentForm offices={activeOffices} />
             </SetupCard>
 
             <SetupCard title="Departments">
-              <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -207,19 +204,17 @@ export default async function OrganizationSetupPage() {
                   ))}
                 </TableBody>
               </Table>
-              </div>
             </SetupCard>
-          </Grid>
+          </SetupSection>
         </TabsContent>
 
         <TabsContent value="divisions" className="mt-6">
-          <Grid>
+          <SetupSection>
             <SetupCard title="Create Division">
               <DivisionForm departments={activeDepartments} />
             </SetupCard>
 
             <SetupCard title="Divisions">
-              <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -265,19 +260,17 @@ export default async function OrganizationSetupPage() {
                   ))}
                 </TableBody>
               </Table>
-              </div>
             </SetupCard>
-          </Grid>
+          </SetupSection>
         </TabsContent>
 
         <TabsContent value="units" className="mt-6">
-          <Grid>
+          <SetupSection>
             <SetupCard title="Create Unit">
               <UnitForm divisions={activeDivisions} />
             </SetupCard>
 
             <SetupCard title="Units">
-              <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -323,19 +316,17 @@ export default async function OrganizationSetupPage() {
                   ))}
                 </TableBody>
               </Table>
-              </div>
             </SetupCard>
-          </Grid>
+          </SetupSection>
         </TabsContent>
 
         <TabsContent value="positions" className="mt-6">
-          <Grid>
+          <SetupSection>
             <SetupCard title="Create Position">
               <PositionForm />
             </SetupCard>
 
             <SetupCard title="Positions">
-              <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -377,9 +368,8 @@ export default async function OrganizationSetupPage() {
                   ))}
                 </TableBody>
               </Table>
-              </div>
             </SetupCard>
-          </Grid>
+          </SetupSection>
         </TabsContent>
       </Tabs>
     </div>
@@ -391,8 +381,8 @@ export default async function OrganizationSetupPage() {
 
 
 
-function Grid({ children }: { children: React.ReactNode }) {
-  return <div className="grid gap-6 xl:grid-cols-[420px_1fr]">{children}</div>;
+function SetupSection({ children }: { children: React.ReactNode }) {
+  return <div className="flex flex-col gap-6">{children}</div>;
 }
 
 function SetupCard({
