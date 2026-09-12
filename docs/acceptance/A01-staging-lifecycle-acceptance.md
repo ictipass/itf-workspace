@@ -65,6 +65,173 @@ Execute one case at a time and restore the approved staging classification/role 
 assurance, revocation and outage steps must use a dedicated test identity and the deployed administrator controls; do
 not manipulate application tables directly.
 
+## What ITF must provide before the remaining exercise
+
+The tester does not need to provide a password, TOTP secret, integration secret, launch assertion or database
+credential in chat or in the evidence pack. ITF must provide only the following decisions and operating window:
+
+- **A01-02:** approve one temporary destination Flow role and its `STANDARD` or `SENSITIVE` classification. It must be
+  a real Flow role code. `OFFICER` remains the approved starting/restoration role; engineering must not select the
+  destination role on ITF's behalf.
+- **A01-03:** authorize a time-bounded staging-only change of `OFFICER` from `STANDARD` to `SENSITIVE`, followed by
+  immediate restoration to `STANDARD`. The change affects every staging user assigned `OFFICER`, so name a maintenance
+  window with no unrelated staging test in progress.
+- **A01-05:** authorize use of the dedicated ordinary staging identity whose access may be revoked and restored. No
+  new policy classification is required.
+- **A01-06 and A01-07:** authorize a staging maintenance window after the controlled acceptance diagnostic described
+  below is implemented. These cases must not be improvised with direct database edits or secrets pasted into a shell
+  command, browser, chat or ticket.
+
+Record the approving authority and approval reference with the test evidence. The approval may identify the dedicated
+test account internally, but this repository should retain only a non-personal test-identity reference.
+
+## Common pre-test checklist
+
+- [ ] Confirm the browser address is the dedicated Workspace staging domain and Flow resolves to the dedicated Flow
+  staging project; neither app points to production.
+- [ ] Record the deployed Workspace and Flow commit hashes.
+- [ ] Confirm both readiness endpoints report ready and the ordinary test identity can launch as `OFFICER`.
+- [ ] Confirm `OFFICER = STANDARD` before starting and that the test identity is not the only recoverable administrator.
+- [ ] Open one browser profile for the ordinary test user and a separate profile for the `SYSTEM_ADMIN`.
+- [ ] Open Vercel runtime logs for both projects, but enable no request-body or secret logging.
+- [ ] Record start time in WAT and UTC, tester, case ID and the approved change reference.
+- [ ] Run only one case, complete its restoration checklist, and then start the next case.
+
+## A01-02 — Role change and mismatch
+
+Purpose: prove that an old Flow role cannot survive a Workspace role change and that Flow refuses the new assertion
+until its own directory has reconciled that exact role.
+
+Prerequisite: ITF has approved the temporary destination Flow role and assurance classification. The role must first
+exist under **Administration → Apps → ITF Flow → Edit → Child-app role assurance**.
+
+1. As the ordinary user, launch Flow as `OFFICER` and leave the Flow page open.
+2. As `SYSTEM_ADMIN`, open **Administration → App Access**. In **Grant App Access**, select the same user and ITF Flow's
+   approved destination role, then submit. This updates the existing entitlement; it does not create a second one.
+3. Refresh or navigate in the user's already-open Flow session.
+4. Expected: the old Flow session no longer opens protected content and Flow requires entry through Workspace again.
+5. Before running directory synchronization, launch Flow again from the user's Workspace catalogue.
+6. Expected: Flow rejects the launch with its generic invalid-token/login result because Workspace asserts the new
+   role while Flow still holds `OFFICER`. A Flow dashboard must not be created.
+7. As `SYSTEM_ADMIN`, open **Administration → Bulk Import Users** and select **Synchronize entitled staff to ITF Flow**.
+8. Launch Flow again from the user's catalogue.
+9. Expected: launch succeeds and Flow applies the approved destination role, not `OFFICER`.
+10. Restore the Workspace entitlement to `OFFICER`, run directory synchronization again, and prove a final launch
+    succeeds as `OFFICER`.
+
+Pass only when all four observations are recorded: old session ended, pre-sync launch rejected, post-sync new role
+accepted, and restoration to `OFFICER` accepted.
+
+## A01-03 — Standard-to-sensitive assurance increase
+
+Purpose: prove that changing policy from password-only to TOTP-protected access terminates the lower-assurance Flow
+session and that a new sensitive launch cannot bypass TOTP.
+
+Prerequisite: ITF has approved the staging-only maintenance window and temporary `OFFICER = SENSITIVE` change.
+
+1. Confirm the test user's entitlement and synchronized Flow role are `OFFICER`, and launch Flow while
+   `OFFICER = STANDARD`.
+2. As `SYSTEM_ADMIN`, open **Administration → Apps → ITF Flow → Edit → Child-app role assurance**.
+3. Change `OFFICER` from `STANDARD` to `SENSITIVE` and select **Update**.
+4. Refresh or navigate in the user's existing Flow session.
+5. Expected: the existing Flow session no longer opens protected content.
+6. From Workspace, try to launch Flow again. If the user has not enrolled TOTP, Workspace must require enrollment; if
+   already enrolled, it must require a current code. Do not record the QR setup key or six-digit code.
+7. Expected: Flow does not launch before successful TOTP. After successful verification, it launches with TOTP present
+   in the approved authentication assurance.
+8. Restore `OFFICER` to `STANDARD`, sign out of Flow, and confirm the ordinary Workspace catalogue can launch Flow
+   under the approved baseline policy.
+
+Pass only when the lower-assurance session ends, pre-TOTP launch is denied, post-TOTP launch succeeds, and the policy
+is restored. Because this temporarily affects every staging `OFFICER`, do not run it during unrelated demonstrations.
+
+## A01-05 — Entitlement revocation
+
+Purpose: prove that removing the Workspace entitlement ends every Flow session for the user and that neither a stale
+Flow cookie nor a direct launch attempt restores access.
+
+1. Launch Flow for the dedicated user in two separate browser profiles so two active Flow sessions exist.
+2. As `SYSTEM_ADMIN`, open **Administration → App Access** and select **Revoke** for that user's active ITF Flow access.
+3. Refresh or navigate to protected pages in both Flow browser profiles.
+4. Expected: both sessions are rejected; entitlement revocation is user-wide rather than limited to one browser.
+5. Refresh the user's Workspace catalogue.
+6. Expected: ITF Flow remains visible in the complete registry but its launch control is disabled because the user is
+   no longer entitled.
+7. Attempting the old Flow URL directly must not restore a staff session.
+8. Restore access by granting `OFFICER`, run **Synchronize entitled staff to ITF Flow**, and confirm a new Workspace
+   launch succeeds.
+
+Pass only when both sessions end, relaunch is denied while revoked, and controlled regrant plus synchronization is
+required for recovery.
+
+## A01-06 — Duplicate delivery
+
+Purpose: prove that retrying the exact same security event does not fail and does not apply the state transition twice.
+The same `eventId` and identical payload must be delivered twice; creating two different revocation events is not this
+test.
+
+The current administrator UI cannot safely replay an exact event. Before execution, engineering must add a narrowly
+scoped staging acceptance diagnostic which:
+
+- refuses to run against a non-staging environment;
+- creates or selects one test-user entitlement event without accepting arbitrary URLs or payloads;
+- sends the same server-generated event body and `eventId` twice through the authenticated Flow receiver;
+- reads the receiver outcomes without displaying the bearer credential or request body;
+- reports first delivery as `accepted: true, duplicate: false` and the second as
+  `accepted: true, duplicate: true`;
+- provides a redacted event/correlation reference and verifies only one effective session/identity revocation; and
+- requires explicit confirmation and documents how to restore the test user.
+
+Once that diagnostic exists, the operator checklist is:
+
+- [ ] Start with one active test entitlement and Flow session.
+- [ ] Run the diagnostic once for A01-06; do not manually repeat or modify its payload.
+- [ ] Confirm both receiver calls are accepted and the second is marked duplicate.
+- [ ] Confirm the Flow session is revoked once and no duplicate durable side effect or server error appears.
+- [ ] Regrant/synchronize the test identity if the diagnostic used entitlement revocation, then prove launch succeeds.
+
+## A01-07 — Receiver outage and retry recovery
+
+Purpose: prove that a temporary Flow outage cannot undo a Workspace revocation, that failed delivery remains durable,
+and that the same event is delivered after recovery.
+
+The existing outbox worker can retry due events, but the UI cannot safely isolate a test event, show its state or
+simulate an approved receiver failure. Engineering must extend the staging acceptance diagnostic before this case. It
+must:
+
+- refuse non-staging targets and require explicit confirmation of the dedicated test identity;
+- preflight that no unrelated due integration event will be processed;
+- induce a bounded Flow receiver failure without weakening receiver authentication or changing production settings;
+- identify the generated outbox event and show only redacted status, attempts, next retry time and correlation data;
+- verify the Workspace entitlement is already revoked while delivery is `RETRY`;
+- restore the valid receiver, invoke the authorized worker after the event becomes due, and follow that one event to
+  `DELIVERED`; and
+- never expose `WORKSPACE_INTEROP_SECRET`, `WORKSPACE_OUTBOX_WORKER_SECRET` or a database credential.
+
+Once that diagnostic exists, the operator checklist is:
+
+- [ ] Start with an active test entitlement and Flow session; record the approved maintenance window.
+- [ ] Enable the diagnostic's bounded receiver-failure mode and revoke the test entitlement through **App Access**.
+- [ ] Confirm Workspace immediately disables launch even though Flow event delivery failed.
+- [ ] Confirm the event is durable in `RETRY`, with a bounded next-attempt time; do not edit the outbox row.
+- [ ] Restore the valid Flow receiver and run the diagnostic's authorized retry after the event becomes due.
+- [ ] Confirm the same event reaches `DELIVERED`, the Flow session ends and direct/Workspace relaunch remains denied.
+- [ ] Regrant `OFFICER`, synchronize the directory and prove normal launch recovery.
+
+A manual successful retry on Vercel Hobby closes the finite A01-07 staging case only. Its once-per-day cron cannot
+meet continuous revocation operations; a production-capable scheduler remains a separate Gate B/production blocker.
+
+## Evidence checklist for every case
+
+- [ ] Case ID, expected result, actual result and pass/fail decision.
+- [ ] Tester and approving authority reference; no personal authentication data.
+- [ ] WAT and UTC start/end times and both deployed commit hashes.
+- [ ] Redacted Workspace audit reference and Flow/outbox correlation or event reference where applicable.
+- [ ] Screenshots contain no query tokens, secrets, TOTP setup data, email addresses or other personal data.
+- [ ] Restoration completed and verified: `OFFICER = STANDARD`, intended entitlement active and directory synchronized.
+- [ ] Any unexpected result is recorded as failed; do not weaken a control or repeat mutations until engineering has
+  reviewed the logs.
+
 ## Completion rule
 
 Gate A remains **Not met** until A01-02, A01-03 and A01-05 through A01-07 have accepted evidence. Vercel Hobby's daily
