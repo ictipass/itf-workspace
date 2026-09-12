@@ -9,7 +9,7 @@
     "postinstall": "prisma generate",
     "db:seed": "node --require ./scripts/windows-test-preload.cjs --import tsx prisma/seed.ts",
     "db:bootstrap-admin": "node --require ./scripts/windows-test-preload.cjs --import tsx scripts/bootstrap-initial-admin.ts",
-    "build": "prisma generate && next build",
+    "build": "prisma generate && next build && node scripts/verify-workbook-runtime-trace.mjs",
     "start": "next start",
     "lint": "eslint",
     "config:check": "node --require ./scripts/windows-test-preload.cjs --import tsx scripts/validate-environment.ts",
