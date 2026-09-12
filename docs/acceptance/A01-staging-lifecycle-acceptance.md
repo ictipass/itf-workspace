@@ -1,6 +1,6 @@
 # A01 staging lifecycle acceptance runbook
 
-Status: In progress — provisioning, launch, W27-W29, replay rejection and central logout accepted; remaining scenarios pending
+Status: In progress — administrator and ordinary-staff provisioning/launch, W27-W29, replay rejection and central logout accepted; remaining scenarios pending
 Environment: Dedicated ITF Workspace and ITF Flow staging only
 
 ## Purpose
@@ -42,6 +42,13 @@ Acceptance: **Passed on 2026-09-08.** Reusing the consumed launch request in a s
 reached Flow's generic invalid-token response and did not create an authenticated Flow session. No assertion or token
 value was retained as evidence. Repository evidence also passes the unique-redemption and concurrent-transaction
 regression cases.
+
+## Ordinary-staff provisioning and launch
+
+Acceptance: **Passed on 2026-09-12.** Dedicated ordinary staging users were created through the HR CSV path, received
+welcome email, replaced temporary passwords and signed into Workspace. After approved `OFFICER = STANDARD`
+classification and directory synchronization, their catalogue controls enabled and Workspace-to-Flow launch
+completed. No personal identity or authentication material is retained in this evidence.
 
 ## Remaining lifecycle cases
 

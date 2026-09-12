@@ -145,6 +145,10 @@ ITF then approved `OFFICER = STANDARD` under D42. W35 makes future imports and d
 against the live role-policy registry; staging still requires the administrator to add that approved policy and run
 directory synchronization before this identity's first Flow launch.
 
+ITF subsequently confirmed the approved role was configured, directory synchronization completed and dedicated
+ordinary test users launched Flow successfully. This accepts the ordinary-staff provisioning/launch path. It does not
+complete A01-02 because no authoritative role change and mismatch/reconciliation sequence has yet been exercised.
+
 ## User interface effect
 
 No layout changed. After an administrator grants or changes ITF Flow access, the success message now explicitly says

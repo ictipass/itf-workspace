@@ -54,7 +54,8 @@ result. Repository code, migrations and commits remain the final implementation 
 | W32 | Organization Setup runtime and hierarchy corrections | Implemented; staging redeployment required | `c211185`; correct Excel ESM constructor, Server Action export boundary, and confirmed manual department/division/unit parent correction with immutable IDs and old/new-parent audit evidence. No migration or new configuration. See [`slices/W32-organization-setup-runtime-and-hierarchy-corrections.md`](slices/W32-organization-setup-runtime-and-hierarchy-corrections.md) |
 | W33 | Organization workbook deployment packaging | Implemented; staging redeployment required | `84878a0`; narrowly scoped Next.js output-tracing includes package ExcelJS's complete dynamically loaded runtime dependency graph into both affected Vercel functions, and the production build now fails if any required package is absent. No migration, seed or configuration change. See [`slices/W33-organization-workbook-deployment-packaging.md`](slices/W33-organization-workbook-deployment-packaging.md) |
 | W34 | Organization Setup responsive information layout | Implemented; staging redeployment required | `b1ed8be`; all five reference-data tabs place a compact responsive creation panel above a full-width entries table, removing the constrained desktop table and redundant nested scrollbar while retaining narrow-screen overflow. No migration or configuration change. See [`slices/W34-organization-setup-responsive-layout.md`](slices/W34-organization-setup-responsive-layout.md) |
-| W35 | Registry-governed child-app roles in staff onboarding | Implemented; staging configuration and redeployment required | `e8c3477`; Flow roles are normalized and validated against active classified registry policies during import, directory sync rejects every unclassified active entitlement, the unsafe fallback role is removed, and clean development seeds reflect approved D42 `OFFICER = STANDARD`. No migration or new environment variable. See [`slices/W35-registry-governed-onboarding-roles.md`](slices/W35-registry-governed-onboarding-roles.md) |
+| W35 | Registry-governed child-app roles in staff onboarding | Implemented and staging accepted | `e8c3477`; Flow roles are normalized and validated against active classified registry policies during import, directory sync rejects every unclassified active entitlement, the unsafe fallback role is removed, and clean development seeds reflect approved D42 `OFFICER = STANDARD`. Dedicated ordinary-user synchronization and launch were accepted on 2026-09-12. No migration or new environment variable. See [`slices/W35-registry-governed-onboarding-roles.md`](slices/W35-registry-governed-onboarding-roles.md) |
+| W36 | Living developer and administrator documentation | Implemented | `2124c81`; maintained documentation hub, developer architecture/configuration guide, admin/support guide, staff and child-app onboarding runbooks, troubleshooting, documentation governance and a build-enforced internal-link/required-document check. No migration, environment or application UI change. See [`slices/W36-living-documentation.md`](slices/W36-living-documentation.md) |
 
 ## Phase 2 — scalable access governance
 
@@ -85,7 +86,7 @@ result. Repository code, migrations and commits remain the final implementation 
 
 | ID | Application slice | Status | Dependency |
 |---|---|---|---|
-| A01 | ITF Flow launch v2, provisioning and revocation integration | In progress | Code complete: Workspace `1a08a5b`, Flow `02b433d`; Flow staging configuration `f48b702` and pooled/direct database hardening `d0199ce`. Database credential rotation, dedicated staging boundary, Workspace sender configuration, app registration, administrator entitlement, directory synchronization, first genuine launch, replay rejection and confirmed central logout are accepted. Role/assurance change, entitlement revocation, duplicate delivery, outage/retry and a continuous retry scheduler remain. See [`slices/A01-itf-flow-integration-reassessment.md`](slices/A01-itf-flow-integration-reassessment.md) |
+| A01 | ITF Flow launch v2, provisioning and revocation integration | In progress | Code complete: Workspace `1a08a5b`, Flow `02b433d`; Flow staging configuration `f48b702` and pooled/direct database hardening `d0199ce`. Database credential rotation, staging boundary, sender configuration, registry, administrator and ordinary-staff provisioning/launch, replay rejection and central logout are accepted. Role/assurance change, entitlement revocation, duplicate delivery, outage/retry and a continuous retry scheduler remain. See [`slices/A01-itf-flow-integration-reassessment.md`](slices/A01-itf-flow-integration-reassessment.md) |
 | A02 | Client Reimbursement staff integration | Planned | A01 lessons plus W17/W21 onboarding contract |
 | A03 | SIWES staff-facing integration | Policy gate | A01; D32 separates staff and external SIWES identities |
 | A04 | PromoIntel staff integration | Planned | A01 lessons plus W17/W21 onboarding contract |
@@ -106,27 +107,25 @@ result. Repository code, migrations and commits remain the final implementation 
 
 ## Current execution order
 
-1. Configure ITF Flow `OFFICER = STANDARD` in the staging app registry, deploy W33-W35 and synchronize the existing entitled test staff to Flow.
-2. Accept the workbook runtime correction and responsive Organization Setup layout in Workspace staging.
-3. Complete A01-02 role-change/mismatch acceptance with the dedicated staging test identity and an approved new Flow role.
-4. Exercise the A01-03 assurance increase and A01-05 entitlement revocation cases in staging.
-5. Exercise A01-06 duplicate delivery and A01-07 outage/retry recovery to close the finite lifecycle evidence.
-6. Establish continuous outbox retry operation and resolve W05, W06 and W09 before a controlled pilot.
-7. Start Phase 2 governance before onboarding more than ITF Flow.
+1. Accept the W33 workbook runtime correction and W34 responsive Organization Setup layout in Workspace staging.
+2. Approve a second Flow role/classification and complete A01-02 role-change/mismatch acceptance with the dedicated staging test identity.
+3. Exercise the A01-03 assurance increase and A01-05 entitlement revocation cases in staging.
+4. Exercise A01-06 duplicate delivery and A01-07 outage/retry recovery to close the finite lifecycle evidence.
+5. Establish continuous outbox retry operation and resolve W05, W06 and W09 before a controlled pilot.
+6. Resolve D15-D30, then implement W10-W18 before repeatable onboarding of additional child apps.
 
-**Next best implementable slice:** configure the approved `OFFICER = STANDARD` role policy in the staging ITF Flow app
-record, deploy W33-W35, and run **Synchronize entitled staff to ITF Flow**. Confirm the dedicated staff identity's app
-card changes from **Role classification required** to **Launch App** and completes a genuine launch. Also accept the
-W33-W34 workbook and layout checks. Then execute A01-02 role-change/mismatch acceptance; the new Flow role and its
-classification still require explicit approval. Do not alter the only recoverable Workspace administrator. Continue
-A01-03 and A01-05 through A01-07 afterward. The continuous retry scheduler remains a controlled-pilot gate. Execute
-and retain evidence through the [`A01 staging lifecycle acceptance runbook`](acceptance/A01-staging-lifecycle-acceptance.md).
+**Next best implementable slice:** accept W33-W34 in staging by testing both organization workbook downloads, a
+controlled office creation and all five responsive tabs while checking runtime logs. Then execute A01-02
+role-change/mismatch acceptance. A second Flow role and its `STANDARD`/`SENSITIVE` classification require explicit
+approval before that lifecycle test; do not alter the only recoverable Workspace administrator. Continue A01-03 and
+A01-05 through A01-07 afterward. The continuous retry scheduler remains a controlled-pilot gate. Execute and retain
+evidence through the [`A01 staging lifecycle acceptance runbook`](acceptance/A01-staging-lifecycle-acceptance.md).
 
 **Current child-app readiness:** The Workspace code foundation and its first-administrator authentication path are
 accepted for integrated ITF Flow staging, but Gate A is not formally met. A01's cross-repository code and contract
 coverage are complete. Flow staging origin, database, classifications, credential rotation, public application
-boundary, receiver credentials, Workspace sender configuration, registry/access records, provisioning, first launch,
-replay rejection, W28/W29 behavior and confirmed central logout are accepted. Role/assurance change, entitlement
+boundary, receiver credentials, Workspace sender configuration, registry/access records, administrator and ordinary
+staff provisioning/launch, replay rejection, W28/W29 behavior and confirmed central logout are accepted. Role/assurance change, entitlement
 revocation, duplicate delivery, outage/retry recovery and continuous retry operation remain.
 Vercel Hobby cannot continuously schedule the staging retry worker; production signing additionally requires the
 approved KMS/HSM adapter.

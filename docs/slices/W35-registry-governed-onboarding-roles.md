@@ -1,6 +1,6 @@
 # W35 - Registry-governed child-app roles in staff onboarding
 
-Status: **Implemented; staging configuration and redeployment required**
+Status: **Implemented and staging accepted**
 
 Implementation commit: `e8c3477`
 
@@ -50,6 +50,11 @@ For the current staging identity:
 Do not rerun `db:seed` against staging to apply this policy: that seed also manages development bootstrap data. Use
 the administrator UI as described.
 
+## Staging acceptance
+
+Accepted on 2026-09-12. ICT configured the approved `OFFICER = STANDARD` role, synchronized entitled staff and
+confirmed that dedicated ordinary test users could launch ITF Flow successfully through Workspace.
+
 ## Verification
 
 - 84/84 tests pass across 15 suites.
@@ -59,5 +64,5 @@ the administrator UI as described.
 
 ## Next action
 
-Complete the existing test identity's first synchronized Flow launch. Then choose and approve the new role and
-classification needed for A01-02 role-change/mismatch acceptance; D42 classifies only the initial `OFFICER` role.
+Choose and approve the new role and classification needed for A01-02 role-change/mismatch acceptance; D42 classifies
+only the initial `OFFICER` role.

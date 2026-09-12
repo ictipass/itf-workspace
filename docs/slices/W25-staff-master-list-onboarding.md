@@ -23,6 +23,10 @@ transaction/input hardening `2463277`; Prisma advisory-lock correction `79aac76`
 
 No database migration was required.
 
+On 2026-09-12, the ordinary-staff happy path was accepted in staging: CSV creation, welcome delivery, first login,
+temporary-password replacement, subsequent Workspace login, `OFFICER = STANDARD` directory synchronization and ITF
+Flow launch succeeded for dedicated test users. This does not close the lifecycle work listed below.
+
 ## Practical effect
 
 A mistaken or altered HR spreadsheet cannot make a staff member a Workspace administrator. The file fails closed and
