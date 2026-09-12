@@ -28,6 +28,13 @@ import {
 
 type Entity = "office" | "department" | "division" | "unit" | "position";
 
+type ParentOption = {
+  id: string;
+  name: string;
+  code: string;
+  isActive: boolean;
+};
+
 const initialState: SetupActionState = {
   success: false,
   message: "",
@@ -39,14 +46,19 @@ export default function SetupRecordEditDialog({
   code,
   displayName,
   officeType,
+  parentId,
+  parentOptions = [],
 }: {
   id: string;
   entity: Entity;
   code: string;
   displayName: string;
   officeType?: OfficeType;
+  parentId?: string;
+  parentOptions?: ParentOption[];
 }) {
   const [open, setOpen] = useState(false);
+  const [selectedParentId, setSelectedParentId] = useState(parentId);
   const [state, formAction, isPending] = useActionState(
     updateSetupRecordAction,
     initialState
@@ -64,9 +76,9 @@ export default function SetupRecordEditDialog({
         <DialogHeader>
           <DialogTitle>Edit reference data</DialogTitle>
           <DialogDescription>
-            Correct the display name and code
-            {entity === "office" ? ", or office type" : ""}. Existing linked records
-            remain attached by their internal identifiers.
+            Correct all applicable fields. Changing a parent moves this record and
+            its descendants in the organization hierarchy; linked staff remain
+            attached through immutable identifiers.
           </DialogDescription>
         </DialogHeader>
 
@@ -134,6 +146,78 @@ export default function SetupRecordEditDialog({
                 <p className="text-xs text-destructive">{state.errors.officeType[0]}</p>
               ) : null}
             </div>
+          ) : null}
+
+          {entity === "department" || entity === "division" || entity === "unit" ? (
+            <div className="space-y-2">
+              <Label htmlFor={`${entity}-${id}-parent`}>
+                {entity === "department"
+                  ? "Office"
+                  : entity === "division"
+                    ? "Department"
+                    : "Division"}
+              </Label>
+              <Select
+                name={
+                  entity === "department"
+                    ? "officeId"
+                    : entity === "division"
+                      ? "departmentId"
+                      : "divisionId"
+                }
+                value={selectedParentId}
+                onValueChange={setSelectedParentId}
+                required
+              >
+                <SelectTrigger id={`${entity}-${id}-parent`}>
+                  <SelectValue placeholder="Select a parent" />
+                </SelectTrigger>
+                <SelectContent>
+                  {parentOptions.map((option) => (
+                    <SelectItem
+                      key={option.id}
+                      value={option.id}
+                      disabled={!option.isActive && option.id !== parentId}
+                    >
+                      {option.name} ({option.code}){option.isActive ? "" : " — inactive"}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {state.errors?.[
+                entity === "department"
+                  ? "officeId"
+                  : entity === "division"
+                    ? "departmentId"
+                    : "divisionId"
+              ]?.[0] ? (
+                <p className="text-xs text-destructive">
+                  {state.errors[
+                    entity === "department"
+                      ? "officeId"
+                      : entity === "division"
+                        ? "departmentId"
+                        : "divisionId"
+                  ]?.[0]}
+                </p>
+              ) : null}
+            </div>
+          ) : null}
+
+          {selectedParentId && selectedParentId !== parentId ? (
+            <label className="flex items-start gap-2 rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-sm">
+              <input
+                className="mt-0.5"
+                type="checkbox"
+                name="confirmHierarchyMove"
+                value="yes"
+                required
+              />
+              <span>
+                I confirm this hierarchy move and understand that affected staff
+                and descendants will resolve through the new parent.
+              </span>
+            </label>
           ) : null}
 
           <DialogFooter>

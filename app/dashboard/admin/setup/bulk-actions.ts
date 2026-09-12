@@ -29,12 +29,6 @@ export type OrganizationImportActionState = {
   requiresFreshMfa?: boolean;
 };
 
-export const initialOrganizationImportState: OrganizationImportActionState = {
-  success: false,
-  phase: "idle",
-  message: "",
-};
-
 function uploadedFiles(formData: FormData) {
   return formData
     .getAll("organizationFiles")

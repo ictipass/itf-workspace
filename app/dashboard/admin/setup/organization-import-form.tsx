@@ -5,9 +5,15 @@ import { useActionState } from "react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
-  initialOrganizationImportState,
   organizationImportAction,
 } from "./bulk-actions";
+import type { OrganizationImportActionState } from "./bulk-actions";
+
+const initialOrganizationImportState: OrganizationImportActionState = {
+  success: false,
+  phase: "idle",
+  message: "",
+};
 
 export default function OrganizationImportForm() {
   const [state, action, pending] = useActionState(

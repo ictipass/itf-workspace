@@ -38,6 +38,7 @@ describe("organization setup correction policy", () => {
       id: "department-1",
       displayName: "Information Technology",
       code: "ict",
+      officeId: "office-1",
     });
 
     assert.equal(result.code, "ICT");
@@ -53,5 +54,46 @@ describe("organization setup correction policy", () => {
     });
 
     assert.equal(result.success, false);
+  });
+
+  test("requires the applicable parent when correcting hierarchy records", () => {
+    const department = updateSetupRecordSchema.safeParse({
+      entity: "department",
+      id: "department-1",
+      displayName: "Information Technology",
+      code: "ICT",
+    });
+    assert.equal(department.success, false);
+    if (!department.success) {
+      assert.match(
+        department.error.flatten().fieldErrors.officeId?.[0] ?? "",
+        /parent selection/i
+      );
+    }
+
+    const division = updateSetupRecordSchema.parse({
+      entity: "division",
+      id: "division-1",
+      displayName: "Applications Development",
+      code: "APPDEV",
+      departmentId: "department-2",
+      confirmHierarchyMove: "yes",
+    });
+    assert.equal(division.departmentId, "department-2");
+    assert.equal(division.confirmHierarchyMove, "yes");
+  });
+
+  test("persists parent corrections and their before-and-after audit IDs", async () => {
+    const source = await import("node:fs/promises").then(({ readFile }) =>
+      readFile(
+        new URL("../app/dashboard/admin/setup/actions.ts", import.meta.url),
+        "utf8"
+      )
+    );
+    assert.match(source, /data: \{ name: displayName, code, officeId: targetOffice\.id \}/);
+    assert.match(source, /data: \{ name: displayName, code, departmentId: targetDepartment\.id \}/);
+    assert.match(source, /data: \{ name: displayName, code, divisionId: targetDivision\.id \}/);
+    assert.match(source, /previousParentId/);
+    assert.match(source, /confirmHierarchyMove/);
   });
 });

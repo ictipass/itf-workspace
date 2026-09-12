@@ -118,6 +118,10 @@ export async function updateSetupRecordAction(
       displayName: formData.get("displayName"),
       code: formData.get("code"),
       officeType: formData.get("officeType") || undefined,
+      officeId: formData.get("officeId") || undefined,
+      departmentId: formData.get("departmentId") || undefined,
+      divisionId: formData.get("divisionId") || undefined,
+      confirmHierarchyMove: formData.get("confirmHierarchyMove") || undefined,
     });
 
     if (!parsed.success) {
@@ -128,12 +132,25 @@ export async function updateSetupRecordAction(
       };
     }
 
-    const { entity, id, displayName, code, officeType } = parsed.data;
+    const {
+      entity,
+      id,
+      displayName,
+      code,
+      officeType,
+      officeId,
+      departmentId,
+      divisionId,
+      confirmHierarchyMove,
+    } = parsed.data;
 
     await prisma.$transaction(async (transaction) => {
       let previousDisplayName: string;
       let previousCode: string;
       let previousOfficeType: OfficeType | undefined = undefined;
+      let previousParentId: string | undefined = undefined;
+      let parentId: string | undefined = undefined;
+      let parentEntity: "office" | "department" | "division" | undefined = undefined;
 
       if (entity === "office") {
         const existing = await transaction.office.findUnique({
@@ -159,16 +176,33 @@ export async function updateSetupRecordAction(
           select: { name: true, code: true, officeId: true },
         });
         if (!existing) throw new Error("Department record was not found.");
+        const targetOffice = await transaction.office.findUnique({
+          where: { id: officeId! },
+          select: { id: true, isActive: true },
+        });
+        if (!targetOffice) throw new Error("Selected office was not found.");
+        if (targetOffice.id !== existing.officeId && !targetOffice.isActive) {
+          throw new Error("A department can only be moved to an active office.");
+        }
+        if (
+          targetOffice.id !== existing.officeId &&
+          confirmHierarchyMove !== "yes"
+        ) {
+          throw new Error("Confirm the department hierarchy move before saving.");
+        }
         const duplicate = await transaction.department.findFirst({
-          where: { code, officeId: existing.officeId, id: { not: id } },
+          where: { code, officeId: targetOffice.id, id: { not: id } },
           select: { id: true },
         });
         if (duplicate) throw new Error("Department code already exists for this office.");
         previousDisplayName = existing.name;
         previousCode = existing.code;
+        previousParentId = existing.officeId ?? undefined;
+        parentId = targetOffice.id;
+        parentEntity = "office";
         await transaction.department.update({
           where: { id },
-          data: { name: displayName, code },
+          data: { name: displayName, code, officeId: targetOffice.id },
         });
       } else if (entity === "division") {
         const existing = await transaction.division.findUnique({
@@ -176,16 +210,33 @@ export async function updateSetupRecordAction(
           select: { name: true, code: true, departmentId: true },
         });
         if (!existing) throw new Error("Division record was not found.");
+        const targetDepartment = await transaction.department.findUnique({
+          where: { id: departmentId! },
+          select: { id: true, isActive: true },
+        });
+        if (!targetDepartment) throw new Error("Selected department was not found.");
+        if (targetDepartment.id !== existing.departmentId && !targetDepartment.isActive) {
+          throw new Error("A division can only be moved to an active department.");
+        }
+        if (
+          targetDepartment.id !== existing.departmentId &&
+          confirmHierarchyMove !== "yes"
+        ) {
+          throw new Error("Confirm the division hierarchy move before saving.");
+        }
         const duplicate = await transaction.division.findFirst({
-          where: { code, departmentId: existing.departmentId, id: { not: id } },
+          where: { code, departmentId: targetDepartment.id, id: { not: id } },
           select: { id: true },
         });
         if (duplicate) throw new Error("Division code already exists for this department.");
         previousDisplayName = existing.name;
         previousCode = existing.code;
+        previousParentId = existing.departmentId;
+        parentId = targetDepartment.id;
+        parentEntity = "department";
         await transaction.division.update({
           where: { id },
-          data: { name: displayName, code },
+          data: { name: displayName, code, departmentId: targetDepartment.id },
         });
       } else if (entity === "unit") {
         const existing = await transaction.unit.findUnique({
@@ -193,16 +244,33 @@ export async function updateSetupRecordAction(
           select: { name: true, code: true, divisionId: true },
         });
         if (!existing) throw new Error("Unit record was not found.");
+        const targetDivision = await transaction.division.findUnique({
+          where: { id: divisionId! },
+          select: { id: true, isActive: true },
+        });
+        if (!targetDivision) throw new Error("Selected division was not found.");
+        if (targetDivision.id !== existing.divisionId && !targetDivision.isActive) {
+          throw new Error("A unit can only be moved to an active division.");
+        }
+        if (
+          targetDivision.id !== existing.divisionId &&
+          confirmHierarchyMove !== "yes"
+        ) {
+          throw new Error("Confirm the unit hierarchy move before saving.");
+        }
         const duplicate = await transaction.unit.findFirst({
-          where: { code, divisionId: existing.divisionId, id: { not: id } },
+          where: { code, divisionId: targetDivision.id, id: { not: id } },
           select: { id: true },
         });
         if (duplicate) throw new Error("Unit code already exists for this division.");
         previousDisplayName = existing.name;
         previousCode = existing.code;
+        previousParentId = existing.divisionId ?? undefined;
+        parentId = targetDivision.id;
+        parentEntity = "division";
         await transaction.unit.update({
           where: { id },
-          data: { name: displayName, code },
+          data: { name: displayName, code, divisionId: targetDivision.id },
         });
       } else {
         const existing = await transaction.position.findUnique({
@@ -238,6 +306,9 @@ export async function updateSetupRecordAction(
             code,
             previousOfficeType,
             officeType: entity === "office" ? officeType : undefined,
+            previousParentId,
+            parentId,
+            parentEntity,
           },
         },
       });

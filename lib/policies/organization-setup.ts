@@ -33,6 +33,10 @@ export const updateSetupRecordSchema = z
       .max(200, "Display name must not exceed 200 characters."),
     code: referenceCodeSchema,
     officeType: z.nativeEnum(OfficeType).optional(),
+    officeId: z.string().trim().min(1).optional(),
+    departmentId: z.string().trim().min(1).optional(),
+    divisionId: z.string().trim().min(1).optional(),
+    confirmHierarchyMove: z.literal("yes").optional(),
   })
   .superRefine((value, context) => {
     if (value.entity === "office" && !value.officeType) {
@@ -40,6 +44,21 @@ export const updateSetupRecordSchema = z
         code: "custom",
         path: ["officeType"],
         message: "Office type is required.",
+      });
+    }
+    const requiredParent: [string, string | undefined] | undefined =
+      value.entity === "department"
+        ? ["officeId", value.officeId]
+        : value.entity === "division"
+          ? ["departmentId", value.departmentId]
+          : value.entity === "unit"
+            ? ["divisionId", value.divisionId]
+            : undefined;
+    if (requiredParent && !requiredParent[1]) {
+      context.addIssue({
+        code: "custom",
+        path: [requiredParent[0]],
+        message: "Parent selection is required.",
       });
     }
   });

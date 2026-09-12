@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { describe, test } from "node:test";
+import Workbook from "@excel.js/exceljs/workbook";
 
 import {
   ORGANIZATION_SHEET_HEADERS,
@@ -23,6 +24,12 @@ function sheets(overrides: Partial<Record<(typeof ORGANIZATION_SHEET_NAMES)[numb
 }
 
 describe("organization bulk-import contract", () => {
+  test("loads the maintained Excel workbook runtime through its ESM subpath", () => {
+    assert.equal(typeof Workbook, "function");
+    const workbook = new Workbook();
+    assert.equal(workbook.addWorksheet("Offices").name, "Offices");
+  });
+
   test("accepts the five-sheet hierarchy and normalizes reference codes", () => {
     const result = parseOrganizationImportSheets(
       sheets({
@@ -162,6 +169,7 @@ describe("organization bulk-import contract", () => {
     ]);
     assert.match(action, /verifyOrganizationImportReceipt/);
     assert.match(action, /requireFreshMfaContext/);
+    assert.doesNotMatch(action, /export const initialOrganizationImportState/);
     assert.match(service, /prisma\.\$transaction/);
     assert.match(service, /pg_advisory_xact_lock/);
     assert.match(service, /ORGANIZATION_BULK_IMPORT_APPLIED/);

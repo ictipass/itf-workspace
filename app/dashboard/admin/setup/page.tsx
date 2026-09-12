@@ -193,6 +193,8 @@ export default async function OrganizationSetupPage() {
                           entity="department"
                           code={department.code}
                           displayName={department.name}
+                          parentId={department.officeId ?? undefined}
+                          parentOptions={offices}
                         />
                         <SetupRecordStatusButton
                           id={department.id}
@@ -249,6 +251,8 @@ export default async function OrganizationSetupPage() {
                           entity="division"
                           code={division.code}
                           displayName={division.name}
+                          parentId={division.departmentId}
+                          parentOptions={departments}
                         />
                         <SetupRecordStatusButton
                           id={division.id}
@@ -305,6 +309,8 @@ export default async function OrganizationSetupPage() {
                           entity="unit"
                           code={unit.code}
                           displayName={unit.name}
+                          parentId={unit.divisionId ?? undefined}
+                          parentOptions={divisions}
                         />
                         <SetupRecordStatusButton
                           id={unit.id}

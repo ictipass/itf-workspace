@@ -1,7 +1,8 @@
 import "server-only";
 
 import { createHash } from "node:crypto";
-import { Workbook, type CellValue } from "@excel.js/exceljs";
+import Workbook from "@excel.js/exceljs/workbook";
+import type { CellValue, Worksheet } from "@excel.js/exceljs";
 import Papa from "papaparse";
 import {
   ORGANIZATION_SHEET_HEADERS,
@@ -45,7 +46,7 @@ function normalizeCell(value: CellValue): string | null {
 }
 
 function workbookSheetToRaw(
-  worksheet: ReturnType<Workbook["addWorksheet"]>,
+  worksheet: Worksheet,
   sheetName: OrganizationSheetName,
   errors: string[]
 ): RawOrganizationSheet {
