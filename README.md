@@ -1,44 +1,60 @@
 # ITF Workspace
 
-ITF Workspace is the central registry and controlled access portal for ITF enterprise applications.
+ITF Workspace is ITF's central application registry, staff authentication service and controlled launch portal for
+enterprise child applications. It currently integrates ITF Flow in staging while broader access governance and
+repeatable child-app onboarding remain under implementation.
 
-Implementation status and cross-chat handoff are maintained in
-[`docs/implementation-slice-register.md`](docs/implementation-slice-register.md). Organizational decisions that must
-not be hard-coded are tracked separately in [`docs/policy-decision-register.md`](docs/policy-decision-register.md).
+## Documentation
 
-This application is built with [Next.js](https://nextjs.org).
+Start at the [documentation hub](docs/README.md).
 
-## Getting Started
+- [Developer guide](docs/developer-guide.md)
+- [Administrator and support guide](docs/admin-support-guide.md)
+- [Staff onboarding runbook](docs/runbooks/staff-onboarding.md)
+- [Child-application onboarding runbook](docs/runbooks/child-app-onboarding.md)
+- [Environment configuration reference](docs/environment-reference.md)
+- [Implementation slice register](docs/implementation-slice-register.md)
+- [Policy decision register](docs/policy-decision-register.md)
+- [Child-app readiness gates](docs/child-app-readiness-gates.md)
 
-First, run the development server:
+The implementation and policy registers are authoritative. Guides describe current operation but do not convert a
+planned feature or unresolved policy decision into an implemented capability.
+
+## Local development
+
+Requirements:
+
+- a supported Node.js release for the pinned dependencies;
+- PostgreSQL;
+- environment values derived from `.env.example`;
+- dependencies installed from the lockfile.
 
 ```bash
+npm install
+npm run config:check
+npx prisma migrate dev
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Before committing:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm run verify
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+`npm run verify` validates runtime configuration, the Prisma schema, regression tests, documentation links, ESLint,
+TypeScript through the production build, and deployment tracing for the organization workbook runtime.
 
-## Learn More
+Do not place real credentials, launch assertions, staff spreadsheets or production data in source control.
 
-To learn more about Next.js, take a look at the following resources:
+## Deployment
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Workspace is deployed on Vercel with distinct staging and production configuration. Read the
+[deployment guide](docs/vercel-deployment-environments.md) and [environment reference](docs/environment-reference.md)
+before changing project settings. Production application launch remains blocked until the approved non-exportable
+KMS/HSM signing adapter is implemented and operationally approved.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Change governance
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Every feature or fix must update its tests, applicable audience documentation, implementation slice and policy
+records in the same delivery. Follow the [documentation governance standard](docs/documentation-governance.md).
