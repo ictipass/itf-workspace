@@ -2,6 +2,7 @@ import Papa from "papaparse";
 import bcrypt from "bcryptjs";
 import {
   AuditAction,
+  AppStatus,
   Department,
   Division,
   Office,
@@ -16,7 +17,9 @@ import { writeDevCreatedUsersLog } from "@/lib/dev/dev-created-users-log";
 import { sendWorkspaceWelcomeEmail } from "@/lib/email/send-workspace-welcome-email";
 import {
   HR_MASTER_LIST_WORKSPACE_ROLE,
+  isActiveClassifiedAppRole,
   isPermittedHrMasterListWorkspaceRole,
+  normalizeAppRoleCode,
 } from "@/lib/policies/staff-onboarding";
 
 type CsvRow = {
@@ -55,17 +58,6 @@ const REQUIRED_HEADERS = [
   "supervisorStaffNumber",
   "itfFlowRole",
 ];
-
-const ITF_FLOW_ROLES = new Set([
-  "DG_SECRETARY",
-  "DG",
-  "DIRECTOR",
-  "DIVISION_HEAD",
-  "UNIT_HEAD",
-  "OFFICER",
-  "RECORDS_ADMIN",
-  "SYSTEM_ADMIN",
-]);
 
 function normalize(value: unknown) {
   return String(value ?? "").trim();
@@ -123,7 +115,7 @@ export async function importWorkspaceUsersFromCsv(params: {
     unitCode: normalize(row.unitCode),
     positionCode: normalize(row.positionCode),
     supervisorStaffNumber: normalize(row.supervisorStaffNumber),
-    itfFlowRole: normalize(row.itfFlowRole),
+    itfFlowRole: normalizeAppRoleCode(normalize(row.itfFlowRole)),
   }));
 
   const emailsInCsv = new Set<string>();
@@ -152,9 +144,9 @@ export async function importWorkspaceUsersFromCsv(params: {
       errors.push(`Row ${row.rowNumber}: a user cannot supervise themselves.`);
     }
 
-    if (row.itfFlowRole && !ITF_FLOW_ROLES.has(row.itfFlowRole)) {
+    if (row.itfFlowRole && !/^[A-Z0-9_-]{2,64}$/.test(row.itfFlowRole)) {
       errors.push(
-        `Row ${row.rowNumber}: invalid itfFlowRole "${row.itfFlowRole}".`,
+        `Row ${row.rowNumber}: itfFlowRole must be a valid configured role code.`,
       );
     }
 
@@ -211,7 +203,17 @@ export async function importWorkspaceUsersFromCsv(params: {
       },
       select: { id: true, staffNumber: true },
     }),
-    prisma.app.findUnique({ where: { slug: "itf-flow" }, select: { id: true } }),
+    prisma.app.findUnique({
+      where: { slug: "itf-flow" },
+      select: {
+        id: true,
+        status: true,
+        rolePolicies: {
+          where: { isActive: true },
+          select: { roleCode: true, isActive: true },
+        },
+      },
+    }),
   ]);
 
   const existingEmails = new Set(existingByEmail.map((u) => u.email));
@@ -335,6 +337,18 @@ export async function importWorkspaceUsersFromCsv(params: {
     if (row.itfFlowRole && !itfFlowApp) {
       errors.push(
         `Row ${row.rowNumber}: ITF Flow must be registered before assigning itfFlowRole.`,
+      );
+    } else if (row.itfFlowRole && itfFlowApp?.status !== AppStatus.ACTIVE) {
+      errors.push(
+        `Row ${row.rowNumber}: ITF Flow must be active before assigning itfFlowRole.`,
+      );
+    } else if (
+      row.itfFlowRole &&
+      itfFlowApp &&
+      !isActiveClassifiedAppRole(row.itfFlowRole, itfFlowApp.rolePolicies)
+    ) {
+      errors.push(
+        `Row ${row.rowNumber}: ITF Flow role "${row.itfFlowRole}" is not active and classified in the app registry.`,
       );
     }
 

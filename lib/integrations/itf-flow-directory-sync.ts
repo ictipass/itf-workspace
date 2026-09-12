@@ -9,14 +9,31 @@ import { prisma } from "@/lib/prisma";
 import { resolveItfFlowDirectorySyncConfiguration } from "@/lib/config/workspace-environment";
 import { buildItfFlowDirectoryBatch } from "@/lib/integrations/itf-flow-directory-contract";
 import { deliverItfFlowSessionEvents } from "@/lib/integrations/itf-flow-session-events";
+import { isActiveClassifiedAppRole } from "@/lib/policies/staff-onboarding";
 
 export async function syncItfFlowDirectory() {
   const configuration = resolveItfFlowDirectorySyncConfiguration();
 
+  const app = await prisma.app.findUnique({
+    where: { slug: configuration.appSlug },
+    select: {
+      id: true,
+      status: true,
+      rolePolicies: {
+        where: { isActive: true },
+        select: { roleCode: true, isActive: true },
+      },
+    },
+  });
+
+  if (!app || app.status !== AppStatus.ACTIVE) {
+    throw new Error("ITF Flow must be registered and active before directory synchronization.");
+  }
+
   const accessRecords = await prisma.appAccess.findMany({
     where: {
       status: AppAccessStatus.ACTIVE,
-      app: { slug: configuration.appSlug, status: AppStatus.ACTIVE },
+      appId: app.id,
     },
     include: {
       user: {
@@ -32,6 +49,20 @@ export async function syncItfFlowDirectory() {
     },
     orderBy: { userId: "asc" },
   });
+
+  const unclassifiedRoleCodes = [
+    ...new Set(
+      accessRecords
+        .map((access) => access.appRole)
+        .filter((roleCode) => !isActiveClassifiedAppRole(roleCode, app.rolePolicies))
+    ),
+  ].sort();
+
+  if (unclassifiedRoleCodes.length > 0) {
+    throw new Error(
+      `ITF Flow directory synchronization blocked: classify and activate these app roles first: ${unclassifiedRoleCodes.join(", ")}.`
+    );
+  }
 
   const workspaceUserIds = accessRecords.map((access) => access.userId);
   if (workspaceUserIds.length) {
@@ -85,7 +116,7 @@ export async function syncItfFlowDirectory() {
           staffNumber: user.staffNumber,
           email: user.email,
           name: user.fullName,
-          role: appRole || "OFFICER",
+          role: appRole,
           isActive: user.status === UserStatus.ACTIVE,
           office: user.office ? { id: user.office.id, name: user.office.name } : null,
           department: user.department

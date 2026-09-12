@@ -63,6 +63,16 @@ async function main() {
     },
   });
 
+  await prisma.appRolePolicy.upsert({
+    where: { appId_roleCode: { appId: flow.id, roleCode: "OFFICER" } },
+    update: { assuranceRequirement: AssuranceRequirement.STANDARD, isActive: true },
+    create: {
+      appId: flow.id,
+      roleCode: "OFFICER",
+      assuranceRequirement: AssuranceRequirement.STANDARD,
+    },
+  });
+
   await prisma.appAccess.upsert({
     where: { userId_appId: { userId: admin.id, appId: flow.id } },
     update: { status: "ACTIVE", appRole: "SYSTEM_ADMIN", revokedAt: null },

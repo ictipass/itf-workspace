@@ -52,7 +52,8 @@ export default async function ImportUsersPage() {
         <CardContent className="space-y-3">
           <p className="text-sm text-muted-foreground">
             Send active ITF Flow entitlements, organization placement, status, role, and
-            supervisor assignments to the child application in batches of 200.
+            supervisor assignments to the child application in batches of 200. Every
+            assigned Flow role must first be active and classified in the app registry.
           </p>
           <DirectorySyncForm />
         </CardContent>
@@ -63,6 +64,10 @@ export default async function ImportUsersPage() {
           <CardTitle>Required Columns</CardTitle>
         </CardHeader>
         <CardContent>
+          <p className="mb-4 text-sm text-muted-foreground">
+            An optional <code>itfFlowRole</code> must exactly match an active role classified
+            under the ITF Flow app. Unclassified roles cause the entire import to fail.
+          </p>
           <pre className="overflow-x-auto rounded-lg bg-muted p-4 text-sm">
 {`staffNumber,fullName,email,workspaceRole,officeCode,departmentCode,divisionCode,unitCode,positionCode,supervisorStaffNumber,itfFlowRole`}
           </pre>
