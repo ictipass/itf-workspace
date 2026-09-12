@@ -2,7 +2,7 @@
 
 Status: **Implemented**
 
-Implementation commits: `449b8b9`; Windows verification `25b99e7`; deployed-runtime correction `c211185`
+Implementation commits: `449b8b9`; Windows verification `25b99e7`; deployed-runtime corrections `c211185`, `84878a0`
 
 Policy: [`2026-09-09 organization reference-data bulk-import directive`](../policies/2026-09-09-organization-reference-data-import-directive.md)
 
@@ -67,6 +67,10 @@ documented by W00.
 
 The W32 deployed-runtime correction `c211185` imports the actual workbook constructor from the package's ESM workbook
 subpath and removes a prohibited non-function export from the W31 `"use server"` action module.
+
+The W33 deployment correction `84878a0` explicitly includes ExcelJS's dynamically required runtime dependency graph
+in both affected Next.js function traces. Every production build verifies those generated traces, preventing a Vercel
+deployment from reaching Ready status when a required workbook module such as `fast-csv` is absent.
 
 ## Verification
 
