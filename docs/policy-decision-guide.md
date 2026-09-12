@@ -349,3 +349,14 @@ sheets or five correspondingly named CSV files. Blank `recordId` values create r
 authorize updates. Explicit active-state changes are allowed; deletion, deactivate-by-omission and hierarchy movement
 are not. A mandatory dry run, unchanged-file receipt, fresh TOTP, atomic transaction and before/after audit trail guard
 the final apply operation. See D40 in the decision register and the organization reference-data bulk-import directive.
+
+### D41 — Manual organization hierarchy correction
+
+**Use case:** A division may be created under the wrong department. Deleting and recreating it could break links to
+staff, units and integration records, while changing its parent silently could alter many users' effective hierarchy.
+
+**Approved interim outcome (2026-09-12):** A system administrator may correct the immediate parent of a department,
+division or unit. Workspace preserves the record ID, requires an active target and explicit impact confirmation,
+checks uniqueness in the new parent, and audits the previous and new parent IDs atomically with the update. Bulk
+imports continue to reject hierarchy moves. See D41 in the decision register and the organization
+hierarchy-correction directive.

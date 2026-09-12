@@ -92,6 +92,8 @@ Implementation commit: `444287a`.
 - W31 commit `449b8b9` adds six organization bulk-import cases covering the exact hierarchy contract, duplicate and
   active-state rejection, sheet/row/configuration bounds, receipt administrator/digest binding, tamper/expiry failure,
   and mandatory receipt/fresh-MFA/transaction controls. The Workspace suite now passes 78 tests across 15 suites.
+- W32 commit `c211185` adds a real Excel ESM constructor check plus manual hierarchy-parent requirement and
+  persistence/audit contract coverage. The Workspace suite now passes 81 tests across 15 suites.
 
 ## Rollback
 

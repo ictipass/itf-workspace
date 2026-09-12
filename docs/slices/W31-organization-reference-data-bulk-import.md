@@ -2,7 +2,7 @@
 
 Status: **Implemented**
 
-Implementation commits: `449b8b9`; Windows verification follow-up `25b99e7`
+Implementation commits: `449b8b9`; Windows verification `25b99e7`; deployed-runtime correction `c211185`
 
 Policy: [`2026-09-09 organization reference-data bulk-import directive`](../policies/2026-09-09-organization-reference-data-import-directive.md)
 
@@ -64,6 +64,9 @@ change updates Next.js and `eslint-config-next` from 16.3.2 to 16.3.4 and refres
 `baseline-browser-mapping` to a patched compatible transitive release. The governed production-runtime audit command
 reports zero known advisories. Development/optional tooling findings remain outside the deployed runtime boundary
 documented by W00.
+
+The W32 deployed-runtime correction `c211185` imports the actual workbook constructor from the package's ESM workbook
+subpath and removes a prohibited non-function export from the W31 `"use server"` action module.
 
 ## Verification
 
