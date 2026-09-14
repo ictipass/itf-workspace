@@ -8,7 +8,11 @@ import {
   WorkspaceRole,
 } from "@/lib/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
-import { requireCurrentUser, requireFreshMfaContext } from "@/lib/auth/current-user";
+import {
+  requireCurrentUser,
+  requireFreshMfaContext,
+  requireFreshMfaContextOrRedirect,
+} from "@/lib/auth/current-user";
 import {
   deliverItfFlowSessionEvents,
   enqueueEntitlementRevocationEvent,
@@ -158,7 +162,13 @@ export async function revokeAppAccessAction(
   if (currentUser.workspaceRole !== WorkspaceRole.SYSTEM_ADMIN) {
     throw new Error("Unauthorized");
   }
-  await requireFreshMfaContext();
+  const requestedReturnTo = String(formData.get("returnTo") || "");
+  const returnTo =
+    requestedReturnTo === "/dashboard/admin/access" ||
+    requestedReturnTo.startsWith("/dashboard/admin/access?")
+      ? requestedReturnTo
+      : "/dashboard/admin/access?stepUp=complete";
+  await requireFreshMfaContextOrRedirect(returnTo);
 
   const parsed = revokeAccessSchema.safeParse({
     accessId: formData.get("accessId"),

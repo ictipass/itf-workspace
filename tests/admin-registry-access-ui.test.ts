@@ -35,10 +35,12 @@ describe("application administration usability", () => {
   });
 
   test("redirects an expired app-role mutation through fresh TOTP", async () => {
-    const [currentUser, appActions, editPage] = await Promise.all([
+    const [currentUser, appActions, accessActions, editPage, accessPage] = await Promise.all([
       source("lib/auth/current-user.ts"),
       source("app/dashboard/admin/apps/actions.ts"),
+      source("app/dashboard/admin/access/actions.ts"),
       source("app/dashboard/admin/apps/[id]/edit/page.tsx"),
+      source("app/dashboard/admin/access/page.tsx"),
     ]);
 
     assert.match(currentUser, /requireFreshMfaContextOrRedirect/);
@@ -46,5 +48,7 @@ describe("application administration usability", () => {
     assert.match(currentUser, /redirect\(`\/mfa\/verify\?returnTo=/);
     assert.match(appActions, /requireFreshMfaContextOrRedirect\(returnTo\)/);
     assert.match(editPage, /Authenticator verification is fresh/);
+    assert.match(accessActions, /requireFreshMfaContextOrRedirect\(returnTo\)/);
+    assert.match(accessPage, /select Revoke again/);
   });
 });

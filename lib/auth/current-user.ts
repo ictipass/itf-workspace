@@ -67,7 +67,10 @@ export async function requireFreshMfaContext() {
 }
 
 export async function requireFreshMfaContextOrRedirect(returnTo: string) {
-  const safeReturnTo = returnTo.startsWith("/dashboard") ? returnTo : "/dashboard";
+  const safeReturnTo =
+    returnTo === "/dashboard" || returnTo.startsWith("/dashboard/")
+      ? returnTo
+      : "/dashboard";
 
   try {
     return await requireFreshMfaContext();

@@ -37,6 +37,7 @@ type AppAccessPageProps = {
     app?: string | string[];
     q?: string | string[];
     page?: string | string[];
+    stepUp?: string | string[];
   }>;
 };
 
@@ -57,6 +58,7 @@ export default async function AppAccessPage({ searchParams }: AppAccessPageProps
   const query = firstQueryValue(params.q)?.trim() ?? "";
   const requestedAppId = firstQueryValue(params.app) ?? "ALL";
   const requestedPage = Number(firstQueryValue(params.page) ?? "1");
+  const stepUpComplete = firstQueryValue(params.stepUp) === "complete";
 
   const [users, apps] = await Promise.all([
     prisma.user.findMany({
@@ -135,8 +137,20 @@ export default async function AppAccessPage({ searchParams }: AppAccessPageProps
     return `/dashboard/admin/access?${nextQuery.toString()}`;
   }
 
+  const returnAfterStepUp = (() => {
+    const nextQuery = new URLSearchParams(queryWithoutPage);
+    nextQuery.set("page", String(page));
+    nextQuery.set("stepUp", "complete");
+    return `/dashboard/admin/access?${nextQuery.toString()}`;
+  })();
+
   return (
     <div className="space-y-6">
+      {stepUpComplete ? (
+        <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+          Authenticator verification is fresh. Review the access record and select Revoke again.
+        </p>
+      ) : null}
       <Card className="rounded-2xl">
         <CardHeader>
           <CardTitle>Grant App Access</CardTitle>
@@ -243,7 +257,10 @@ export default async function AppAccessPage({ searchParams }: AppAccessPageProps
 
                       <TableCell className="text-right">
                         {access.status === AppAccessStatus.ACTIVE ? (
-                          <RevokeAccessButton accessId={access.id} />
+                          <RevokeAccessButton
+                            accessId={access.id}
+                            returnTo={returnAfterStepUp}
+                          />
                         ) : (
                           <span className="text-xs text-muted-foreground">
                             Revoked
