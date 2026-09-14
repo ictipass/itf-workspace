@@ -11,7 +11,11 @@ import {
   AssuranceRequirement,
 } from "@/lib/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
-import { requireCurrentUser, requireFreshMfaContext } from "@/lib/auth/current-user";
+import {
+  requireCurrentUser,
+  requireFreshMfaContext,
+  requireFreshMfaContextOrRedirect,
+} from "@/lib/auth/current-user";
 import { normalizeAppLaunchUrl } from "@/lib/apps/launch-url";
 import { APP_ICON_KEYS } from "@/lib/apps/app-icons";
 import {
@@ -298,7 +302,11 @@ const rolePolicySchema = z.object({
 });
 
 export async function upsertAppRolePolicyAction(formData: FormData) {
-  const context = await requireFreshMfaContext();
+  const appId = String(formData.get("appId") || "");
+  const returnTo = appId
+    ? `/dashboard/admin/apps/${encodeURIComponent(appId)}/edit?stepUp=complete`
+    : "/dashboard/admin/apps";
+  const context = await requireFreshMfaContextOrRedirect(returnTo);
   if (context.user.workspaceRole !== WorkspaceRole.SYSTEM_ADMIN) throw new Error("Unauthorized");
   const parsed = rolePolicySchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) throw new Error("A valid role code and assurance classification are required.");

@@ -1,6 +1,7 @@
 import "server-only";
 
 import { cache } from "react";
+import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import {
   resolveAuthoritativeWorkspaceUser,
@@ -63,4 +64,17 @@ export async function requireFreshMfaContext() {
     throw new Error("FRESH_MFA_REQUIRED");
   }
   return context;
+}
+
+export async function requireFreshMfaContextOrRedirect(returnTo: string) {
+  const safeReturnTo = returnTo.startsWith("/dashboard") ? returnTo : "/dashboard";
+
+  try {
+    return await requireFreshMfaContext();
+  } catch (error) {
+    if (error instanceof Error && error.message === "FRESH_MFA_REQUIRED") {
+      redirect(`/mfa/verify?returnTo=${encodeURIComponent(safeReturnTo)}`);
+    }
+    throw error;
+  }
 }

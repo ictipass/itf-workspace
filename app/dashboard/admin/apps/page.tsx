@@ -36,13 +36,15 @@ export default async function AdminAppsPage() {
   });
 
   return (
-    <div className="grid gap-6 xl:grid-cols-[420px_1fr]">
+    <div className="space-y-6">
       <Card className="rounded-2xl">
         <CardHeader>
           <CardTitle>Register App</CardTitle>
         </CardHeader>
         <CardContent>
-          <AppCreateForm />
+          <div className="max-w-2xl">
+            <AppCreateForm />
+          </div>
         </CardContent>
       </Card>
 
@@ -52,6 +54,7 @@ export default async function AdminAppsPage() {
         </CardHeader>
 
         <CardContent>
+          <div className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
@@ -123,6 +126,7 @@ export default async function AdminAppsPage() {
               )}
             </TableBody>
           </Table>
+          </div>
         </CardContent>
       </Card>
     </div>

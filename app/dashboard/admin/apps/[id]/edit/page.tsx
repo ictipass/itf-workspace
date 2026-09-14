@@ -10,9 +10,10 @@ import { Button } from "@/components/ui/button";
 
 type Props = {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ stepUp?: string | string[] }>;
 };
 
-export default async function EditAppPage({ params }: Props) {
+export default async function EditAppPage({ params, searchParams }: Props) {
   const user = await requireCurrentUser();
 
   if (user.workspaceRole !== WorkspaceRole.SYSTEM_ADMIN) {
@@ -20,6 +21,9 @@ export default async function EditAppPage({ params }: Props) {
   }
 
   const { id } = await params;
+  const query = await searchParams;
+  const stepUpComplete =
+    (Array.isArray(query.stepUp) ? query.stepUp[0] : query.stepUp) === "complete";
 
   const app = await prisma.app.findUnique({
     where: { id },
@@ -39,6 +43,11 @@ export default async function EditAppPage({ params }: Props) {
           <CardTitle>Edit App</CardTitle>
         </CardHeader>
         <CardContent>
+          {stepUpComplete ? (
+            <p className="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+              Authenticator verification is fresh. Review and submit the intended change again.
+            </p>
+          ) : null}
           <AppEditForm app={app} />
         </CardContent>
       </Card>
