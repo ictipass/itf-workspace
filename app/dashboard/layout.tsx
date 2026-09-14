@@ -9,6 +9,7 @@ import {
   Users,
   ClipboardList,
   MonitorSmartphone,
+  BookOpenText,
 } from "lucide-react";
 import { WorkspaceRole } from "@/lib/generated/prisma/client";
 import { Button } from "@/components/ui/button";
@@ -108,6 +109,13 @@ export default async function DashboardLayout({
                 icon={<ClipboardList className="h-4 w-4" />}
               >
                 Audit Logs
+              </NavItem>
+
+              <NavItem
+                href="/dashboard/admin/help"
+                icon={<BookOpenText className="h-4 w-4" />}
+              >
+                Admin Help
               </NavItem>
             </>
           ) : null}

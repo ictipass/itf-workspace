@@ -17,7 +17,7 @@
     "config:check:staging": "node --require ./scripts/windows-test-preload.cjs --import tsx scripts/validate-environment.ts --environment=staging",
     "config:check:production": "node --require ./scripts/windows-test-preload.cjs --import tsx scripts/validate-environment.ts --environment=production",
     "test": "npm run test:security",
-    "test:security": "node --require ./scripts/windows-test-preload.cjs --import tsx --test tests/security-regression.test.ts tests/configuration-regression.test.ts tests/session-regression.test.ts tests/launch-v2-regression.test.ts tests/outbox-regression.test.ts tests/directory-contract.test.ts tests/staff-onboarding-policy.test.ts tests/proxy-access-policy.test.ts tests/initial-admin-bootstrap.test.ts tests/app-icon-regression.test.ts tests/app-navigation-contract.test.ts tests/organization-setup-policy.test.ts tests/organization-bulk-import.test.ts tests/admin-registry-access-ui.test.ts",
+    "test:security": "node --require ./scripts/windows-test-preload.cjs --import tsx --test tests/security-regression.test.ts tests/configuration-regression.test.ts tests/session-regression.test.ts tests/launch-v2-regression.test.ts tests/outbox-regression.test.ts tests/directory-contract.test.ts tests/staff-onboarding-policy.test.ts tests/proxy-access-policy.test.ts tests/initial-admin-bootstrap.test.ts tests/app-icon-regression.test.ts tests/app-navigation-contract.test.ts tests/organization-setup-policy.test.ts tests/organization-bulk-import.test.ts tests/admin-registry-access-ui.test.ts tests/admin-help.test.ts",
     "verify": "npm run config:check && prisma validate && npm run test:security && npm run lint && npm run build"
   },
   "dependencies": {
