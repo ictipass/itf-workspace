@@ -22,9 +22,11 @@ that general workflow is not yet complete. Never change roles directly in the da
 - **My Apps**: all active registered apps; unavailable apps remain visible and disabled.
 - **My Sessions**: view and terminate the current user's Workspace sessions.
 - **Organization Setup**: offices, departments, divisions, units, positions and controlled bulk organization import.
-- **Manage Apps**: register applications, edit metadata and classify child roles.
+- **Manage Apps**: register applications in the top panel, then review the full-width registry table below it; edit
+  metadata and classify child roles.
 - **Users**: search/filter staff, activate/deactivate users, inspect app counts and administer sessions.
-- **App Access**: grant or revoke a classified application role.
+- **App Access**: grant a classified role in the top panel, then filter the access table by app, search staff and move
+  through 25-record pages below it.
 - **Bulk Import Users**: create ordinary staff and synchronize entitled identities to ITF Flow.
 - **Audit Logs**: review administrative and security events.
 
@@ -73,6 +75,10 @@ Every assignable child-app role must then be added under **Child-app role assura
 No entitlement should be granted before the exact role code is active and classified. A sensitive app or role requires
 TOTP; the more restrictive classification wins.
 
+Role-assurance updates require a TOTP verification no more than ten minutes old. If it has expired, Workspace opens
+the authenticator page and returns to the same app edit screen. Review and submit the intended change again; Workspace
+does not automatically replay a security-sensitive mutation after reauthentication.
+
 Registering metadata alone does not integrate an app. The child must implement and pass the contracts in the
 [child-app onboarding runbook](runbooks/child-app-onboarding.md).
 
@@ -88,9 +94,15 @@ To grant access:
 6. complete fresh TOTP;
 7. for ITF Flow, run directory synchronization before first launch.
 
+Use the app selector first, then search by name, official email or staff number to find an entitlement. Filters apply
+before the 25-record pagination and remain selected while moving between pages.
+
 To revoke access, use **App Access** and the existing record's revoke action. Workspace queues a durable revocation
 event for ITF Flow and attempts immediate delivery. Confirm the user cannot relaunch and review the audit event.
 Continuous retry operation is not yet adequate for a controlled production pilot on the current Vercel Hobby schedule.
+
+There is currently no safe **resend onboarding details** action. The original temporary password is not retrievable
+from its hash. Escalate failed welcome delivery under W25/D10; do not re-import the user or send an invented password.
 
 ## User status and sessions
 

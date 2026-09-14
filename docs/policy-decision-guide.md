@@ -104,6 +104,12 @@ identity before resetting it so a caller cannot take over another employee's acc
 **Please provide:** Verification steps, authorized reset personnel, delivery channel for temporary credentials, expiry,
 forced-change behavior and whether manager confirmation is required.
 
+This decision also governs a proposed **resend onboarding details** action. Because Workspace stores only a password
+hash, it cannot resend the original temporary password. Please additionally confirm whether the action may be used
+only while `isTemporaryPassword` is true, whether it must issue a new random credential and revoke the old credential
+and all sessions, who may approve/perform it, credential expiry, resend rate limits, required identity/manager
+verification, durable email retry behavior and audit/notification requirements.
+
 ### D11 — Authentication alerts and escalation
 
 **Use case:** Repeated failed logins, an administrator login from an unusual location, or mass lockouts may require SOC

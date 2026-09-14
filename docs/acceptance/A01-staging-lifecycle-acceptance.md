@@ -122,6 +122,11 @@ exist under **Administration → Apps → ITF Flow → Edit → Child-app role a
 Pass only when all four observations are recorded: old session ended, pre-sync launch rejected, post-sync new role
 accepted, and restoration to `OFFICER` accepted.
 
+Progress reported 2026-09-14: `SYSTEM_ADMIN` approved temporary `UNIT_HEAD = STANDARD` and the role operation was
+reported successful. This does not yet mark A01-02 accepted: the evidence must explicitly confirm the old session
+ended, the pre-sync mismatch failed, the post-sync `UNIT_HEAD` launch succeeded, and the final
+`OFFICER = STANDARD` restoration succeeded.
+
 ## A01-03 — Standard-to-sensitive assurance increase
 
 Purpose: prove that changing policy from password-only to TOTP-protected access terminates the lower-assurance Flow
@@ -144,6 +149,11 @@ Prerequisite: ITF has approved the staging-only maintenance window and temporary
 
 Pass only when the lower-assurance session ends, pre-TOTP launch is denied, post-TOTP launch succeeds, and the policy
 is restored. Because this temporarily affects every staging `OFFICER`, do not run it during unrelated demonstrations.
+
+The administrator mutation itself was reported successful on 2026-09-14. An expired ten-minute administrator step-up
+also exposed an unhandled `FRESH_MFA_REQUIRED` page error; W37 corrects the recovery path without weakening D05. A01-03
+remains pending until the staff-session, pre/post-TOTP and restoration observations above are accepted on the
+redeployed release.
 
 ## A01-05 — Entitlement revocation
 

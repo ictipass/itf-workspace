@@ -94,6 +94,9 @@ Implementation commit: `444287a`.
   and mandatory receipt/fresh-MFA/transaction controls. The Workspace suite now passes 78 tests across 15 suites.
 - W32 commit `c211185` adds a real Excel ESM constructor check plus manual hierarchy-parent requirement and
   persistence/audit contract coverage. The Workspace suite now passes 81 tests across 15 suites.
+- W33/W34/W35 maintenance added deployment-trace, responsive hierarchy-layout and registry-governed onboarding-role
+  coverage. W37 commit `7344aca` adds three application-administration cases for vertical layouts, bounded
+  filter/search pagination and expired fresh-TOTP recovery. The Workspace suite now passes 87 tests across 16 suites.
 
 ## Rollback
 

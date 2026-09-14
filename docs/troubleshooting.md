@@ -35,6 +35,7 @@ URLs into tickets, chat or screenshots. Use timestamps, public routes, correlati
 | `Access not assigned` | No active `AppAccess` | Use approved App Access grant with fresh TOTP |
 | `Role classification required` | Role policy missing/inactive | Add the exact approved role classification |
 | Sensitive launch redirects to MFA | App, role or Workspace role is sensitive or step-up is older than ten minutes | Complete TOTP verification |
+| App-role update previously showed `FRESH_MFA_REQUIRED` / page could not load | Administrator's approved ten-minute TOTP freshness expired | On the current release, complete the automatic authenticator redirect, return to app edit, then deliberately submit the change again |
 | Flow missing-token page from direct URL | Launch route was opened without a Workspace assertion | Start from Workspace; this confirms Flow owns the public route |
 | Flow invalid-token response | Expired, malformed, replayed, wrong-audience or bad-signature assertion | Start a fresh Workspace launch; inspect redacted logs, never copy token |
 | Global logout 404 | Child points to obsolete `/logout` behavior or old deployment | Confirm current W28 deployment and configured Workspace return/global logout URLs |

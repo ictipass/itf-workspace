@@ -42,7 +42,7 @@ result. Repository code, migrations and commits remain the final implementation 
 | W05 | Login abuse protection and authentication security events | Policy gate | D08-D11: throttling, lockout, recovery and alerting policy |
 | W06 | App URL and outbound-request SSRF protection | Policy gate | D12: permitted domains/networks and operational exception process |
 | W07 | Secure configuration validation and removal of unsafe credential defaults | Implemented | Initial `2caeede`; Vercel stage separation `05153bb` adds an explicit staging policy without weakening the production KMS gate. See [`slices/W07-secure-configuration-validation.md`](slices/W07-secure-configuration-validation.md) |
-| W08 | Workspace security regression test foundation | Implemented | 84 Workspace regressions across 15 suites cover the Excel constructor, audited manual hierarchy corrections, responsive Organization Setup layout and fail-closed registry role validation; every production build additionally verifies both organization-workbook function traces contain the complete dynamically loaded Excel dependency graph. See [`slices/W08-security-regression-foundation.md`](slices/W08-security-regression-foundation.md) |
+| W08 | Workspace security regression test foundation | Implemented | 87 Workspace regressions across 16 suites additionally cover application-admin layouts, access filtering/pagination and expired fresh-TOTP recovery; every production build verifies both organization-workbook function traces contain the complete dynamically loaded Excel dependency graph. See [`slices/W08-security-regression-foundation.md`](slices/W08-security-regression-foundation.md) |
 | W09 | Security headers, browser policy and deployment trust boundary | Policy gate | Local proxy control `a6a90ab` and Vercel Preview/Production stage binding `05153bb` are implemented. Vercel hosting and the staging branch/domain are recorded; D13-D14 production topology and permitted origins remain open. See [`vercel-deployment-environments.md`](vercel-deployment-environments.md) |
 | W25 | Staff master-list onboarding and credential lifecycle | In progress | HR-import boundary `ce680e0`; registry-role enforcement `e8c3477`; staging-only controlled initial administrator bootstrap `37feab7`, remote hardening `2463277`, advisory-lock correction `79aac76`. Initial-admin authentication was accepted on 2026-09-04; ordinary staff import, welcome delivery, temporary-password replacement and login were accepted on 2026-09-12. HR imports remain `STAFF`-only; durable bulk-delivery/reissue, general privileged-role workflow and HR lifecycle reconciliation remain. See [`slices/W25-staff-master-list-onboarding.md`](slices/W25-staff-master-list-onboarding.md) |
 | W26 | Curated application icon catalogue | Implemented | `2965023`; 16 centrally controlled icon keys, server-side allow-list validation, accessible create/edit selection, safe legacy fallback and consistent staff/admin rendering. No migration or environment configuration is required. See [`slices/W26-curated-application-icons.md`](slices/W26-curated-application-icons.md) |
@@ -56,6 +56,7 @@ result. Repository code, migrations and commits remain the final implementation 
 | W34 | Organization Setup responsive information layout | Implemented; staging redeployment required | `b1ed8be`; all five reference-data tabs place a compact responsive creation panel above a full-width entries table, removing the constrained desktop table and redundant nested scrollbar while retaining narrow-screen overflow. No migration or configuration change. See [`slices/W34-organization-setup-responsive-layout.md`](slices/W34-organization-setup-responsive-layout.md) |
 | W35 | Registry-governed child-app roles in staff onboarding | Implemented and staging accepted | `e8c3477`; Flow roles are normalized and validated against active classified registry policies during import, directory sync rejects every unclassified active entitlement, the unsafe fallback role is removed, and clean development seeds reflect approved D42 `OFFICER = STANDARD`. Dedicated ordinary-user synchronization and launch were accepted on 2026-09-12. No migration or new environment variable. See [`slices/W35-registry-governed-onboarding-roles.md`](slices/W35-registry-governed-onboarding-roles.md) |
 | W36 | Living developer and administrator documentation | Implemented | `2124c81`; maintained documentation hub, developer architecture/configuration guide, admin/support guide, staff and child-app onboarding runbooks, troubleshooting, documentation governance and a build-enforced internal-link/required-document check. No migration, environment or application UI change. See [`slices/W36-living-documentation.md`](slices/W36-living-documentation.md) |
+| W37 | Application administration usability and fresh-MFA recovery | Implemented; staging redeployment required | `7344aca`; vertical registry/access layouts, database-backed app filter, user search, 25-row pagination and safe authenticator redirect for expired app-role mutations. Credential reissue remains gated by D10/W25. No migration or configuration. See [`slices/W37-admin-app-access-usability.md`](slices/W37-admin-app-access-usability.md) |
 
 ## Phase 2 — scalable access governance
 
@@ -107,19 +108,20 @@ result. Repository code, migrations and commits remain the final implementation 
 
 ## Current execution order
 
-1. Accept the W33 workbook runtime correction and W34 responsive Organization Setup layout in Workspace staging.
-2. Approve a second Flow role/classification and complete A01-02 role-change/mismatch acceptance with the dedicated staging test identity.
-3. Exercise the A01-03 assurance increase and A01-05 entitlement revocation cases in staging.
-4. Exercise A01-06 duplicate delivery and A01-07 outage/retry recovery to close the finite lifecycle evidence.
-5. Establish continuous outbox retry operation and resolve W05, W06 and W09 before a controlled pilot.
-6. Resolve D15-D30, then implement W10-W18 before repeatable onboarding of additional child apps.
+1. Redeploy and accept W37's application administration layouts, access filters/pagination and fresh-TOTP recovery in Workspace staging.
+2. Complete the four A01-02 role-change/mismatch observations for approved temporary `UNIT_HEAD = STANDARD`, including restoration to `OFFICER = STANDARD`.
+3. Complete A01-03 assurance increase and A01-05 entitlement revocation acceptance in staging.
+4. Implement the controlled A01-06/A01-07 staging diagnostic, then exercise duplicate delivery and outage/retry recovery.
+5. Resolve D10 before implementing temporary-credential reissue and durable onboarding-email delivery under W25.
+6. Establish continuous outbox retry operation and resolve W05, W06 and W09 before a controlled pilot.
+7. Resolve D15-D30, then implement W10-W18 before repeatable onboarding of additional child apps.
 
-**Next best implementable slice:** accept W33-W34 in staging by testing both organization workbook downloads, a
-controlled office creation and all five responsive tabs while checking runtime logs. Then execute A01-02
-role-change/mismatch acceptance. A second Flow role and its `STANDARD`/`SENSITIVE` classification require explicit
-approval before that lifecycle test; do not alter the only recoverable Workspace administrator. Continue A01-03 and
-A01-05 through A01-07 afterward. The continuous retry scheduler remains a controlled-pilot gate. Execute and retain
-evidence through the [`A01 staging lifecycle acceptance runbook`](acceptance/A01-staging-lifecycle-acceptance.md).
+**Next best implementable slice:** redeploy and accept W37 in staging, then finish A01-02 evidence for the approved
+temporary `UNIT_HEAD = STANDARD` role and restore the test identity to `OFFICER = STANDARD`. Continue A01-03 and A01-05,
+then implement the controlled A01-06/A01-07 staging diagnostic. The continuous retry scheduler remains a
+controlled-pilot gate. Execute and retain evidence through the
+[`A01 staging lifecycle acceptance runbook`](acceptance/A01-staging-lifecycle-acceptance.md). A resend/reissue action
+must not be implemented until D10 defines identity proofing, authorization, expiry and delivery behavior.
 
 **Current child-app readiness:** The Workspace code foundation and its first-administrator authentication path are
 accepted for integrated ITF Flow staging, but Gate A is not formally met. A01's cross-repository code and contract
