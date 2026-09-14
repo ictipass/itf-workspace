@@ -29,6 +29,18 @@ that general workflow is not yet complete. Never change roles directly in the da
   through 25-record pages below it.
 - **Bulk Import Users**: create ordinary staff and synchronize entitled identities to ITF Flow.
 - **Audit Logs**: review administrative and security events.
+- **Admin Help**: expand categorized operational procedures, follow safe resolution steps and identify when escalation
+  is required.
+
+## In-product help
+
+`SYSTEM_ADMIN` users can open **Admin Help** from the dashboard navigation. Its categorized procedures are a concise
+operational view of this guide and the troubleshooting runbook. Expand only the relevant topic, follow the listed
+steps in order and use its direct link to the applicable administrator screen where provided.
+
+The page does not grant permission to bypass an open policy or use direct database changes. If it marks a function as
+unavailable or says to escalate, retain the safe evidence listed under Support triage and contact the approved owner.
+Developers must update the typed help-topic catalogue and these living guides together when behavior changes.
 
 ## Organization setup
 

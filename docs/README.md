@@ -11,6 +11,7 @@ maintained with the code; a guide never overrides the implementation register or
 2. [Staff onboarding runbook](runbooks/staff-onboarding.md)
 3. [Troubleshooting guide](troubleshooting.md)
 4. [Current implementation status](implementation-slice-register.md)
+5. In the deployed Workspace, `SYSTEM_ADMIN` users can open **Admin Help** for concise expandable procedures.
 
 ### Developers and application integrators
 
@@ -20,6 +21,7 @@ maintained with the code; a guide never overrides the implementation register or
 4. [Launch-token contract](workspace-launch-token.md)
 5. [Deployment environments](vercel-deployment-environments.md)
 6. [Child-app readiness gates](child-app-readiness-gates.md)
+7. [Enterprise-readiness roadmap](enterprise-readiness-roadmap.md)
 
 ### Policy, security and project owners
 
@@ -48,8 +50,8 @@ maintained with the code; a guide never overrides the implementation register or
 - Organization setup, ordinary-staff CSV creation, temporary-password replacement and TOTP for sensitive access are
   implemented.
 - ITF Flow is the first integrated child app. Ordinary `OFFICER` provisioning and launch have passed staging.
-- ITF Flow lifecycle cases for role/assurance change, entitlement revocation, duplicate delivery and outage recovery
-  are not yet accepted.
+- ITF Flow role/assurance lifecycle cases are accepted; entitlement revocation, duplicate delivery and outage recovery
+  remain.
 - Repeatable onboarding of additional apps is not yet approved; Gate C requires configurable connectors and Phase 2
   access governance.
 - Production launch signing remains blocked until the approved KMS/HSM adapter exists.

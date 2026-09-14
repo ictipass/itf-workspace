@@ -97,6 +97,9 @@ Implementation commit: `444287a`.
 - W33/W34/W35 maintenance added deployment-trace, responsive hierarchy-layout and registry-governed onboarding-role
   coverage. W37 commit `7344aca` adds three application-administration cases for vertical layouts, bounded
   filter/search pagination and expired fresh-TOTP recovery. The Workspace suite now passes 87 tests across 16 suites.
+- W38 commit `04de237` adds three cases for structured support-topic integrity, required operational coverage,
+  authoritative `SYSTEM_ADMIN` route protection and expandable rendering. The suite now passes 90 tests across 17
+  suites.
 
 ## Rollback
 

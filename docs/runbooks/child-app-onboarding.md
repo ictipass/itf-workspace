@@ -22,6 +22,24 @@ An app is fully onboarded only when:
 
 Seeing an enabled catalogue button proves only that Workspace found an active entitlement and role policy.
 
+## Stakeholder explanation: registry versus integration
+
+Registering an app gives staff a discoverable Workspace tile and lets Workspace decide whether its launch control is
+enabled. It does not automatically teach the child app how to trust Workspace, create a user session, display other
+eligible apps or respond to central logout. ITF Flow feels smoother because both repositories implement those child
+contracts and UI behaviors.
+
+Other apps will use authenticated APIs plus a signed browser launch—not a shared login password or a shared
+`AUTH_SECRET`. In plain terms: Workspace provisions the entitled identity/role; the browser carries a short-lived
+single-use signed handoff; the child verifies it and creates its own session; the child backend requests the current
+waffle list; and Workspace sends logout/revocation events when access changes. Small child-side UI changes render the
+waffle, split local/global logout and provide a Workspace-login entry link.
+
+Flow-specific code is the reference implementation, not the scalable final design. W17/W18 must move endpoints,
+credentials, capabilities, retries and reconciliation into governed per-app connector profiles. The onboarding kit
+then supplies reusable schemas, adapters, UI components and conformance tests so developers integrate a standard
+contract rather than reverse-engineering Flow.
+
 ## Current platform limitation
 
 ITF Flow is the reference integration, but its directory, navigation and event configuration still contains

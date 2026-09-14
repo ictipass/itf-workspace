@@ -22,6 +22,7 @@ authoritative database state.
 | Environment validation | `lib/config/workspace-environment.ts`, `instrumentation.ts` | Fail-fast stage-aware runtime configuration |
 | Regression tests | `tests/` | Security, configuration, session and integration contracts |
 | Operational evidence | `docs/` | Policy, slices, runbooks, gates and accepted staging evidence |
+| In-product administrator help | `lib/support/admin-help-topics.ts`, `app/dashboard/admin/help/` | Typed concise procedures rendered only to system administrators |
 
 ## Core data model
 
@@ -151,6 +152,10 @@ npm run verify
 
 The build includes TypeScript, documentation link validation and organization-workbook deployment-trace validation.
 Security-sensitive changes require negative tests proving denial, not only a successful case.
+
+When an administrator workflow or support-visible failure changes, update both the Markdown source guidance and the
+typed in-product help topic in the same delivery. The in-product page must describe only implemented behavior and must
+not expose environment secrets, staff data or internal-only diagnostics.
 
 ## Deployment and rollback
 
