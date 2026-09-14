@@ -1,8 +1,8 @@
 # W37 — Application administration usability and fresh-MFA recovery
 
-Status: **Implemented; staging redeployment required**
+Status: **Implemented; primary staging acceptance passed, revocation-recovery follow-up requires redeployment**
 
-Implementation commit: `7344aca`
+Implementation commits: `7344aca`; revocation fresh-MFA correction `ec760ee`
 
 ## Outcome
 
@@ -22,6 +22,8 @@ administrator's ten-minute freshness window has elapsed, instead of surfacing an
 - An expired fresh-TOTP check during a child-role assurance update redirects to authenticator verification, returns to
   the same app edit page, and tells the administrator to review and submit the mutation again. The mutation is never
   replayed automatically after reauthentication.
+- The same recovery now protects entitlement revocation, retains the current app/search/page view and requires the
+  administrator to select **Revoke** again after TOTP. This closes the unhandled error found while starting A01-05.
 
 ## Security and scaling properties
 
@@ -49,13 +51,14 @@ Adding an icon before those controls exist would present an unsafe or non-functi
 
 ## Deployment and acceptance
 
-Redeploy Workspace staging, then verify:
+ITF accepted the vertical layouts, filters/pagination and role-assurance fresh-TOTP recovery on 2026-09-14. Redeploy
+the `ec760ee` follow-up, then verify:
 
 1. **Manage Apps** shows the complete registration form above the registered-app table.
 2. **App Access** shows the grant form above the existing-access table.
 3. Selecting ITF Flow and searching a known staff identifier returns only matching ITF Flow access records.
 4. More than 25 matching records, when present, expose working Previous/Next controls that retain filters.
-5. After the ten-minute TOTP freshness window, changing child-role assurance opens authenticator verification, returns
-   to the app edit page and succeeds only after the administrator deliberately submits the change again.
+5. After the ten-minute TOTP freshness window, selecting **Revoke** opens authenticator verification, returns to the
+   same filtered access page, performs no revocation automatically, and succeeds only after a deliberate second click.
 
 Rollback is the application commit only. Existing data and classifications require no rollback migration.

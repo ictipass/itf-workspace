@@ -56,7 +56,7 @@ result. Repository code, migrations and commits remain the final implementation 
 | W34 | Organization Setup responsive information layout | Implemented; staging redeployment required | `b1ed8be`; all five reference-data tabs place a compact responsive creation panel above a full-width entries table, removing the constrained desktop table and redundant nested scrollbar while retaining narrow-screen overflow. No migration or configuration change. See [`slices/W34-organization-setup-responsive-layout.md`](slices/W34-organization-setup-responsive-layout.md) |
 | W35 | Registry-governed child-app roles in staff onboarding | Implemented and staging accepted | `e8c3477`; Flow roles are normalized and validated against active classified registry policies during import, directory sync rejects every unclassified active entitlement, the unsafe fallback role is removed, and clean development seeds reflect approved D42 `OFFICER = STANDARD`. Dedicated ordinary-user synchronization and launch were accepted on 2026-09-12. No migration or new environment variable. See [`slices/W35-registry-governed-onboarding-roles.md`](slices/W35-registry-governed-onboarding-roles.md) |
 | W36 | Living developer and administrator documentation | Implemented | `2124c81`; maintained documentation hub, developer architecture/configuration guide, admin/support guide, staff and child-app onboarding runbooks, troubleshooting, documentation governance and a build-enforced internal-link/required-document check. No migration, environment or application UI change. See [`slices/W36-living-documentation.md`](slices/W36-living-documentation.md) |
-| W37 | Application administration usability and fresh-MFA recovery | Implemented; staging redeployment required | `7344aca`; vertical registry/access layouts, database-backed app filter, user search, 25-row pagination and safe authenticator redirect for expired app-role mutations. Credential reissue remains gated by D10/W25. No migration or configuration. See [`slices/W37-admin-app-access-usability.md`](slices/W37-admin-app-access-usability.md) |
+| W37 | Application administration usability and fresh-MFA recovery | Implemented; primary staging acceptance passed, corrective redeployment required | `7344aca`, revocation correction `ec760ee`; vertical registry/access layouts, database-backed app filter, user search, 25-row pagination and safe authenticator redirects for expired role-policy/revocation mutations. Primary checks passed 2026-09-14; revoke recovery awaits redeployment. Credential reissue remains gated by D10/W25. No migration or configuration. See [`slices/W37-admin-app-access-usability.md`](slices/W37-admin-app-access-usability.md) |
 
 ## Phase 2 — scalable access governance
 
@@ -87,7 +87,7 @@ result. Repository code, migrations and commits remain the final implementation 
 
 | ID | Application slice | Status | Dependency |
 |---|---|---|---|
-| A01 | ITF Flow launch v2, provisioning and revocation integration | In progress | Code complete: Workspace `1a08a5b`, Flow `02b433d`; Flow staging configuration `f48b702` and pooled/direct database hardening `d0199ce`. Database credential rotation, staging boundary, sender configuration, registry, administrator and ordinary-staff provisioning/launch, replay rejection and central logout are accepted. Role/assurance change, entitlement revocation, duplicate delivery, outage/retry and a continuous retry scheduler remain. See [`slices/A01-itf-flow-integration-reassessment.md`](slices/A01-itf-flow-integration-reassessment.md) |
+| A01 | ITF Flow launch v2, provisioning and revocation integration | In progress | Code complete: Workspace `1a08a5b`, Flow `02b433d`; Flow staging configuration `f48b702` and pooled/direct database hardening `d0199ce`. Database credential rotation, staging boundary, sender configuration, registry, administrator/ordinary-staff provisioning and launch, replay, role change, assurance increase and central logout are accepted. Entitlement revocation, duplicate delivery, outage/retry and a continuous retry scheduler remain. See [`slices/A01-itf-flow-integration-reassessment.md`](slices/A01-itf-flow-integration-reassessment.md) |
 | A02 | Client Reimbursement staff integration | Planned | A01 lessons plus W17/W21 onboarding contract |
 | A03 | SIWES staff-facing integration | Policy gate | A01; D32 separates staff and external SIWES identities |
 | A04 | PromoIntel staff integration | Planned | A01 lessons plus W17/W21 onboarding contract |
@@ -108,18 +108,16 @@ result. Repository code, migrations and commits remain the final implementation 
 
 ## Current execution order
 
-1. Redeploy and accept W37's application administration layouts, access filters/pagination and fresh-TOTP recovery in Workspace staging.
-2. Complete the four A01-02 role-change/mismatch observations for approved temporary `UNIT_HEAD = STANDARD`, including restoration to `OFFICER = STANDARD`.
-3. Complete A01-03 assurance increase and A01-05 entitlement revocation acceptance in staging.
-4. Implement the controlled A01-06/A01-07 staging diagnostic, then exercise duplicate delivery and outage/retry recovery.
-5. Resolve D10 before implementing temporary-credential reissue and durable onboarding-email delivery under W25.
-6. Establish continuous outbox retry operation and resolve W05, W06 and W09 before a controlled pilot.
-7. Resolve D15-D30, then implement W10-W18 before repeatable onboarding of additional child apps.
+1. Redeploy W37 follow-up `ec760ee` and accept the expired-fresh-TOTP revocation recovery in Workspace staging.
+2. Complete A01-05 entitlement revocation acceptance in staging.
+3. Implement the controlled A01-06/A01-07 staging diagnostic, then exercise duplicate delivery and outage/retry recovery.
+4. Resolve D10 before implementing temporary-credential reissue and durable onboarding-email delivery under W25.
+5. Establish continuous outbox retry operation and resolve W05, W06 and W09 before a controlled pilot.
+6. Resolve D15-D30, then implement W10-W18 before repeatable onboarding of additional child apps.
 
-**Next best implementable slice:** redeploy and accept W37 in staging, then finish A01-02 evidence for the approved
-temporary `UNIT_HEAD = STANDARD` role and restore the test identity to `OFFICER = STANDARD`. Continue A01-03 and A01-05,
-then implement the controlled A01-06/A01-07 staging diagnostic. The continuous retry scheduler remains a
-controlled-pilot gate. Execute and retain evidence through the
+**Next best implementable slice:** redeploy W37 follow-up `ec760ee`, verify expired-TOTP revocation recovery, and
+complete A01-05 entitlement revocation acceptance. Then implement the controlled A01-06/A01-07 staging diagnostic.
+The continuous retry scheduler remains a controlled-pilot gate. Execute and retain evidence through the
 [`A01 staging lifecycle acceptance runbook`](acceptance/A01-staging-lifecycle-acceptance.md). A resend/reissue action
 must not be implemented until D10 defines identity proofing, authorization, expiry and delivery behavior.
 
@@ -127,8 +125,8 @@ must not be implemented until D10 defines identity proofing, authorization, expi
 accepted for integrated ITF Flow staging, but Gate A is not formally met. A01's cross-repository code and contract
 coverage are complete. Flow staging origin, database, classifications, credential rotation, public application
 boundary, receiver credentials, Workspace sender configuration, registry/access records, administrator and ordinary
-staff provisioning/launch, replay rejection, W28/W29 behavior and confirmed central logout are accepted. Role/assurance change, entitlement
-revocation, duplicate delivery, outage/retry recovery and continuous retry operation remain.
+staff provisioning/launch, replay rejection, W28/W29 behavior, role/assurance change and confirmed central logout are
+accepted. Entitlement revocation, duplicate delivery, outage/retry recovery and continuous retry operation remain.
 Vercel Hobby cannot continuously schedule the staging retry worker; production signing additionally requires the
 approved KMS/HSM adapter.
 

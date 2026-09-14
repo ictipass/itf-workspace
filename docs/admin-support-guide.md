@@ -100,6 +100,8 @@ before the 25-record pagination and remain selected while moving between pages.
 To revoke access, use **App Access** and the existing record's revoke action. Workspace queues a durable revocation
 event for ITF Flow and attempts immediate delivery. Confirm the user cannot relaunch and review the audit event.
 Continuous retry operation is not yet adequate for a controlled production pilot on the current Vercel Hobby schedule.
+If TOTP freshness has expired, Workspace returns to the same filtered access list after verification and asks the
+administrator to select **Revoke** again. It does not automatically replay the destructive action.
 
 There is currently no safe **resend onboarding details** action. The original temporary password is not retrievable
 from its hash. Escalate failed welcome delivery under W25/D10; do not re-import the user or send an invented password.

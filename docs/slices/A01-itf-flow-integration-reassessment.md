@@ -135,8 +135,7 @@ launch completed. This accepts the joint provisioning and launch happy path.
 On 2026-09-08, ITF confirmed W28/W29 staging behavior and the A01 replay exercise worked as expected. A consumed
 assertion produced only Flow's generic invalid-token result in a separate unauthenticated browser context and did not
 create a Flow session; no token value was retained. Confirmed global logout revoked the current Workspace session and
-its exact Flow session while preserving a separate Workspace device session. A01-01 and A01-04 are accepted. Role and
-assurance changes, entitlement revocation, duplicate delivery and outage/retry recovery remain.
+its exact Flow session while preserving a separate Workspace device session. A01-01 and A01-04 are accepted.
 
 On 2026-09-12, ITF created a dedicated ordinary staging identity through the governed HR CSV path. Welcome-email
 delivery, first login, temporary-password replacement and subsequent Workspace login succeeded. Its imported
@@ -146,8 +145,14 @@ against the live role-policy registry; staging still requires the administrator 
 directory synchronization before this identity's first Flow launch.
 
 ITF subsequently confirmed the approved role was configured, directory synchronization completed and dedicated
-ordinary test users launched Flow successfully. This accepts the ordinary-staff provisioning/launch path. It does not
-complete A01-02 because no authoritative role change and mismatch/reconciliation sequence has yet been exercised.
+ordinary test users launched Flow successfully. This accepts the ordinary-staff provisioning/launch path.
+
+On 2026-09-14, ITF approved temporary `UNIT_HEAD = STANDARD` and confirmed A01-02's old-session termination,
+pre-synchronization mismatch rejection, post-synchronization `UNIT_HEAD` launch and restoration to
+`OFFICER = STANDARD`. ITF also confirmed A01-03's standard-session termination, pre-TOTP denial, post-TOTP launch and
+restoration. Role and assurance lifecycle cases are accepted. An expired administrator step-up exposed an unhandled
+revocation error while beginning A01-05; Workspace follow-up `ec760ee` replaces it with deliberate TOTP recovery and
+must be redeployed before the entitlement-revocation exercise continues.
 
 ## User interface effect
 
@@ -157,14 +162,14 @@ after a role, status or assurance increase and must relaunch through Workspace.
 
 ## Readiness and next action
 
-A01's code implementation, environment-separated staging configuration, provisioning, first launch, replay rejection
-and confirmed central logout are accepted.
+A01's code implementation, environment-separated staging configuration, provisioning, first launch, replay rejection,
+role/assurance change and confirmed central logout are accepted.
 The slice remains In progress until the remaining lifecycle scenarios and a continuous retry scheduler are accepted.
 Gate A is therefore not formally met, and Workspace is not yet approved for an ITF Flow pilot.
 
-Next best implementable action: execute A01-02 role-change/mismatch acceptance with a dedicated staging identity and
-explicitly approved old/new Flow roles. Do not alter the only recoverable Workspace administrator. If Infrastructure
-cannot yet provide a continuous scheduler, the finite outage/retry case may use the approved manual invocation while
-the controlled-pilot scheduler gate remains. Use the
+Next best implementable action: redeploy Workspace follow-up `ec760ee`, verify the expired-TOTP revocation recovery,
+then execute A01-05 entitlement revocation with the dedicated staging identity. Do not alter the only recoverable
+Workspace administrator. If Infrastructure cannot yet provide a continuous scheduler, the finite outage/retry case
+may use the approved manual invocation while the controlled-pilot scheduler gate remains. Use the
 [`A01 staging lifecycle acceptance runbook`](../acceptance/A01-staging-lifecycle-acceptance.md) and do not retain launch
 assertions as evidence.

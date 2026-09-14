@@ -1,6 +1,6 @@
 # A01 staging lifecycle acceptance runbook
 
-Status: In progress — administrator and ordinary-staff provisioning/launch, W27-W29, replay rejection and central logout accepted; remaining scenarios pending
+Status: In progress — provisioning/launch, W27-W29, replay, role change, assurance increase and central logout accepted; A01-05 through A01-07 pending
 Environment: Dedicated ITF Workspace and ITF Flow staging only
 
 ## Purpose
@@ -54,8 +54,8 @@ completed. No personal identity or authentication material is retained in this e
 
 | Case | Practical failure being prevented | Required observation |
 |---|---|---|
-| A01-02 role change/mismatch | Old or forged child role outlives its approved assignment | Existing Flow session ends; launch before directory reconciliation fails; synchronized approved role launches |
-| A01-03 assurance increase | A standard session survives after app/role becomes sensitive | Existing session ends and the next launch requires fresh TOTP |
+| A01-02 role change/mismatch — accepted 2026-09-14 | Old or forged child role outlives its approved assignment | Existing Flow session ends; launch before directory reconciliation fails; synchronized approved role launches |
+| A01-03 assurance increase — accepted 2026-09-14 | A standard session survives after app/role becomes sensitive | Existing session ends and the next launch requires fresh TOTP |
 | A01-04 confirmed central logout — accepted 2026-09-08 | Leaving a shared device leaves Flow usable | W28 confirmation revoked the current Workspace session and its exact Flow session; the separately authenticated Workspace device session remained available |
 | A01-05 entitlement revocation | Removed staff retains child access | All active Flow sessions for that entitlement end and relaunch is denied |
 | A01-06 duplicate delivery | Retry applies the same security transition twice or errors | The same event is accepted idempotently and produces one effective revocation |
@@ -122,10 +122,9 @@ exist under **Administration → Apps → ITF Flow → Edit → Child-app role a
 Pass only when all four observations are recorded: old session ended, pre-sync launch rejected, post-sync new role
 accepted, and restoration to `OFFICER` accepted.
 
-Progress reported 2026-09-14: `SYSTEM_ADMIN` approved temporary `UNIT_HEAD = STANDARD` and the role operation was
-reported successful. This does not yet mark A01-02 accepted: the evidence must explicitly confirm the old session
-ended, the pre-sync mismatch failed, the post-sync `UNIT_HEAD` launch succeeded, and the final
-`OFFICER = STANDARD` restoration succeeded.
+Acceptance: **Passed on 2026-09-14.** `SYSTEM_ADMIN` approved temporary `UNIT_HEAD = STANDARD`. ITF confirmed all four
+observations: the old session ended, the pre-sync mismatch failed, the synchronized `UNIT_HEAD` launch succeeded, and
+the final `OFFICER = STANDARD` restoration and launch succeeded.
 
 ## A01-03 — Standard-to-sensitive assurance increase
 
@@ -150,10 +149,11 @@ Prerequisite: ITF has approved the staging-only maintenance window and temporary
 Pass only when the lower-assurance session ends, pre-TOTP launch is denied, post-TOTP launch succeeds, and the policy
 is restored. Because this temporarily affects every staging `OFFICER`, do not run it during unrelated demonstrations.
 
-The administrator mutation itself was reported successful on 2026-09-14. An expired ten-minute administrator step-up
-also exposed an unhandled `FRESH_MFA_REQUIRED` page error; W37 corrects the recovery path without weakening D05. A01-03
-remains pending until the staff-session, pre/post-TOTP and restoration observations above are accepted on the
-redeployed release.
+Acceptance: **Passed on 2026-09-14.** ITF confirmed the existing standard Flow session ended, launch was blocked until
+TOTP, post-TOTP launch succeeded, and `OFFICER = STANDARD` was restored successfully. An expired ten-minute
+administrator step-up also exposed an unhandled `FRESH_MFA_REQUIRED` page error; W37 corrected role-policy recovery
+without weakening D05. Follow-up commit `ec760ee` applies the same safe reauthentication pattern to entitlement
+revocation and requires a staging redeployment before A01-05 continues.
 
 ## A01-05 — Entitlement revocation
 
@@ -244,6 +244,6 @@ meet continuous revocation operations; a production-capable scheduler remains a 
 
 ## Completion rule
 
-Gate A remains **Not met** until A01-02, A01-03 and A01-05 through A01-07 have accepted evidence. Vercel Hobby's daily
+Gate A remains **Not met** until A01-05 through A01-07 have accepted evidence. Vercel Hobby's daily
 cron remains insufficient for continuous retry operation; a successful authorized manual A01-07 invocation proves
 only finite staging recovery, not the controlled-pilot scheduler gate.
