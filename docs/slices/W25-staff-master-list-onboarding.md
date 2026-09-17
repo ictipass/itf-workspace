@@ -7,6 +7,9 @@ transaction/input hardening `2463277`; Prisma advisory-lock correction `79aac76`
 
 ## Implemented increment
 
+- W40 adds HR-confirmed single-staff entry through the same STAFF-only creation/credential lifecycle service. App
+  access remains separate. Manual and bulk workflows explicitly report welcome failures after committed creation.
+
 - HR master-list imports accept Workspace role `STAFF` only and reject `APP_ADMIN`, `SYSTEM_ADMIN`, unknown and
   incorrectly cased values before creating any account.
 - The downloaded CSV template now contains ordinary staff examples only.
@@ -42,6 +45,9 @@ page explains that Flow roles must first be active and classified, and directory
 blocking it.
 
 ## Verification
+
+W40 verification (2026-09-17): 94 Workspace regressions, TypeScript, ESLint, schema/configuration/documentation checks
+and production build passed. Four dedicated tests cover manual onboarding. The earlier increment evidence follows.
 
 - 84/84 Workspace security/regression tests pass across 15 suites, including four onboarding-policy checks.
 - TypeScript, ESLint and the 24-route production build pass.

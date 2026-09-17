@@ -4,7 +4,7 @@ Status: **Create-only ordinary-staff path implemented and staging-accepted; full
 
 ## Purpose
 
-Create ordinary Workspace staff from an HR-authoritative CSV, deliver temporary credentials and provision approved
+Create ordinary Workspace staff from an HR-authoritative CSV or individual entry, deliver temporary credentials and provision approved
 ITF Flow entitlements without permitting spreadsheet-based privilege escalation.
 
 ## Authorization and data handling
@@ -25,6 +25,22 @@ Before preparing the CSV:
 4. Confirm every requested Flow role is active and classified under **Manage Apps > ITF Flow**.
 5. Confirm Workspace and Flow staging integration secrets/endpoints are healthy before a test import.
 6. Use non-sensitive test data for acceptance exercises.
+
+## Single-staff alternative
+
+1. Sign in as `SYSTEM_ADMIN` and open **Administration → Users → Add Staff**.
+2. Use HR-confirmed details; preserve leading zeroes in the staff number. Do not invent a staff identity.
+3. Select an active office and optional department/division/unit/position. Select parents before children. A supervisor
+   staff number, if supplied, must already exist.
+4. Record the HR source reference (reference only, not copied staff data) and confirm HR authority.
+5. Choose **Add staff and send welcome**. If TOTP is stale, use **Verify authenticator in another tab**, return to the
+   original form and deliberately submit again. Entered details remain on that page.
+6. Confirm directory/audit state and email delivery. The new account is `STAFF` with mandatory password replacement.
+7. Grant approved application access separately under **App Access**. For Flow, synchronize before first launch.
+
+This form creates no Workspace administrator role or app entitlement. Uniqueness and reference validations are shared
+with CSV import. If the result says account creation succeeded but delivery failed, do not add it again; escalate under
+W25/D10. Provider acceptance is not proof of inbox delivery. There is no automatic credential reissue/retry yet.
 
 ## CSV contract
 

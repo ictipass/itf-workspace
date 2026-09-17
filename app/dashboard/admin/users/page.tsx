@@ -109,9 +109,12 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
           </p>
         </div>
 
-        <Button asChild>
+        <div className="flex flex-wrap gap-2">
+        <Button asChild><Link href="/dashboard/admin/users/new">Add Staff</Link></Button>
+        <Button asChild variant="outline">
           <Link href="/dashboard/admin/users/import">Bulk Import Users</Link>
         </Button>
+        </div>
       </div>
 
       <Card className="rounded-2xl">

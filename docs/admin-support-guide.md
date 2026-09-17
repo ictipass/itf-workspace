@@ -64,6 +64,11 @@ reference codes afterward. Bulk imports cannot move hierarchy parents or delete 
 
 Use the [staff onboarding runbook](runbooks/staff-onboarding.md). The safe sequence is:
 
+For one HR-confirmed staff member, use **User Directory → Add Staff** instead of preparing a CSV. The form is
+`STAFF`-only, records the HR source reference, requires fresh TOTP and sends the existing welcome email. Grant app
+access separately and synchronize Flow before launch. Account-created/email-failed is not a failed database write;
+do not repeat creation. Bulk import remains available for batches.
+
 1. confirm organization and app-role prerequisites;
 2. download a fresh CSV template and reference codes;
 3. prepare and protect the HR file;
@@ -76,6 +81,11 @@ Use the [staff onboarding runbook](runbooks/staff-onboarding.md). The safe seque
 
 The current importer creates new users only. Do not use it to update existing staff, transfers, exits or lost
 credentials. Those lifecycle workflows remain incomplete and must be escalated.
+
+## Diagnosing a rejected Flow launch
+
+For Flow's generic `invalid-token` page, collect only the new support reference/time and follow the
+[Flow handoff troubleshooting runbook](runbooks/flow-handoff-troubleshooting.md). Do not request launch tokens.
 
 ## Registering and configuring an app
 

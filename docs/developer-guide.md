@@ -92,6 +92,17 @@ Flow-specific environment variables and code still exist. Do not copy that imple
 requires W10, W15, W17 and W18 so roles, effective entitlements, connector endpoints and retries become repeatable and
 registry-driven. Follow the [child-app onboarding runbook](runbooks/child-app-onboarding.md).
 
+## Staff creation and handoff diagnosis
+
+Manual and CSV onboarding use `createWorkspaceStaff` in `lib/services/workspace-user-bulk-import.service.ts`; manual
+input schema/action/UI live in `lib/policies/single-staff-onboarding.ts` and `app/dashboard/admin/users/new/`. The manual
+entry grants no app roles, derives `STAFF` on the server, and records source evidence. Post-commit delivery failures
+are returned separately from validation/creation failures, not automatically retried.
+
+Flow launch failure logging uses server-generated UUID references and allow-listed stage/code categories. For the
+cross-repository read-only preflight and deployed diagnostic procedure, see the
+[handoff troubleshooting runbook](runbooks/flow-handoff-troubleshooting.md). The signed handoff protocol is unchanged.
+
 ## Local setup
 
 1. Copy `.env.example` to a local `.env` and replace placeholders.

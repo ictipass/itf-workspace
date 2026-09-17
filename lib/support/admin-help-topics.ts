@@ -114,6 +114,20 @@ export const ADMIN_HELP_TOPICS: readonly AdminHelpTopic[] = [
         linkLabel: "Open Bulk Import Users",
       },
       {
+        title: "Add one HR-confirmed staff member without a spreadsheet",
+        summary: "Add Staff uses the same ordinary-staff creation and first-password-change process, without granting app access.",
+        steps: [
+          "Open User Directory and choose Add Staff.",
+          "Enter HR-confirmed official email, name, staff number and active organization references.",
+          "Record the HR source reference and confirm the details come from the authoritative HR list.",
+          "Complete fresh TOTP when requested and deliberately submit the reviewed form again.",
+          "Confirm welcome delivery and password replacement; grant approved app access separately and synchronize Flow before launch.",
+        ],
+        href: "/dashboard/admin/users/new",
+        linkLabel: "Open Add Staff",
+        escalation: "If creation committed but email failed, do not add the user again. Escalate delivery/reissue under W25/D10.",
+      },
+      {
         title: "The welcome email did not arrive",
         summary: "A completed import cannot be repeated because the user now exists.",
         steps: [

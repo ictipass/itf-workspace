@@ -22,7 +22,7 @@ import {
   normalizeAppRoleCode,
 } from "@/lib/policies/staff-onboarding";
 
-type CsvRow = {
+export type WorkspaceStaffInput = {
   staffNumber?: string;
   fullName?: string;
   email?: string;
@@ -43,6 +43,7 @@ export type BulkImportResult = {
   dryRun?: boolean;
   errors: string[];
   devLogPath?: string;
+  deliveryFailedCount?: number;
 };
 
 const REQUIRED_HEADERS = [
@@ -74,7 +75,7 @@ export async function importWorkspaceUsersFromCsv(params: {
 }): Promise<BulkImportResult> {
   const { csvText, importedById } = params;
 
-  const parsed = Papa.parse<CsvRow>(csvText, {
+  const parsed = Papa.parse<WorkspaceStaffInput>(csvText, {
     header: true,
     skipEmptyLines: true,
     transformHeader: (header) => header.trim(),
@@ -103,7 +104,31 @@ export async function importWorkspaceUsersFromCsv(params: {
     return { success: false, createdCount: 0, errors };
   }
 
-  const rows = parsed.data.map((row, index) => ({
+  return createWorkspaceStaff({
+    rows: parsed.data,
+    importedById,
+    dryRun: params.dryRun,
+    mode: "BULK_IMPORT",
+  });
+}
+
+// Both entry methods use the same validation, STAFF-only boundary and credential lifecycle.
+export async function createWorkspaceStaff(params: {
+  rows: WorkspaceStaffInput[];
+  importedById: string;
+  dryRun?: boolean;
+  mode: "BULK_IMPORT" | "SINGLE_USER";
+  sourceReference?: string;
+}): Promise<BulkImportResult> {
+  const { importedById } = params;
+  const errors: string[] = [];
+  if (params.rows.length === 0 || (params.mode === "SINGLE_USER" && params.rows.length !== 1)) {
+    return { success: false, createdCount: 0, errors: ["Supply the expected number of staff records."] };
+  }
+  if (params.mode === "SINGLE_USER" && !params.sourceReference?.trim()) {
+    return { success: false, createdCount: 0, errors: ["An HR source reference is required."] };
+  }
+  const rows = params.rows.map((row, index) => ({
     rowNumber: index + 2,
     staffNumber: normalize(row.staffNumber),
     fullName: normalize(row.fullName),
@@ -316,6 +341,14 @@ export async function importWorkspaceUsersFromCsv(params: {
       );
     }
 
+    if (division && !department) {
+      errors.push(`Row ${row.rowNumber}: departmentCode is required when divisionCode is supplied.`);
+    }
+
+    if (unit && !division) {
+      errors.push(`Row ${row.rowNumber}: divisionCode is required when unitCode is supplied.`);
+    }
+
     if (unit) {
       if (unit.divisionId && division && unit.divisionId !== division.id) {
         errors.push(
@@ -462,7 +495,8 @@ export async function importWorkspaceUsersFromCsv(params: {
         actorId: importedById,
         action: AuditAction.USER_CREATED,
         metadata: {
-          mode: "BULK_IMPORT",
+          mode: params.mode,
+          ...(params.mode === "SINGLE_USER" ? { sourceReference: params.sourceReference!.trim() } : {}),
           createdCount: validatedRows.length,
           reportingLinesAssigned: validatedRows.filter((row) => row.supervisorStaffNumber).length,
           itfFlowEntitlementsGranted: validatedRows.filter((row) => row.itfFlowRole).length,
@@ -472,14 +506,20 @@ export async function importWorkspaceUsersFromCsv(params: {
   });
 
   let devLogPath: string | undefined;
+  let deliveryFailedCount = 0;
 
   if (process.env.NODE_ENV === "production") {
     for (const user of createdCredentials) {
-      await sendWorkspaceWelcomeEmail({
-        to: user.email,
-        fullName: user.fullName,
-        temporaryPassword: user.temporaryPassword,
-      });
+      try {
+        await sendWorkspaceWelcomeEmail({
+          to: user.email,
+          fullName: user.fullName,
+          temporaryPassword: user.temporaryPassword,
+        });
+      } catch {
+        // Creation already committed. Never report it as rolled back or disclose credentials.
+        deliveryFailedCount += 1;
+      }
     }
   } else {
     devLogPath = await writeDevCreatedUsersLog(createdCredentials);
@@ -490,6 +530,7 @@ export async function importWorkspaceUsersFromCsv(params: {
     createdCount: createdCredentials.length,
     errors: [],
     devLogPath,
+    deliveryFailedCount,
   };
 }
 

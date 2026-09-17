@@ -75,7 +75,9 @@ export async function importUsersAction(
     success: true,
     message: result.dryRun
       ? `Dry run passed. ${result.validatedCount} row(s) are ready to import; no data was changed.`
-      : `${result.createdCount} user(s) created successfully.`,
+      : result.deliveryFailedCount
+        ? `${result.createdCount} user(s) created; ${result.deliveryFailedCount} welcome email(s) failed. Do not re-import these users. Escalate delivery/reissue through approved support.`
+        : `${result.createdCount} user(s) created successfully.`,
     createdCount: result.createdCount,
     devLogPath: result.devLogPath,
   };
