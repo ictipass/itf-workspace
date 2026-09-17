@@ -69,6 +69,16 @@ Plain-language scenarios and the information needed to answer every question are
 | D41 | Permitted manual correction of organization hierarchy parents | Approved (interim) | Super administrator | System administrators may move a department to an active office, a division to an active department, or a unit to an active division with explicit impact confirmation, immutable-ID preservation, new-scope uniqueness validation, atomic persistence and previous/new-parent audit evidence. Bulk hierarchy moves remain prohibited. `2026-09-12`, [`organization hierarchy-correction directive`](policies/2026-09-12-organization-hierarchy-correction-directive.md) |
 | D42 | ITF Flow `OFFICER` assurance classification | Approved (interim) | Super administrator | The exact ITF Flow role code `OFFICER` is classified `STANDARD`. The application-level classification and D05's more-restrictive-wins rule continue to apply; this decision does not classify any other Flow role. `2026-09-12`, [`ITF Flow OFFICER assurance directive`](policies/2026-09-12-itf-flow-officer-assurance-directive.md) |
 
+## D43 — Authenticator loss, replacement and recovery
+
+Status: **Open**. Accountable owners: ITF ICT service desk/security and super administrator.
+
+Required: identity-proofing evidence, reset approvers/segregation of duties, voluntary migration requirements,
+recovery-code/backup permissions, response to stolen factors, notification/audit rules and a sole-administrator
+recovery route. D05 remains unchanged. The request for support documentation is not approval of a factor-reset policy.
+The app currently has no supported TOTP reset or recovery-code workflow. See the
+[authenticator runbook](runbooks/authenticator-loss-and-replacement.md).
+
 ## Decision procedure
 
 For each decision, record the approved outcome, effective date, approving authority and policy/document reference.

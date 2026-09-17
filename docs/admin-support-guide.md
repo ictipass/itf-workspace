@@ -180,6 +180,13 @@ Follow the [troubleshooting guide](troubleshooting.md) before escalation.
 
 ## Known operational limitations
 
+Authenticator phone loss/replacement and the missing governed reset route are explained in the
+[authenticator runbook](runbooks/authenticator-loss-and-replacement.md). Do not remove MFA through database edits.
+The exact current button location and batch steps are in the
+[Flow synchronization runbook](runbooks/flow-directory-synchronization.md). Both procedures appear in Admin Help.
+SYSTEM_ADMIN operators can use the disabled-by-default
+[controlled staging diagnostic](acceptance/A01-staging-diagnostic-operations.md) during an explicitly configured window.
+
 - Staff import is create-only; updates, transfers, exits and reconciliation are incomplete.
 - Welcome-email delivery is not yet backed by an operator-visible durable retry workflow.
 - General password recovery/reissue policy is unresolved.

@@ -1,6 +1,6 @@
 # A01 staging lifecycle acceptance runbook
 
-Status: In progress — provisioning/launch, W27-W29, replay, role change, assurance increase and central logout accepted; A01-05 through A01-07 pending
+Status: In progress — provisioning/launch, W27-W29, replay, role change, assurance increase, central logout and entitlement revocation accepted; A01-06/A01-07 pending
 Environment: Dedicated ITF Workspace and ITF Flow staging only
 
 ## Purpose
@@ -57,7 +57,7 @@ completed. No personal identity or authentication material is retained in this e
 | A01-02 role change/mismatch — accepted 2026-09-14 | Old or forged child role outlives its approved assignment | Existing Flow session ends; launch before directory reconciliation fails; synchronized approved role launches |
 | A01-03 assurance increase — accepted 2026-09-14 | A standard session survives after app/role becomes sensitive | Existing session ends and the next launch requires fresh TOTP |
 | A01-04 confirmed central logout — accepted 2026-09-08 | Leaving a shared device leaves Flow usable | W28 confirmation revoked the current Workspace session and its exact Flow session; the separately authenticated Workspace device session remained available |
-| A01-05 entitlement revocation | Removed staff retains child access | All active Flow sessions for that entitlement end and relaunch is denied |
+| A01-05 entitlement revocation — accepted 2026-09-17 | Removed staff retains child access | All active Flow sessions for that entitlement end and relaunch is denied |
 | A01-06 duplicate delivery | Retry applies the same security transition twice or errors | The same event is accepted idempotently and produces one effective revocation |
 | A01-07 receiver outage/retry | Flow outage loses a revocation or restores access | Workspace revocation remains final; outbox enters retry and later delivers after recovery |
 
@@ -78,8 +78,8 @@ credential in chat or in the evidence pack. ITF must provide only the following 
   window with no unrelated staging test in progress.
 - **A01-05:** authorize use of the dedicated ordinary staging identity whose access may be revoked and restored. No
   new policy classification is required.
-- **A01-06 and A01-07:** authorize a staging maintenance window after the controlled acceptance diagnostic described
-  below is implemented. These cases must not be improvised with direct database edits or secrets pasted into a shell
+- **A01-06 and A01-07:** authorize a staging maintenance window and configure the chosen ordinary test-user ID and
+  matching temporary expiry in both apps. W42/Flow S23E implement the diagnostic. Do not improvise with database edits or secrets pasted into a shell
   command, browser, chat or ticket.
 
 Record the approving authority and approval reference with the test evidence. The approval may identify the dedicated
@@ -174,14 +174,20 @@ Flow cookie nor a direct launch attempt restores access.
 Pass only when both sessions end, relaunch is denied while revoked, and controlled regrant plus synchronization is
 required for recovery.
 
+Acceptance: **Passed on 2026-09-17.** ITF confirmed that both separately launched browser-profile sessions rejected
+protected Flow pages after Workspace revocation. Workspace retained Flow but disabled launch; OFFICER regrant,
+directory synchronization and a new launch succeeded. This confirmation does not separately attest an expired-TOTP
+revocation submission; that negative-path recovery check remains independently verifiable.
+
 ## A01-06 — Duplicate delivery
 
 Purpose: prove that retrying the exact same security event does not fail and does not apply the state transition twice.
 The same `eventId` and identical payload must be delivered twice; creating two different revocation events is not this
 test.
 
-The current administrator UI cannot safely replay an exact event. Before execution, engineering must add a narrowly
-scoped staging acceptance diagnostic which:
+W42/Flow S23E implement the narrowly scoped diagnostic at
+`/dashboard/admin/integrations/acceptance`. Follow the
+[exact deployment/operator procedure](A01-staging-diagnostic-operations.md). It:
 
 - refuses to run against a non-staging environment;
 - creates or selects one test-user entitlement event without accepting arbitrary URLs or payloads;
@@ -192,7 +198,7 @@ scoped staging acceptance diagnostic which:
 - provides a redacted event/correlation reference and verifies only one effective session/identity revocation; and
 - requires explicit confirmation and documents how to restore the test user.
 
-Once that diagnostic exists, the operator checklist is:
+The operator checklist is:
 
 - [ ] Start with one active test entitlement and Flow session.
 - [ ] Run the diagnostic once for A01-06; do not manually repeat or modify its payload.
@@ -205,26 +211,25 @@ Once that diagnostic exists, the operator checklist is:
 Purpose: prove that a temporary Flow outage cannot undo a Workspace revocation, that failed delivery remains durable,
 and that the same event is delivered after recovery.
 
-The existing outbox worker can retry due events, but the UI cannot safely isolate a test event, show its state or
-simulate an approved receiver failure. Engineering must extend the staging acceptance diagnostic before this case. It
-must:
+W42/Flow S23E isolate the recorded test event, show bounded evidence and simulate one authenticated HTTP 503 before
+receiver side effects. Follow the [exact configuration and retry steps](A01-staging-diagnostic-operations.md). It:
 
-- refuse non-staging targets and require explicit confirmation of the dedicated test identity;
-- preflight that no unrelated due integration event will be processed;
-- induce a bounded Flow receiver failure without weakening receiver authentication or changing production settings;
-- identify the generated outbox event and show only redacted status, attempts, next retry time and correlation data;
-- verify the Workspace entitlement is already revoked while delivery is `RETRY`;
-- restore the valid receiver, invoke the authorized worker after the event becomes due, and follow that one event to
+- refuses non-staging targets and requires explicit confirmation of the dedicated test identity;
+- preflights that no unrelated due integration event will be processed;
+- induces a bounded Flow receiver failure without weakening receiver authentication or changing production settings;
+- identifies the generated outbox event and shows only redacted status, attempts, next retry time and correlation data;
+- verifies the Workspace entitlement is already revoked while delivery is `RETRY`;
+- retries without the one-request failure header after the event becomes due, and follows that one event to
   `DELIVERED`; and
-- never expose `WORKSPACE_INTEROP_SECRET`, `WORKSPACE_OUTBOX_WORKER_SECRET` or a database credential.
+- never exposes `WORKSPACE_INTEROP_SECRET`, `WORKSPACE_OUTBOX_WORKER_SECRET` or a database credential.
 
-Once that diagnostic exists, the operator checklist is:
+The operator checklist is:
 
 - [ ] Start with an active test entitlement and Flow session; record the approved maintenance window.
-- [ ] Enable the diagnostic's bounded receiver-failure mode and revoke the test entitlement through **App Access**.
+- [ ] Select A01-07 on **Staging integration acceptance** and explicitly confirm diagnostic revocation there.
 - [ ] Confirm Workspace immediately disables launch even though Flow event delivery failed.
 - [ ] Confirm the event is durable in `RETRY`, with a bounded next-attempt time; do not edit the outbox row.
-- [ ] Restore the valid Flow receiver and run the diagnostic's authorized retry after the event becomes due.
+- [ ] Check/retry the recorded event without a failure header after its displayed due time.
 - [ ] Confirm the same event reaches `DELIVERED`, the Flow session ends and direct/Workspace relaunch remains denied.
 - [ ] Regrant `OFFICER`, synchronize the directory and prove normal launch recovery.
 
@@ -244,6 +249,6 @@ meet continuous revocation operations; a production-capable scheduler remains a 
 
 ## Completion rule
 
-Gate A remains **Not met** until A01-05 through A01-07 have accepted evidence. Vercel Hobby's daily
+Gate A remains **Not met** until A01-06 and A01-07 have accepted evidence. Vercel Hobby's daily
 cron remains insufficient for continuous retry operation; a successful authorized manual A01-07 invocation proves
 only finite staging recovery, not the controlled-pilot scheduler gate.

@@ -29,8 +29,9 @@ Required:
 Current status: **Not met**. W00-W04, W07 and the expanded W08 foundation are complete; D01-D07 are approved;
 environment-separated staging credentials, administrator and ordinary-staff provisioning/launch, W27 application navigation,
 W28/W29 behavior, replay rejection, role/assurance change and confirmed central logout are accepted. Workspace/Flow
-launch, immutable provisioning and revocation contract tests pass. Live entitlement revocation, duplicate delivery
-and outage/retry evidence remain. The code is mature enough for integrated staging; production signing
+launch, immutable provisioning and revocation contract tests pass. A01-05 live entitlement revocation and controlled
+regrant/synchronization are accepted on 2026-09-17. W42/Flow S23E diagnostics are implemented, but live duplicate
+delivery and outage/retry evidence remain. The code is mature enough for integrated staging; production signing
 additionally remains gated on the approved KMS/HSM provider adapter.
 
 When the final item is satisfied, the slice handoff must explicitly state: **Workspace is ready for integrated ITF

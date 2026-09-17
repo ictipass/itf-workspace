@@ -12,6 +12,9 @@ maintained with the code; a guide never overrides the implementation register or
 3. [Troubleshooting guide](troubleshooting.md)
 4. [Current implementation status](implementation-slice-register.md)
 5. In the deployed Workspace, `SYSTEM_ADMIN` users can open **Admin Help** for concise expandable procedures.
+6. [Lost/replaced authenticator](runbooks/authenticator-loss-and-replacement.md)
+7. [Synchronize Flow directory](runbooks/flow-directory-synchronization.md)
+8. [Controlled staging diagnostics](acceptance/A01-staging-diagnostic-operations.md)
 
 ### Developers and application integrators
 
@@ -50,8 +53,8 @@ maintained with the code; a guide never overrides the implementation register or
 - Organization setup, ordinary-staff CSV creation, temporary-password replacement and TOTP for sensitive access are
   implemented.
 - ITF Flow is the first integrated child app. Ordinary `OFFICER` provisioning and launch have passed staging.
-- ITF Flow role/assurance lifecycle cases are accepted; entitlement revocation, duplicate delivery and outage recovery
-  remain.
+- ITF Flow role/assurance and entitlement-revocation cases are accepted. W42/Flow S23E provide controlled diagnostics;
+  live duplicate-delivery and outage/retry acceptance remain.
 - Repeatable onboarding of additional apps is not yet approved; Gate C requires configurable connectors and Phase 2
   access governance.
 - Production launch signing remains blocked until the approved KMS/HSM adapter exists.

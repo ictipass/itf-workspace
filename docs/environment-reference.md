@@ -117,6 +117,20 @@ values in Vercel runtime variables and do not run the general development seed t
 
 ## Secret and key generation
 
+### Temporary staging acceptance controls
+
+| Variable | Secret? | Values / effect |
+|---|---|---|
+| `WORKSPACE_STAGING_ACCEPTANCE_ENABLED` | No | `false` default; `true` only in approved staging window |
+| `WORKSPACE_STAGING_ACCEPTANCE_USER_ID` | No; internal identifier | Exactly one dedicated ordinary staff Workspace ID; not email or Flow-local ID |
+| `WORKSPACE_STAGING_ACCEPTANCE_EXPIRES_AT` | No | UTC ISO timestamp ending in `Z`, future and within 24 hours; expiration disables diagnostic controls |
+
+The three values must match in both staging apps. Flow additionally requires `ITF_FLOW_DEPLOYMENT_STAGE=staging`
+in its dedicated staging project. Workspace uses its existing `WORKSPACE_DEPLOYMENT_STAGE=staging` and rejects the
+Vercel Production slot. No new secret generation is needed: existing authenticated receiver credentials are reused.
+Leave diagnostics disabled in production and normal staging operation. Complete pending diagnostic events before
+disabling controls. See the [configuration, invocation and cleanup procedure](acceptance/A01-staging-diagnostic-operations.md).
+
 Generate a 32-byte opaque secret as 64 hexadecimal characters for Auth.js and independent shared integration secrets:
 
 ```bash

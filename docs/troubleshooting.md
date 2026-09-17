@@ -64,6 +64,14 @@ URLs into tickets, chat or screenshots. Use timestamps, public routes, correlati
 
 ## Escalation record
 
+For a lost/replaced authenticator, follow the
+[factor-loss runbook](runbooks/authenticator-loss-and-replacement.md): the current app has no supported reset UI; D43
+approval is required, and SQL clearing or classification downgrades are not recovery procedures.
+For a provisioning/role mismatch after an approved grant or regrant, use the
+[directory-synchronization procedure](runbooks/flow-directory-synchronization.md), then make a fresh catalogue launch.
+Controlled staging duplicate/outage diagnostics have a separate
+[deployment and cleanup checklist](acceptance/A01-staging-diagnostic-operations.md).
+
 Provide environment, time, public route, exact sanitized message, correlation ID, deployed commit and last approved
 admin action. Escalate security events, suspected credential disclosure, unexplained privilege, repeated login abuse,
 lost privileged authentication and failed revocation immediately through ITF's approved incident channel.

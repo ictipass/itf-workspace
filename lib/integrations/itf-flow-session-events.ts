@@ -17,6 +17,7 @@ import {
   buildItfFlowSessionEventPayload,
   retryDelaySeconds,
 } from "@/lib/integrations/outbox-policy";
+import { acceptanceAckSchema, shouldFailStagingDelivery, stagingAcceptanceTarget } from "@/lib/integrations/staging-acceptance-policy";
 
 type RevocableSession = { id: string; userId: string };
 
@@ -166,45 +167,45 @@ async function claimEvents(eventIds?: readonly string[]) {
   });
 }
 
-async function deliverClaimedEvent(event: ClaimedEvent) {
+export function buildOutboxEventPayload(event: Omit<ClaimedEvent, "id" | "attemptCount" | "leaseId">) {
+  if (event.type === IntegrationOutboxEventType.CENTRAL_LOGOUT) {
+    if (!event.workspaceSessionId) throw new Error("Central logout session identifier missing.");
+    return buildItfFlowSessionEventPayload({ ...event, type: "CENTRAL_LOGOUT", workspaceSessionId: event.workspaceSessionId, occurredAt: event.createdAt });
+  }
+  return buildItfFlowSessionEventPayload({ ...event, type: "ENTITLEMENT_REVOKED", workspaceSessionId: undefined, occurredAt: event.createdAt });
+}
+
+async function deliverClaimedEvent(event: ClaimedEvent, diagnostic?: {
+  failReceiver: boolean;
+  acknowledgement?: (value: { accepted: true; duplicate: boolean; matchedSessions: number }) => void;
+}) {
   const configuration = resolveItfFlowSessionEventConfiguration();
   const attemptCount = event.attemptCount + 1;
   try {
     if (event.type === IntegrationOutboxEventType.CENTRAL_LOGOUT && !event.workspaceSessionId) {
       throw new Error("A central logout event is missing its Workspace session identifier.");
     }
-    const payload = event.type === IntegrationOutboxEventType.CENTRAL_LOGOUT
-      ? buildItfFlowSessionEventPayload({
-          eventId: event.eventId,
-          type: "CENTRAL_LOGOUT",
-          workspaceUserId: event.workspaceUserId,
-          workspaceSessionId: event.workspaceSessionId!,
-          targetAppSlug: event.targetAppSlug,
-          occurredAt: event.createdAt,
-          reason: event.reason,
-        })
-      : buildItfFlowSessionEventPayload({
-          eventId: event.eventId,
-          type: "ENTITLEMENT_REVOKED",
-          workspaceUserId: event.workspaceUserId,
-          targetAppSlug: event.targetAppSlug,
-          occurredAt: event.createdAt,
-          reason: event.reason,
-        });
+    const payload = buildOutboxEventPayload(event);
     const response = await fetch(configuration.endpoint, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${configuration.secret}`,
         "Content-Type": "application/json",
         "X-Correlation-Id": event.eventId,
+        ...(diagnostic?.failReceiver && shouldFailStagingDelivery(event)
+          ? { "X-ITF-Staging-Receiver-Failure": "once" } : {}),
       },
       body: JSON.stringify(payload),
       cache: "no-store",
+      redirect: "error",
       signal: AbortSignal.timeout(configuration.requestTimeoutMs),
     });
     const result = (await response.json().catch(() => null)) as { accepted?: boolean } | null;
     if (!response.ok || result?.accepted !== true) {
       throw new Error(`ITF Flow rejected the event with HTTP ${response.status}.`);
+    }
+    if (diagnostic?.acknowledgement) {
+      diagnostic.acknowledgement(acceptanceAckSchema.parse(result));
     }
     await prisma.integrationOutboxEvent.updateMany({
       where: { id: event.id, leaseId: event.leaseId, status: IntegrationOutboxStatus.PROCESSING },
@@ -240,13 +241,31 @@ async function deliverClaimedEvent(event: ClaimedEvent) {
   }
 }
 
+// Narrow staging-only worker invocation. Cannot process an unlinked or unrelated event.
+export async function deliverStagingAcceptanceEvent(eventId: string, failReceiver = false) {
+  const target = stagingAcceptanceTarget();
+  if (!target) throw new Error("Staging diagnostic is disabled or expired.");
+  const event = await prisma.integrationOutboxEvent.findUnique({ where: { eventId } });
+  if (!event || event.workspaceUserId !== target || event.type !== "ENTITLEMENT_REVOKED" ||
+      !/^STAGING_A01_(06|07):[0-9a-f-]{36}$/.test(event.reason) ||
+      !isItfFlowAppSlug(event.targetAppSlug) || (failReceiver && (event.attemptCount !== 0 || !shouldFailStagingDelivery(event)))) {
+    throw new Error("Invalid staging diagnostic event.");
+  }
+  const claimed = await claimEvents([eventId]);
+  let acknowledgement: { accepted: true; duplicate: boolean; matchedSessions: number } | undefined;
+  const delivered = claimed.length === 1
+    ? await deliverClaimedEvent(claimed[0], { failReceiver, acknowledgement: (value) => { acknowledgement = value; } })
+    : false;
+  return { claimed: claimed.length, delivered, acknowledgement };
+}
+
 export async function deliverItfFlowSessionEvents(eventIds?: readonly string[]) {
   if (eventIds && eventIds.length === 0) {
     return { configured: true, claimed: 0, delivered: 0, failed: 0 };
   }
   try {
     const events = await claimEvents(eventIds);
-    const results = await Promise.all(events.map(deliverClaimedEvent));
+    const results = await Promise.all(events.map((event) => deliverClaimedEvent(event)));
     return {
       configured: true,
       claimed: events.length,

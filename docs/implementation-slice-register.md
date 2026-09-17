@@ -42,7 +42,7 @@ result. Repository code, migrations and commits remain the final implementation 
 | W05 | Login abuse protection and authentication security events | Policy gate | D08-D11: throttling, lockout, recovery and alerting policy |
 | W06 | App URL and outbound-request SSRF protection | Policy gate | D12: permitted domains/networks and operational exception process |
 | W07 | Secure configuration validation and removal of unsafe credential defaults | Implemented | Initial `2caeede`; Vercel stage separation `05153bb` adds an explicit staging policy without weakening the production KMS gate. See [`slices/W07-secure-configuration-validation.md`](slices/W07-secure-configuration-validation.md) |
-| W08 | Workspace security regression test foundation | Implemented | 94 Workspace regressions across 17 suites additionally cover application administration, protected in-product support and manual STAFF-only onboarding; every production build verifies both organization-workbook function traces contain the complete dynamically loaded Excel dependency graph. See [`slices/W08-security-regression-foundation.md`](slices/W08-security-regression-foundation.md) |
+| W08 | Workspace security regression test foundation | Implemented | 100 Workspace regressions across 17 suites cover administration, support, STAFF-only onboarding and staging diagnostic guards; every production build verifies both organization-workbook function traces contain the complete dynamically loaded Excel dependency graph. See [`slices/W08-security-regression-foundation.md`](slices/W08-security-regression-foundation.md) |
 | W09 | Security headers, browser policy and deployment trust boundary | Policy gate | Local proxy control `a6a90ab` and Vercel Preview/Production stage binding `05153bb` are implemented. Vercel hosting and the staging branch/domain are recorded; D13-D14 production topology and permitted origins remain open. See [`vercel-deployment-environments.md`](vercel-deployment-environments.md) |
 | W25 | Staff master-list onboarding and credential lifecycle | In progress | HR-import boundary `ce680e0`; registry-role enforcement `e8c3477`; staging-only controlled initial administrator bootstrap `37feab7`, remote hardening `2463277`, advisory-lock correction `79aac76`. Initial-admin authentication was accepted on 2026-09-04; ordinary staff import, welcome delivery, temporary-password replacement and login were accepted on 2026-09-12. HR imports remain `STAFF`-only; durable bulk-delivery/reissue, general privileged-role workflow and HR lifecycle reconciliation remain. See [`slices/W25-staff-master-list-onboarding.md`](slices/W25-staff-master-list-onboarding.md) |
 | W26 | Curated application icon catalogue | Implemented | `2965023`; 16 centrally controlled icon keys, server-side allow-list validation, accessible create/edit selection, safe legacy fallback and consistent staff/admin rendering. No migration or environment configuration is required. See [`slices/W26-curated-application-icons.md`](slices/W26-curated-application-icons.md) |
@@ -60,6 +60,13 @@ result. Repository code, migrations and commits remain the final implementation 
 | W38 | In-product administrator support centre | Implemented; staging redeployment required | `04de237`; protected Admin Help navigation/page with seven expandable operational topics, safe procedures, escalation boundaries and links to relevant screens. No migration or configuration. See [`slices/W38-in-product-administrator-support-centre.md`](slices/W38-in-product-administrator-support-centre.md) |
 | W39 | Flow handoff failure diagnostics | Implemented; staging launch recovery accepted | Workspace `c992230`, Flow `9577561`; synchronization restored launch, confirmed 2026-09-17. Read-only preflight and safe failure references remain available; diagnostic failure-path acceptance is not implied. Both builds and 94 Workspace/33 Flow regressions passed. No auth bypass/migration/env change. See [`slices/W39-flow-launch-diagnostics.md`](slices/W39-flow-launch-diagnostics.md) |
 | W40 | HR-confirmed single ordinary-staff creation | Implemented; staging happy path accepted | Workspace `c992230`; successful single-user onboarding confirmed 2026-09-17. HR reference/confirmation, SYSTEM_ADMIN/fresh-TOTP enforcement and shared STAFF-only service; app grants remain separate. 94 regressions/full verification passed. Negative/mail-failure staging cases and W25 lifecycle gates remain. See [`slices/W40-single-staff-creation.md`](slices/W40-single-staff-creation.md) |
+
+## Additional support and acceptance slices
+
+| ID | Slice | Status | Evidence / remaining gate |
+|---|---|---|---|
+| W41 | Authenticator and directory support | Implemented locally; live acceptance pending | 100 Workspace regressions/full verification passed; expandable Admin Help procedures, recovery gap/D43 and directory-sync steps; A01-05 accepted 2026-09-17. See [slice](slices/W41-authenticator-and-directory-support.md) |
+| W42 | Controlled staging lifecycle diagnostic | Implemented locally; live acceptance pending | 100 Workspace/36 Flow regressions and both builds passed; Flow S23E; default-off stage/pin/24-hour window, exact duplicate delivery and filtered durable outage retry. Live A01-06/A01-07 pending. See [slice](slices/W42-controlled-staging-acceptance.md) |
 
 ## Phase 2 — scalable access governance
 
@@ -90,7 +97,7 @@ result. Repository code, migrations and commits remain the final implementation 
 
 | ID | Application slice | Status | Dependency |
 |---|---|---|---|
-| A01 | ITF Flow launch v2, provisioning and revocation integration | In progress | Code complete: Workspace `1a08a5b`, Flow `02b433d`; Flow staging configuration `f48b702` and pooled/direct database hardening `d0199ce`. Database credential rotation, staging boundary, sender configuration, registry, administrator/ordinary-staff provisioning and launch, replay, role change, assurance increase and central logout are accepted. Entitlement revocation, duplicate delivery, outage/retry and a continuous retry scheduler remain. See [`slices/A01-itf-flow-integration-reassessment.md`](slices/A01-itf-flow-integration-reassessment.md) |
+| A01 | ITF Flow launch v2, provisioning and revocation integration | In progress | Code complete: Workspace `1a08a5b`, Flow `02b433d`; Flow staging configuration `f48b702` and pooled/direct database hardening `d0199ce`. Database credential rotation, staging boundary, sender configuration, registry, administrator/ordinary-staff provisioning and launch, replay, role change, assurance increase and central logout are accepted. Entitlement revocation is accepted on 2026-09-17; W42/Flow S23E diagnostics exist, but live duplicate-delivery/outage-retry acceptance and continuous scheduling remain. See [`slices/A01-itf-flow-integration-reassessment.md`](slices/A01-itf-flow-integration-reassessment.md) |
 | A02 | Client Reimbursement staff integration | Planned | A01 lessons plus W17/W21 onboarding contract |
 | A03 | SIWES staff-facing integration | Policy gate | A01; D32 separates staff and external SIWES identities |
 | A04 | PromoIntel staff integration | Planned | A01 lessons plus W17/W21 onboarding contract |
@@ -111,39 +118,29 @@ result. Repository code, migrations and commits remain the final implementation 
 
 ## Current execution order
 
-Latest verified delivery (2026-09-17): W39 — Workspace `c992230`, Flow `9577561`; W40 — Workspace `c992230`.
-Both production builds passed; 94 Workspace and 33 Flow security regressions passed. ITF subsequently confirmed Flow
-launch recovery after directory synchronization and successful single-user onboarding on 2026-09-17. Diagnostic
-failure-path and additional negative onboarding cases are not independently accepted by this confirmation.
+Verified delivery (2026-09-17): W41 support/runbooks and W42/Flow S23E controlled staging diagnostics pass both full
+verification commands and production builds, 100 Workspace/36 Flow security cases and 57-document checks. No migration
+or new secret is required; live diagnostics were not executed. ITF confirmed A01-05: both browser-profile Flow sessions reject protected pages after
+entitlement removal; Workspace disables launch; OFFICER regrant and synchronization restore launch.
 
-1. Redeploy W37 follow-up `ec760ee` and accept the expired-fresh-TOTP revocation recovery in Workspace staging.
-2. Complete A01-05 entitlement revocation acceptance in staging.
-3. Implement the controlled A01-06/A01-07 staging diagnostic, then exercise duplicate delivery and outage/retry recovery.
-4. Resolve D10 before implementing temporary-credential reissue and durable onboarding-email delivery under W25.
-5. Establish continuous outbox retry operation and resolve W05, W06 and W09 before a controlled pilot.
-6. Resolve D15-D30, then implement W10-W18 before repeatable onboarding of additional child apps.
+1. Deploy both diagnostic implementations, configure the approved ordinary test identity/window, then execute A01-06
+   and A01-07 using the [operator procedure](acceptance/A01-staging-diagnostic-operations.md).
+2. Obtain D43 authenticator-recovery approval before implementing reset, replacement or sole-administrator recovery.
+3. Resolve D10 before temporary-credential reissue and durable onboarding-email delivery under W25.
+4. Establish continuous outbox retries and resolve W05, W06 and W09 before a controlled pilot.
+5. Resolve D15-D30 and implement W10-W18 before repeatable onboarding of additional apps.
 
-**Immediate priority (2026-09-17):** launch recovery and single-staff onboarding are confirmed. Complete A01-05 using
-the dedicated ordinary staging identity, then implement and execute the controlled A01-06/A01-07 diagnostic.
+**Next best operational step:** execute and accept A01-06/A01-07; local diagnostics/tests do not close their live gates.
+**Next engineering outcome:** governed authenticator recovery after D43 approval, or generic per-app connectors and
+App Access synchronization under W17/W18 once their contracts and dependencies are approved. Do not hard-code more
+Flow-specific buttons to claim generic synchronization.
 
-**Next best implementable engineering slice:** the controlled A01-06/A01-07 staging diagnostic for duplicate security
-event delivery and receiver outage/retry. A01-05 entitlement revocation acceptance can already be executed using the
-current UI; verify W37 expired-TOTP revocation recovery if that correction has not yet been accepted.
-The continuous retry scheduler remains a controlled-pilot gate. Execute and retain evidence through the
-[`A01 staging lifecycle acceptance runbook`](acceptance/A01-staging-lifecycle-acceptance.md). A resend/reissue action
-must not be implemented until D10 defines identity proofing, authorization, expiry and delivery behavior.
+**Current child-app readiness:** Workspace and Flow are suitable for integrated staging. Gate A remains **Not met**
+until duplicate-delivery and outage/retry evidence is accepted. Continuous retry scheduling remains a pilot gate:
+Vercel Hobby daily cron is insufficient. Production additionally needs the approved KMS/HSM adapter and remaining
+security, governance and operational approval gates.
 
-**Current child-app readiness:** The Workspace code foundation and its first-administrator authentication path are
-accepted for integrated ITF Flow staging, but Gate A is not formally met. A01's cross-repository code and contract
-coverage are complete. Flow staging origin, database, classifications, credential rotation, public application
-boundary, receiver credentials, Workspace sender configuration, registry/access records, administrator and ordinary
-staff provisioning/launch, replay rejection, W28/W29 behavior, role/assurance change and confirmed central logout are
-accepted. Entitlement revocation, duplicate delivery, outage/retry recovery and continuous retry operation remain.
-Vercel Hobby cannot continuously schedule the staging retry worker; production signing additionally requires the
-approved KMS/HSM adapter.
-
-The plain-language sequence from current staging through enterprise production is maintained in the
-[`enterprise-readiness roadmap`](enterprise-readiness-roadmap.md).
+The [enterprise-readiness roadmap](enterprise-readiness-roadmap.md) maintains the complete production path.
 
 ## Cross-chat handoff protocol
 

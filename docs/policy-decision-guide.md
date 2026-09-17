@@ -377,3 +377,18 @@ the launch control or provision the identity to Flow.
 more-restrictive-wins rule remains: a future `SENSITIVE` application classification would still require TOTP. This
 approval does not classify `UNIT_HEAD`, `DIVISION_HEAD`, `DIRECTOR`, `DG`, `DG_SECRETARY`, `RECORDS_ADMIN`,
 `SYSTEM_ADMIN` or any future role. See D42 in the decision register and the ITF Flow OFFICER assurance directive.
+
+### D43 — Lost/replaced authenticator and recovery approval
+
+**Use case:** An administrator loses the only phone holding their TOTP factor. Email and password alone cannot safely
+authorize removing that factor; a stolen phone's copied secret may also remain usable after an app transfer.
+
+**Please provide:** Approved identity-proofing evidence and reset approvers, whether old-factor-authenticated voluntary
+migration and recovery codes/backups are permitted, how stolen factors and sessions are invalidated, notification/audit
+requirements and the independent route when the only administrator is locked out.
+
+**Recommended design, not approved policy:** password plus fresh old TOTP for voluntary replacement; independent
+identity proofing and separately authorized lost-factor recovery; verify a newly bound secret before replacing the old
+one; revoke old-factor use and affected sessions; notify and audit. Privileged users must not self-approve recovery.
+No reset is implemented until ITF approves these controls. See the
+[current support procedure and limitations](runbooks/authenticator-loss-and-replacement.md).

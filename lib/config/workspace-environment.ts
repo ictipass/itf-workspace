@@ -1,3 +1,5 @@
+import { stagingAcceptanceConfigurationIssues } from "../integrations/staging-acceptance-policy";
+
 export type WorkspaceEnvironmentMode =
   | "development"
   | "test"
@@ -971,6 +973,7 @@ export function validateWorkspaceRuntimeEnvironment(
     }
   }
 
+  issues.push(...stagingAcceptanceConfigurationIssues(environment));
   throwIfInvalid(issues);
 
   return {
