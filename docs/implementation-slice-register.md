@@ -111,6 +111,10 @@ result. Repository code, migrations and commits remain the final implementation 
 
 ## Current execution order
 
+Latest verified delivery (2026-09-17): W39 — Workspace `c992230`, Flow `9577561`; W40 — Workspace `c992230`.
+Both production builds passed; 94 Workspace and 33 Flow security regressions passed. Deployment/staging recovery and
+single-user onboarding acceptance remain pending, not implied by these commits.
+
 1. Redeploy W37 follow-up `ec760ee` and accept the expired-fresh-TOTP revocation recovery in Workspace staging.
 2. Complete A01-05 entitlement revocation acceptance in staging.
 3. Implement the controlled A01-06/A01-07 staging diagnostic, then exercise duplicate delivery and outage/retry recovery.

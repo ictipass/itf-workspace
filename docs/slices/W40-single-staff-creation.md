@@ -2,6 +2,8 @@
 
 Status: **Implemented; staging acceptance pending**
 
+Implementation commit: Workspace `c992230`.
+
 ## Practical effect and policy boundary
 
 ICT can add one HR-confirmed staff member without creating a CSV. This is an alternative data-entry method under

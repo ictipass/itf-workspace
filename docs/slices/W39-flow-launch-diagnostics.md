@@ -2,7 +2,7 @@
 
 Status: **Implemented; staging diagnosis/acceptance pending**
 
-Flow implementation commit: `9577561`. Workspace preflight is delivered alongside W40 in repository history.
+Implementation commits: Flow `9577561`; Workspace read-only preflight `c992230` (delivered alongside W40).
 
 ## Purpose and changes
 
