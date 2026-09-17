@@ -65,8 +65,8 @@ result. Repository code, migrations and commits remain the final implementation 
 
 | ID | Slice | Status | Evidence / remaining gate |
 |---|---|---|---|
-| W41 | Authenticator and directory support | Implemented locally; live acceptance pending | 100 Workspace regressions/full verification passed; expandable Admin Help procedures, recovery gap/D43 and directory-sync steps; A01-05 accepted 2026-09-17. See [slice](slices/W41-authenticator-and-directory-support.md) |
-| W42 | Controlled staging lifecycle diagnostic | Implemented locally; live acceptance pending | 100 Workspace/36 Flow regressions and both builds passed; Flow S23E; default-off stage/pin/24-hour window, exact duplicate delivery and filtered durable outage retry. Live A01-06/A01-07 pending. See [slice](slices/W42-controlled-staging-acceptance.md) |
+| W41 | Authenticator and directory support | Implemented; deployment pending | Workspace `b3a9ab5`, Flow `c4cef48`; 100 Workspace regressions/full verification passed; expandable Admin Help procedures, recovery gap/D43 and directory-sync steps; A01-05 accepted 2026-09-17. See [slice](slices/W41-authenticator-and-directory-support.md) |
+| W42 | Controlled staging lifecycle diagnostic | Implemented; staging acceptance pending | Workspace `b3a9ab5`, Flow `c4cef48`; 100 Workspace/36 Flow regressions and both builds passed; Flow S23E; default-off stage/pin/24-hour window, exact duplicate delivery and filtered durable outage retry. Live A01-06/A01-07 pending. See [slice](slices/W42-controlled-staging-acceptance.md) |
 
 ## Phase 2 — scalable access governance
 
@@ -122,6 +122,9 @@ Verified delivery (2026-09-17): W41 support/runbooks and W42/Flow S23E controlle
 verification commands and production builds, 100 Workspace/36 Flow security cases and 57-document checks. No migration
 or new secret is required; live diagnostics were not executed. ITF confirmed A01-05: both browser-profile Flow sessions reject protected pages after
 entitlement removal; Workspace disables launch; OFFICER regrant and synchronization restore launch.
+
+Implementation commits: Workspace `b3a9ab5`; Flow `c4cef48`. Both repositories are committed; paired metadata is
+recorded in this follow-up. Existing W37 expired-TOTP revocation recovery is not independently accepted by A01-05.
 
 1. Deploy both diagnostic implementations, configure the approved ordinary test identity/window, then execute A01-06
    and A01-07 using the [operator procedure](acceptance/A01-staging-diagnostic-operations.md).

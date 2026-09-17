@@ -1,6 +1,7 @@
 # W41 — Authenticator and directory support
 
 Implemented 2026-09-17; documentation and Admin Help change only.
+Commit: Workspace `b3a9ab5`.
 
 Explains authenticator loss, stolen-device containment, controlled app/device migration and the currently missing
 reset/recovery path. D43 records the unresolved approval/identity-proofing rules; no reset capability or MFA bypass is

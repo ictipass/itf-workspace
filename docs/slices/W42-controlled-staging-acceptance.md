@@ -32,7 +32,7 @@ retain acceptance evidence. Continuous outbox scheduling and other pilot/product
 ## Delivery evidence
 
 Starting commits: Workspace `ae9649d`, Flow `5a55007`; both worktrees were clean before this operation.
-All uncommitted changes in this delivery belong to W41/W42/S23E.
+Implementation commits: Workspace `b3a9ab5`, Flow `c4cef48`; all changes belong to W41/W42/S23E.
 Workspace `npm run verify`, supplementary final security/lint checks and documentation checks passed:
 100 regressions, 57 Markdown documents, successful production build and complete organization-workbook runtime traces.
 Flow has 36 passing security cases; paired full-build evidence is recorded in the implementation register on commit.
