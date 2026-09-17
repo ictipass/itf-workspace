@@ -58,8 +58,8 @@ result. Repository code, migrations and commits remain the final implementation 
 | W36 | Living developer and administrator documentation | Implemented | `2124c81`; maintained documentation hub, developer architecture/configuration guide, admin/support guide, staff and child-app onboarding runbooks, troubleshooting, documentation governance and a build-enforced internal-link/required-document check. No migration, environment or application UI change. See [`slices/W36-living-documentation.md`](slices/W36-living-documentation.md) |
 | W37 | Application administration usability and fresh-MFA recovery | Implemented; primary staging acceptance passed, corrective redeployment required | `7344aca`, revocation correction `ec760ee`; vertical registry/access layouts, database-backed app filter, user search, 25-row pagination and safe authenticator redirects for expired role-policy/revocation mutations. Primary checks passed 2026-09-14; revoke recovery awaits redeployment. Credential reissue remains gated by D10/W25. No migration or configuration. See [`slices/W37-admin-app-access-usability.md`](slices/W37-admin-app-access-usability.md) |
 | W38 | In-product administrator support centre | Implemented; staging redeployment required | `04de237`; protected Admin Help navigation/page with seven expandable operational topics, safe procedures, escalation boundaries and links to relevant screens. No migration or configuration. See [`slices/W38-in-product-administrator-support-centre.md`](slices/W38-in-product-administrator-support-centre.md) |
-| W39 | Flow handoff failure diagnostics | Implemented; staging diagnosis pending | Read-only issuer/key/directory preflight and Flow allow-listed failure stage/code with safe browser UUID reference; one inactive Flow identity observed on 2026-09-17. Actual affected-user causes require fresh deployed evidence. Both builds and 94 Workspace/33 Flow regressions passed. No auth bypass/migration/env change. See [`slices/W39-flow-launch-diagnostics.md`](slices/W39-flow-launch-diagnostics.md) |
-| W40 | HR-confirmed single ordinary-staff creation | Implemented; staging acceptance pending | Add Staff page/action, active organization selectors, HR reference/confirmation, SYSTEM_ADMIN/fresh-TOTP enforcement and shared CSV/manual STAFF-only creation service. 94 regressions and full verification passed. App grants remain separate; post-commit mail failure is reported accurately. W25 lifecycle gates remain. See [`slices/W40-single-staff-creation.md`](slices/W40-single-staff-creation.md) |
+| W39 | Flow handoff failure diagnostics | Implemented; staging launch recovery accepted | Workspace `c992230`, Flow `9577561`; synchronization restored launch, confirmed 2026-09-17. Read-only preflight and safe failure references remain available; diagnostic failure-path acceptance is not implied. Both builds and 94 Workspace/33 Flow regressions passed. No auth bypass/migration/env change. See [`slices/W39-flow-launch-diagnostics.md`](slices/W39-flow-launch-diagnostics.md) |
+| W40 | HR-confirmed single ordinary-staff creation | Implemented; staging happy path accepted | Workspace `c992230`; successful single-user onboarding confirmed 2026-09-17. HR reference/confirmation, SYSTEM_ADMIN/fresh-TOTP enforcement and shared STAFF-only service; app grants remain separate. 94 regressions/full verification passed. Negative/mail-failure staging cases and W25 lifecycle gates remain. See [`slices/W40-single-staff-creation.md`](slices/W40-single-staff-creation.md) |
 
 ## Phase 2 — scalable access governance
 
@@ -112,8 +112,9 @@ result. Repository code, migrations and commits remain the final implementation 
 ## Current execution order
 
 Latest verified delivery (2026-09-17): W39 — Workspace `c992230`, Flow `9577561`; W40 — Workspace `c992230`.
-Both production builds passed; 94 Workspace and 33 Flow security regressions passed. Deployment/staging recovery and
-single-user onboarding acceptance remain pending, not implied by these commits.
+Both production builds passed; 94 Workspace and 33 Flow security regressions passed. ITF subsequently confirmed Flow
+launch recovery after directory synchronization and successful single-user onboarding on 2026-09-17. Diagnostic
+failure-path and additional negative onboarding cases are not independently accepted by this confirmation.
 
 1. Redeploy W37 follow-up `ec760ee` and accept the expired-fresh-TOTP revocation recovery in Workspace staging.
 2. Complete A01-05 entitlement revocation acceptance in staging.
@@ -122,12 +123,12 @@ single-user onboarding acceptance remain pending, not implied by these commits.
 5. Establish continuous outbox retry operation and resolve W05, W06 and W09 before a controlled pilot.
 6. Resolve D15-D30, then implement W10-W18 before repeatable onboarding of additional child apps.
 
-**Immediate priority (2026-09-17):** deploy W39 Flow diagnostics and W40 Workspace single-staff entry, identify each
-reported launch rejection by reference, and restore only approved entitlements through the governed sync workflow.
-Single-staff staging acceptance and Flow launch recovery are not yet confirmed.
+**Immediate priority (2026-09-17):** launch recovery and single-staff onboarding are confirmed. Complete A01-05 using
+the dedicated ordinary staging identity, then implement and execute the controlled A01-06/A01-07 diagnostic.
 
-**Next best implementable slice after recovery:** redeploy W37 follow-up `ec760ee`, verify expired-TOTP revocation recovery, and
-complete A01-05 entitlement revocation acceptance. Then implement the controlled A01-06/A01-07 staging diagnostic.
+**Next best implementable engineering slice:** the controlled A01-06/A01-07 staging diagnostic for duplicate security
+event delivery and receiver outage/retry. A01-05 entitlement revocation acceptance can already be executed using the
+current UI; verify W37 expired-TOTP revocation recovery if that correction has not yet been accepted.
 The continuous retry scheduler remains a controlled-pilot gate. Execute and retain evidence through the
 [`A01 staging lifecycle acceptance runbook`](acceptance/A01-staging-lifecycle-acceptance.md). A resend/reissue action
 must not be implemented until D10 defines identity proofing, authorization, expiry and delivery behavior.

@@ -7,6 +7,9 @@ transaction/input hardening `2463277`; Prisma advisory-lock correction `79aac76`
 
 ## Implemented increment
 
+- Single-user ordinary-staff onboarding was confirmed working in staging on 2026-09-17. This accepts its happy path,
+  not the remaining credential lifecycle or HR reconciliation scope.
+
 - W40 adds HR-confirmed single-staff entry through the same STAFF-only creation/credential lifecycle service. App
   access remains separate. Manual and bulk workflows explicitly report welcome failures after committed creation.
 

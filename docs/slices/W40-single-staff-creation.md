@@ -1,8 +1,14 @@
 # W40 — Single ordinary-staff creation
 
-Status: **Implemented; staging acceptance pending**
+Status: **Implemented; staging onboarding happy path accepted**
 
 Implementation commit: Workspace `c992230`.
+
+## Staging acceptance — 2026-09-17
+
+ITF confirmed that single-user onboarding works successfully in staging. The ordinary-staff creation workflow's happy
+path is accepted. This confirmation is not evidence that each negative/expiry/mail-failure scenario below was exercised,
+and does not close W25's credential-delivery/recovery, privileged-role or HR lifecycle policy gates.
 
 ## Practical effect and policy boundary
 

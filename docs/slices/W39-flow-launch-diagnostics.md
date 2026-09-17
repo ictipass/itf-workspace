@@ -1,8 +1,16 @@
 # W39 — Flow handoff failure diagnostics
 
-Status: **Implemented; staging diagnosis/acceptance pending**
+Status: **Implemented; staging launch recovery accepted; diagnostic failure-path acceptance pending**
 
 Implementation commits: Flow `9577561`; Workspace read-only preflight `c992230` (delivered alongside W40).
+
+## Staging recovery acceptance — 2026-09-17
+
+ITF confirmed that **Synchronize entitled staff to ITF Flow** restored successful Workspace-to-Flow launch. This
+accepts the reported launch recovery through the existing provisioning workflow, consistent with a directory-state
+problem. It does not prove every failed attempt had the same rejection category, nor independently accept the new
+failure-reference/logging path. No signature, MFA, replay or identity check was bypassed. A01-05 through A01-07 remain
+unaccepted; successful resynchronization alone does not accept those lifecycle cases.
 
 ## Purpose and changes
 
