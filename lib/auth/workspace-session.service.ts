@@ -35,6 +35,7 @@ const authenticatedUserSelection = {
   unitId: true,
   positionId: true,
   totpEnrolledAt: true,
+  mfaEnrollmentRequired: true,
 } satisfies Prisma.UserSelect;
 
 type AuthenticatedUserRecord = Prisma.UserGetPayload<{
@@ -70,6 +71,7 @@ function toAuthUser(
     unitId: user.unitId,
     positionId: user.positionId,
     totpEnrolledAt: user.totpEnrolledAt,
+    mfaEnrollmentRequired: user.mfaEnrollmentRequired,
     workspaceSessionId: session.id,
     workspaceSessionIdleExpiresAt: session.idleExpiresAt,
     workspaceSessionAbsoluteExpiresAt: session.absoluteExpiresAt,

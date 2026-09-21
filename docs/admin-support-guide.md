@@ -21,6 +21,7 @@ that general workflow is not yet complete. Never change roles directly in the da
 - **Dashboard**: summary and entry to the staff catalogue.
 - **My Apps**: all active registered apps; unavailable apps remain visible and disabled.
 - **My Sessions**: view and terminate the current user's Workspace sessions.
+- **Authenticator Security**: replace a working authenticator and regenerate one-time recovery codes.
 - **Organization Setup**: offices, departments, divisions, units, positions and controlled bulk organization import.
 - **Manage Apps**: register applications in the top panel, then review the full-width registry table below it; edit
   metadata and classify child roles.
@@ -31,6 +32,8 @@ that general workflow is not yet complete. Never change roles directly in the da
 - **Audit Logs**: review administrative and security events.
 - **Admin Help**: expand categorized operational procedures, follow safe resolution steps and identify when escalation
   is required.
+- **MFA Recovery**: visible to system administrators and appointed recovery authorities; records D43 identity
+  verification, approval and execution without exposing secrets.
 
 ## In-product help
 
@@ -144,6 +147,17 @@ absolute session expiry are server-enforced. Child-app activity does not keep Wo
 - Sensitive apps/roles and privileged Workspace roles require authenticator-app TOTP.
 - Email is a notification/recovery channel, not an MFA factor.
 - Never request a user's password, temporary password, QR provisioning URI, setup key or TOTP code.
+
+Initial and recovered TOTP enrollment displays ten one-time recovery codes once. Users store them outside the current
+device. **Authenticator Security** supports replacement with the current password, fresh old TOTP and verification of
+the new secret. A saved code plus password supports self-recovery; invalid attempts are temporarily locked. Both paths
+invalidate the prior factor/codes, terminate all Workspace and connected-child sessions and issue a security notice.
+
+Without a valid factor/code, follow the [D43 recovery runbook](runbooks/authenticator-loss-and-replacement.md): in-person
+HR verification; different SYSTEM_ADMIN execution for ordinary staff; additional independent ICT Security approval for
+privileged users; and the appointed ICT Recovery Operator for a locked-out sole administrator. Set up three distinct
+authority holders and rehearse this path before production. Assisted authenticator recovery does not reset a forgotten
+password.
 
 General lost-password recovery and governed temporary-credential reissue remain open under D10. Escalate these cases
 to the authorized ICT/security owner; do not create an informal bypass.

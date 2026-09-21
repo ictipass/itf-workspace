@@ -14,6 +14,7 @@ export type MfaActionState = {
   secret?: string;
   qrCodeDataUrl?: string;
   expiresAt?: string;
+  recoveryCodes?: string[];
 };
 
 function safeReturnTo(value: FormDataEntryValue | null) {
@@ -55,15 +56,15 @@ export async function confirmEnrollmentAction(
   const context = await getCurrentSessionContext();
   if (!context) return { error: "Your Workspace session is no longer active." };
   try {
-    await confirmTotpEnrollment({
+    const result = await confirmTotpEnrollment({
       userId: context.user.id,
       workspaceSessionId: context.session.id,
       code: String(formData.get("code") ?? ""),
     });
+    return { recoveryCodes: result.recoveryCodes };
   } catch (error) {
     return { error: error instanceof Error ? error.message : "Enrollment failed." };
   }
-  redirect(safeReturnTo(formData.get("returnTo")));
 }
 
 export async function verifyMfaAction(

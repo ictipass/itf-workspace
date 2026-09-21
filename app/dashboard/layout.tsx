@@ -10,6 +10,7 @@ import {
   ClipboardList,
   MonitorSmartphone,
   BookOpenText,
+  KeyRound,
 } from "lucide-react";
 import { WorkspaceRole } from "@/lib/generated/prisma/client";
 import { Button } from "@/components/ui/button";
@@ -19,6 +20,7 @@ import { getCurrentSessionContext } from "@/lib/auth/current-user";
 import { resolveWorkspaceSessionPolicy } from "@/lib/config/workspace-environment";
 import { SessionActivityMonitor } from "@/components/session-activity-monitor";
 import { signOutWorkspaceAndAppsAction } from "@/app/logout/actions";
+import { prisma } from "@/lib/prisma";
 
 export default async function DashboardLayout({
   children,
@@ -30,6 +32,10 @@ export default async function DashboardLayout({
 
   if (!user) {
     redirect("/login");
+  }
+
+  if (user.mfaEnrollmentRequired) {
+    redirect("/mfa/enroll?returnTo=/dashboard");
   }
 
   const privileged =
@@ -52,6 +58,10 @@ export default async function DashboardLayout({
 
   const isSystemAdmin =
     user.workspaceRole === WorkspaceRole.SYSTEM_ADMIN;
+  const hasRecoveryAuthority = isSystemAdmin || Boolean(await prisma.mfaRecoveryAuthority.findFirst({
+    where: { userId: user.id, revokedAt: null },
+    select: { id: true },
+  }));
   const sessionPolicy = resolveWorkspaceSessionPolicy();
 
   return (
@@ -85,6 +95,16 @@ export default async function DashboardLayout({
           <NavItem href="/dashboard/sessions" icon={<MonitorSmartphone className="h-4 w-4" />}>
             My Sessions
           </NavItem>
+
+          <NavItem href="/dashboard/security/authenticator" icon={<KeyRound className="h-4 w-4" />}>
+            Authenticator Security
+          </NavItem>
+
+          {hasRecoveryAuthority ? (
+            <NavItem href="/dashboard/admin/mfa-recovery" icon={<ShieldCheck className="h-4 w-4" />}>
+              MFA Recovery
+            </NavItem>
+          ) : null}
 
           {isSystemAdmin ? (
             <>

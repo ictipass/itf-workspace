@@ -164,14 +164,13 @@ after a role, status or assurance increase and must relaunch through Workspace.
 
 A01's code implementation, environment-separated staging configuration, provisioning, first launch, replay rejection,
 role/assurance change, confirmed central logout and entitlement revocation are accepted.
-The slice remains In progress until the remaining lifecycle scenarios and a continuous retry scheduler are accepted.
-Gate A is therefore not formally met, and Workspace is not yet approved for an ITF Flow pilot.
+The finite staging lifecycle is accepted. Gate A is met for integrated staging; a continuous retry scheduler and the
+remaining Gate B controls are still required before an ITF Flow pilot.
 
 On 2026-09-17, ITF confirmed A01-05: both browser-profile Flow sessions reject protected pages after Workspace
 revocation; Workspace retains Flow with disabled launch; OFFICER regrant and synchronization restore launch.
 
-Next action: deploy W42/Flow S23E, configure the approved short-lived staging pin/window and execute A01-06/A01-07
-through the [controlled diagnostic procedure](../acceptance/A01-staging-diagnostic-operations.md). Do not alter the only
-recoverable administrator. Finite manual outage/retry acceptance does not satisfy continuous scheduling. Use the
-[`A01 staging lifecycle acceptance runbook`](../acceptance/A01-staging-lifecycle-acceptance.md) and do not retain launch
-assertions as evidence.
+On 2026-09-21, ITF reported A01-06 duplicate delivery and A01-07 outage/retry recovery successful. Finite manual
+outage/retry acceptance does not satisfy continuous scheduling. Use the
+[`A01 staging lifecycle acceptance runbook`](../acceptance/A01-staging-lifecycle-acceptance.md) for retained boundaries
+and do not retain launch assertions as evidence.

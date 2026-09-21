@@ -1,6 +1,6 @@
 # A01 staging lifecycle acceptance runbook
 
-Status: In progress — provisioning/launch, W27-W29, replay, role change, assurance increase, central logout and entitlement revocation accepted; A01-06/A01-07 pending
+Status: **Finite staging lifecycle accepted** — A01-01 through A01-07 passed; continuous scheduling remains a separate pilot gate
 Environment: Dedicated ITF Workspace and ITF Flow staging only
 
 ## Purpose
@@ -201,10 +201,12 @@ W42/Flow S23E implement the narrowly scoped diagnostic at
 The operator checklist is:
 
 - [ ] Start with one active test entitlement and Flow session.
-- [ ] Run the diagnostic once for A01-06; do not manually repeat or modify its payload.
-- [ ] Confirm both receiver calls are accepted and the second is marked duplicate.
-- [ ] Confirm the Flow session is revoked once and no duplicate durable side effect or server error appears.
-- [ ] Regrant/synchronize the test identity if the diagnostic used entitlement revocation, then prove launch succeeds.
+- [x] Run the diagnostic once for A01-06; do not manually repeat or modify its payload.
+- [x] Confirm both receiver calls are accepted and the second is marked duplicate.
+- [x] Confirm the Flow session is revoked once and no duplicate durable side effect or server error appears.
+- [x] Regrant/synchronize the test identity if the diagnostic used entitlement revocation, then prove launch succeeds.
+
+Acceptance: **Passed, reported by the super administrator on 2026-09-21.**
 
 ## A01-07 — Receiver outage and retry recovery
 
@@ -225,13 +227,15 @@ receiver side effects. Follow the [exact configuration and retry steps](A01-stag
 
 The operator checklist is:
 
-- [ ] Start with an active test entitlement and Flow session; record the approved maintenance window.
-- [ ] Select A01-07 on **Staging integration acceptance** and explicitly confirm diagnostic revocation there.
-- [ ] Confirm Workspace immediately disables launch even though Flow event delivery failed.
-- [ ] Confirm the event is durable in `RETRY`, with a bounded next-attempt time; do not edit the outbox row.
-- [ ] Check/retry the recorded event without a failure header after its displayed due time.
-- [ ] Confirm the same event reaches `DELIVERED`, the Flow session ends and direct/Workspace relaunch remains denied.
-- [ ] Regrant `OFFICER`, synchronize the directory and prove normal launch recovery.
+- [x] Start with an active test entitlement and Flow session; record the approved maintenance window.
+- [x] Select A01-07 on **Staging integration acceptance** and explicitly confirm diagnostic revocation there.
+- [x] Confirm Workspace immediately disables launch even though Flow event delivery failed.
+- [x] Confirm the event is durable in `RETRY`, with a bounded next-attempt time; do not edit the outbox row.
+- [x] Check/retry the recorded event without a failure header after its displayed due time.
+- [x] Confirm the same event reaches `DELIVERED`, the Flow session ends and direct/Workspace relaunch remains denied.
+- [x] Regrant `OFFICER`, synchronize the directory and prove normal launch recovery.
+
+Acceptance: **Passed, reported by the super administrator on 2026-09-21.**
 
 A manual successful retry on Vercel Hobby closes the finite A01-07 staging case only. Its once-per-day cron cannot
 meet continuous revocation operations; a production-capable scheduler remains a separate Gate B/production blocker.
@@ -249,6 +253,6 @@ meet continuous revocation operations; a production-capable scheduler remains a 
 
 ## Completion rule
 
-Gate A remains **Not met** until A01-06 and A01-07 have accepted evidence. Vercel Hobby's daily
-cron remains insufficient for continuous retry operation; a successful authorized manual A01-07 invocation proves
-only finite staging recovery, not the controlled-pilot scheduler gate.
+Gate A is **met for integrated staging**: A01-01 through A01-07 have accepted results. Vercel Hobby's daily cron remains
+insufficient for continuous retry operation; the successful authorized manual A01-07 invocation proves finite staging
+recovery, not the controlled-pilot scheduler gate.

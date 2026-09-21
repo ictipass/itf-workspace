@@ -45,6 +45,10 @@ export async function requireCurrentUser() {
   const context = await requireAuthenticatedSessionContext();
   const { user } = context;
 
+  if (user.mfaEnrollmentRequired) {
+    throw new Error("MFA_ENROLLMENT_REQUIRED");
+  }
+
   if (
     (user.workspaceRole === WorkspaceRole.SYSTEM_ADMIN ||
       user.workspaceRole === WorkspaceRole.APP_ADMIN) &&
@@ -59,6 +63,7 @@ export async function requireCurrentUser() {
 export async function requireFreshMfaContext() {
   const context = await getCurrentSessionContext();
   if (!context) throw new Error("UNAUTHENTICATED");
+  if (context.user.mfaEnrollmentRequired) throw new Error("MFA_ENROLLMENT_REQUIRED");
   const { stepUpSeconds } = resolveWorkspaceLaunchV2Configuration();
   if (!hasFreshMfa(context.session.mfaAuthenticatedAt, stepUpSeconds)) {
     throw new Error("FRESH_MFA_REQUIRED");

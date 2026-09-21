@@ -14,6 +14,7 @@ export type AuthoritativeWorkspaceUserRecord = {
   unitId?: string | null;
   positionId?: string | null;
   totpEnrolledAt?: Date | null;
+  mfaEnrollmentRequired: boolean;
 };
 
 export type CurrentWorkspaceUser = {
@@ -30,6 +31,7 @@ export type CurrentWorkspaceUser = {
   unitId?: string | null;
   positionId?: string | null;
   totpEnrolledAt?: Date | null;
+  mfaEnrollmentRequired: boolean;
 };
 
 export function resolveAuthoritativeWorkspaceUser(
@@ -51,5 +53,6 @@ export function resolveAuthoritativeWorkspaceUser(
     unitId: user.unitId,
     positionId: user.positionId,
     totpEnrolledAt: user.totpEnrolledAt,
+    mfaEnrollmentRequired: user.mfaEnrollmentRequired,
   };
 }

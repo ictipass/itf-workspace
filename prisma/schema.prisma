@@ -81,6 +81,17 @@ enum AuditAction {
   SESSION_TERMINATED
   MFA_ENROLLED
   MFA_VERIFIED
+  MFA_RECOVERY_CODES_REGENERATED
+  MFA_REPLACEMENT_STARTED
+  MFA_REPLACED
+  MFA_RECOVERY_AUTHORITY_GRANTED
+  MFA_RECOVERY_AUTHORITY_REVOKED
+  MFA_RECOVERY_REQUEST_CREATED
+  MFA_RECOVERY_REQUEST_APPROVED
+  MFA_RECOVERY_REQUEST_REJECTED
+  MFA_RECOVERY_COMPLETED
+  SECURITY_NOTIFICATION_SENT
+  SECURITY_NOTIFICATION_FAILED
   APP_ROLE_POLICY_CREATED
   APP_ROLE_POLICY_UPDATED
 }
@@ -94,6 +105,22 @@ enum WorkspaceSessionRevocationReason {
   IDLE_TIMEOUT
   ABSOLUTE_TIMEOUT
   SESSION_LIMIT_RECOVERY
+  MFA_REPLACED
+  MFA_RECOVERY
+}
+
+enum MfaRecoveryAuthorityRole {
+  HR_IDENTITY_VERIFIER
+  ICT_SECURITY_APPROVER
+  ICT_RECOVERY_OPERATOR
+}
+
+enum MfaRecoveryRequestStatus {
+  PENDING_SECURITY_APPROVAL
+  APPROVED
+  REJECTED
+  COMPLETED
+  EXPIRED
 }
 
 enum IntegrationOutboxEventType {
@@ -143,17 +170,87 @@ model User {
   auditLogs             AuditLog[]
   workspaceSessions     WorkspaceSession[]
   sessionRecoveryGrants WorkspaceSessionRecoveryGrant[]
+  mfaRecoveryCodes      MfaRecoveryCode[]
+  mfaRecoveryAuthority  MfaRecoveryAuthority? @relation("MfaRecoveryAuthoritySubject")
+  mfaAuthorityGrants    MfaRecoveryAuthority[] @relation("MfaRecoveryAuthorityGrantor")
+  mfaRecoveryTargets    MfaRecoveryRequest[]   @relation("MfaRecoveryTarget")
+  mfaIdentityChecks     MfaRecoveryRequest[]   @relation("MfaRecoveryIdentityVerifier")
+  mfaSecurityApprovals  MfaRecoveryRequest[]   @relation("MfaRecoverySecurityApprover")
+  mfaRecoveryExecutions MfaRecoveryRequest[]   @relation("MfaRecoveryExecutor")
 
   totpSecretCiphertext        String?
   totpEnrolledAt              DateTime?
   totpPendingSecretCiphertext String?
   totpPendingExpiresAt        DateTime?
   totpLastUsedCounter         BigInt?
+  mfaEnrollmentRequired       Boolean   @default(false)
+  mfaRecoveryFailedAttempts   Int       @default(0)
+  mfaRecoveryLockedUntil      DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([supervisorId, status])
+}
+
+model MfaRecoveryCode {
+  id       String @id @default(cuid())
+  codeHash String @unique
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  consumedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([userId, consumedAt])
+}
+
+model MfaRecoveryAuthority {
+  id   String                   @id @default(cuid())
+  role MfaRecoveryAuthorityRole
+
+  userId String @unique
+  user   User   @relation("MfaRecoveryAuthoritySubject", fields: [userId], references: [id], onDelete: Cascade)
+
+  grantedById String
+  grantedBy   User   @relation("MfaRecoveryAuthorityGrantor", fields: [grantedById], references: [id])
+
+  approvalReference String
+  grantedAt         DateTime  @default(now())
+  revokedAt         DateTime?
+
+  @@index([role, revokedAt])
+}
+
+model MfaRecoveryRequest {
+  id     String                   @id @default(cuid())
+  status MfaRecoveryRequestStatus
+
+  targetUserId String
+  targetUser   User   @relation("MfaRecoveryTarget", fields: [targetUserId], references: [id], onDelete: Cascade)
+
+  identityVerifiedById String
+  identityVerifiedBy   User   @relation("MfaRecoveryIdentityVerifier", fields: [identityVerifiedById], references: [id])
+  identityVerificationReference String
+  identityVerifiedAt            DateTime @default(now())
+
+  securityApprovedById String?
+  securityApprovedBy   User?    @relation("MfaRecoverySecurityApprover", fields: [securityApprovedById], references: [id])
+  securityApprovalReference String?
+  securityApprovedAt        DateTime?
+
+  executedById String?
+  executedBy   User?    @relation("MfaRecoveryExecutor", fields: [executedById], references: [id])
+  executedAt   DateTime?
+
+  rejectionReason String?
+  expiresAt       DateTime
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([targetUserId, status])
+  @@index([status, expiresAt])
 }
 
 model WorkspaceSession {

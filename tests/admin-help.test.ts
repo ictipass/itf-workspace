@@ -35,13 +35,14 @@ describe("in-product administrator support centre", () => {
       assert.equal(ids.has(required), true, required);
     }
   });
-  test("documents factor-loss gaps and exact Flow synchronization steps without promising a reset", () => {
+  test("documents governed factor recovery and exact Flow synchronization steps", () => {
     const entries = ADMIN_HELP_TOPICS.flatMap((topic) => topic.entries);
     const loss = entries.find((entry) => entry.title.includes("phone was lost"));
     const sync = entries.find((entry) => entry.title === "Synchronize entitled staff to ITF Flow");
     assert.ok(loss);
-    assert.match(loss.steps.join(" "), /no recovery codes or supported authenticator reset/);
-    assert.match(loss.escalation ?? "", /D43/);
+    assert.match(loss.steps.join(" "), /HR Identity Verifier/);
+    assert.equal(loss.href, "/dashboard/admin/mfa-recovery");
+    assert.match(loss.escalation ?? "", /independent authority/);
     assert.ok(sync);
     assert.equal(sync.href, "/dashboard/admin/users/import");
     assert.match(sync.steps.join(" "), /all active Flow entitlements/);

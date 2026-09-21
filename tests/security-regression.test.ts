@@ -3,9 +3,20 @@ import { describe, test } from "node:test";
 
 import { resolveAuthoritativeWorkspaceUser } from "../lib/auth/authoritative-user";
 import { normalizeAppLaunchUrl } from "../lib/apps/launch-url";
-import { UserStatus, WorkspaceRole } from "../lib/generated/prisma/client";
+import { MfaRecoveryAuthorityRole, MfaRecoveryRequestStatus, UserStatus, WorkspaceRole } from "../lib/generated/prisma/client";
 import { appendWorkspaceLaunchToken } from "../lib/apps/launch-url";
 import { canReplaceTemporaryPassword } from "../lib/auth/credential-transition-policy";
+import {
+  generateMfaRecoveryCode,
+  hashMfaRecoveryCode,
+  normalizeMfaRecoveryCode,
+} from "../lib/security/mfa-recovery-code";
+import {
+  assertIndependentRecoveryExecutor,
+  assertIndependentSecurityApprover,
+  canExecuteRecovery,
+  initialRecoveryStatus,
+} from "../lib/auth/mfa-recovery-policy";
 
 const activeUser = {
   id: "user-1",
@@ -20,6 +31,7 @@ const activeUser = {
   divisionId: "division-1",
   unitId: "unit-1",
   positionId: "position-1",
+  mfaEnrollmentRequired: false,
 };
 
 
@@ -76,6 +88,7 @@ describe("authoritative current-user policy", () => {
       unitId: activeUser.unitId,
       positionId: activeUser.positionId,
       totpEnrolledAt: undefined,
+      mfaEnrollmentRequired: false,
     });
   });
 
@@ -91,6 +104,41 @@ describe("authoritative current-user policy", () => {
         workspaceRole
       );
     }
+  });
+});
+
+describe("MFA recovery codes", () => {
+  test("generates user-friendly codes with at least 96 bits of randomness", () => {
+    const codes = Array.from({ length: 20 }, generateMfaRecoveryCode);
+    assert.equal(new Set(codes).size, codes.length);
+    for (const code of codes) assert.match(code, /^(?:[A-F0-9]{4}-){5}[A-F0-9]{4}$/);
+  });
+
+  test("normalizes separators but binds stored hashes to the user", () => {
+    const code = "ABCD-1234-EF56-7890-ABCD-1234";
+    assert.equal(normalizeMfaRecoveryCode(code.toLowerCase()), "ABCD1234EF567890ABCD1234");
+    assert.equal(hashMfaRecoveryCode("user-1", code), hashMfaRecoveryCode("user-1", code.replaceAll("-", " ")));
+    assert.notEqual(hashMfaRecoveryCode("user-1", code), hashMfaRecoveryCode("user-2", code));
+  });
+});
+
+describe("D43 recovery responsibility policy", () => {
+  test("ordinary recovery skips security approval while privileged recovery requires it", () => {
+    assert.equal(initialRecoveryStatus(WorkspaceRole.STAFF), MfaRecoveryRequestStatus.APPROVED);
+    assert.equal(initialRecoveryStatus(WorkspaceRole.APP_ADMIN), MfaRecoveryRequestStatus.PENDING_SECURITY_APPROVAL);
+    assert.equal(initialRecoveryStatus(WorkspaceRole.SYSTEM_ADMIN), MfaRecoveryRequestStatus.PENDING_SECURITY_APPROVAL);
+  });
+
+  test("rejects self-approval and actor overlap", () => {
+    assert.throws(() => assertIndependentSecurityApprover({ actorId: "target", targetUserId: "target", identityVerifierId: "hr" }), /independent/);
+    assert.throws(() => assertIndependentSecurityApprover({ actorId: "hr", targetUserId: "target", identityVerifierId: "hr" }), /independent/);
+    assert.throws(() => assertIndependentRecoveryExecutor({ actorId: "security", targetUserId: "target", identityVerifierId: "hr", securityApproverId: "security" }), /independent/);
+  });
+
+  test("allows SYSTEM_ADMIN or the appointed sole-admin recovery operator to execute", () => {
+    assert.equal(canExecuteRecovery(WorkspaceRole.SYSTEM_ADMIN), true);
+    assert.equal(canExecuteRecovery(WorkspaceRole.STAFF, MfaRecoveryAuthorityRole.ICT_RECOVERY_OPERATOR), true);
+    assert.equal(canExecuteRecovery(WorkspaceRole.STAFF, MfaRecoveryAuthorityRole.HR_IDENTITY_VERIFIER), false);
   });
 });
 

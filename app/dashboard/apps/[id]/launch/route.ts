@@ -12,6 +12,9 @@ type Props = { params: Promise<{ id: string }> };
 export async function GET(_request: Request, { params }: Props) {
   const context = await getCurrentSessionContext();
   if (!context) redirect("/login");
+  if (context.user.mfaEnrollmentRequired) {
+    redirect(`/mfa/enroll?returnTo=${encodeURIComponent("/dashboard/apps")}`);
+  }
 
   const { id } = await params;
   const access = await prisma.appAccess.findFirst({

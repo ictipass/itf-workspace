@@ -1,64 +1,71 @@
-# Authenticator loss and replacement
+# Authenticator loss, replacement and recovery
 
-Status: **Support guidance for current behavior; recovery/rotation implementation gated by D43**
+Status: **D43 approved; W43 governed recovery implemented, staging acceptance pending**
 
-## What changes when the phone/app changes?
+Workspace stores an encrypted TOTP secret; the authenticator stores the matching secret. A new phone, SIM or app does
+not recreate it. Staff identity, organization placement and app grants remain intact when an authenticator changes.
+Never downgrade a sensitive role, edit MFA columns or rotate the deployment encryption key to bypass recovery.
 
-Workspace stores an encrypted TOTP secret for the staff account. The authenticator holds the matching secret and
-generates codes locally. Installing a new app or changing phone number/SIM does not register that secret automatically.
-The staff identity, password, organization assignments and app entitlements are not deleted by loss of a phone.
+## Prepare recovery before loss
 
-Required MFA is still enforced: Workspace administrators and sensitive-app/role access need TOTP. Standard ordinary
-access remains governed by D05; loss is not permission to downgrade a sensitive role. An existing signed-in session is
-not permanent recovery and must not be used as a loophole. Password changes do not replace the TOTP secret.
+1. Open **Authenticator Security** after enrolling TOTP.
+2. Generate a recovery-code set after fresh TOTP verification.
+3. Store the once-displayed codes outside the current phone in an ICT-approved password manager or sealed secure
+   record. Do not store them in email, screenshots, chat or a support ticket.
+4. Generating a new set invalidates every unused code in the old set. Each code can be used once.
 
-## Current implementation limits
+## Replace a working authenticator
 
-- No Workspace recovery codes, extra independently bound authenticators or approved break-glass UI.
-- No self-service TOTP replacement, server-side rotation or administrator MFA-reset workflow.
-- `/mfa/enroll` does not overwrite an already enrolled factor; it redirects to verification.
-- Email is notification/recovery communication, not an approved MFA factor or sufficient identity proof by itself.
-- Copying/restoring the same authenticator entry copies the same secret; it cannot revoke the old device separately.
+1. Keep the old authenticator available and open **Authenticator Security**.
+2. Enter the current Workspace password and a fresh code from the old authenticator.
+3. Scan the new QR code (or privately enter its setup key) in the new authenticator.
+4. Enter a code from the new authenticator. Workspace does not replace the old secret until this succeeds.
+5. Store the new recovery-code set. Replacement invalidates the old factor/codes, terminates every Workspace session
+   and emits connected-child session revocations. Sign in again.
+6. Confirm the official-email security notice and report an unrecognized replacement immediately.
 
-These are operational gaps, especially if the only administrator loses the authenticator. Support must escalate rather
-than pretend there is a reset button or issue an undocumented SQL bypass. D43 must be approved before implementation.
+## Recover with a saved code
 
-## Lost/stolen/unavailable phone
+1. Sign in with the normal password. At authenticator verification choose **Use a saved recovery code**.
+2. Enter the current password and one unused recovery code. Invalid attempts are rate-limited and temporarily locked.
+3. Successful recovery consumes the code, invalidates the old authenticator/codes and terminates every Workspace and
+   connected-child session.
+4. Sign in again. Workspace forces enrollment and verification of a new authenticator before dashboard access.
+5. Store the newly displayed recovery-code set and confirm the official-email security notice.
 
-1. Report the incident to the approved ICT/security channel. State whether loss/theft/compromise is suspected, but do
-   not provide a QR code, setup secret, six-digit code, password or launch URL.
-2. An available authorized administrator opens **Users → Sessions** for the affected account, terminates affected
-   Workspace sessions and reviews central-to-child event delivery. Suspected compromise follows the approved existing
-   containment workflow, including account deactivation when authorized; session termination alone does not invalidate
-   the lost TOTP secret. On an enabled integration, delivery must be verified, not assumed from the click.
-3. Confirm identity and request recovery approval through ICT/security. The exact proofing evidence, reset approvers,
-   sole-admin exception, factor backup permissions and expiry are unresolved D43 decisions—not invented requirements.
-4. There is currently no supported Workspace reset operation. If an approved vendor backup can restore the entry, ICT
-   must assess it; restored codes do not prove that the old/lost copy is safe or invalidated.
-5. Where loss/compromise calls for a new secret, retain the incident/escalation until a governed replacement is approved
-   and implemented. Do not clear MFA columns, delete/re-import the staff record, downgrade classifications, regenerate
-   `WORKSPACE_MFA_ENCRYPTION_KEY_BASE64` or email old/new secrets as an emergency workaround.
+## Assisted recovery after loss or no valid code
 
-## Planned change while the old authenticator still works
+1. Report loss/theft immediately through the approved ICT/security channel. Do not send any secret.
+2. An appointed HR Identity Verifier identifies the person **in person** against the authoritative HR staff record,
+   opens **MFA Recovery**, records a non-secret HR reference and creates the request.
+3. For ordinary `STAFF`, the request becomes executable without ICT Security approval. For `APP_ADMIN` or
+   `SYSTEM_ADMIN`, a different appointed ICT Security Approver records approval.
+4. A different authorized `SYSTEM_ADMIN` executes recovery. If the only administrator is locked out, the appointed
+   ICT Recovery Operator executes it. The executor cannot be the user, HR verifier or ICT Security approver.
+5. Workspace clears the factor and codes, terminates all sessions, emits child-app revocations, audits the actors and
+   sends an official-email security notice. A notification failure is shown and audited; contact the user through an
+   approved channel rather than repeating recovery.
+6. The user signs in with the existing password and is forced to enroll a new authenticator. Assisted MFA recovery
+   does not reset a forgotten password; that remains D10.
 
-1. Keep the working entry/device. Obtain ICT approval for the new app and permitted migration/backup method.
-2. If that approved vendor combination supports secure entry transfer, follow its official procedure privately. This
-   is authenticator-side transfer, not a Workspace replacement feature. Do not assume cloud synchronization is approved.
-3. Enable automatic time and verify a new Workspace TOTP challenge using the migrated entry. Workspace rejects reuse
-   of an accepted code/time step; wait for a fresh code before a subsequent challenge.
-4. Retire the old device/entry and protect/remove export material under approved procedures only after verification.
-   Transfer retained the same secret. Removing an entry locally is not revocation of an untrusted/retained old copy.
-5. If transfer is unsupported or a fresh secret is needed, do not delete the only working factor; request governed
-   server-side replacement under D43, which is not yet implemented.
+Requests expire after 24 hours. Restart identity verification after expiry. Approval/reference fields must identify
+approved records but contain no personal authentication data.
 
-## Recommended future controls — not approved policy
+## Authority setup and sole-administrator readiness
 
-An implementation should distinguish a voluntary change authorized with password plus recent current TOTP from lost
-factor recovery requiring approved independent identity verification. It should bind/verify a new secret before
-replacement, invalidate the old secret and sessions/step-up, revoke connected app sessions, notify the official address,
-audit approvals and prohibit self-approval of privileged recovery. ITF must decide approvers/proofing, recovery codes or
-secondary factors, vendor/cloud backup rules, and a separately controlled sole-admin recovery procedure.
+A fresh-TOTP `SYSTEM_ADMIN` uses **MFA Recovery** to appoint three different active TOTP-enrolled staff: HR Identity
+Verifier, ICT Security Approver and ICT Recovery Operator. Authority cannot be self-assigned, and one user cannot hold
+multiple active recovery-authority roles. Complete this setup and a staging rehearsal before production; otherwise the
+sole-administrator procedure is not operational.
 
-These recommendations reflect [OWASP MFA lifecycle guidance](https://cheatsheetseries.owasp.org/cheatsheets/Multifactor_Authentication_Cheat_Sheet.html)
-and [NIST authenticator lifecycle management](https://pages.nist.gov/800-63-4/sp800-63b.html). They do not claim NIST
-assurance compliance or override ITF's approved policy. Support escalation must omit authentication secrets.
+## Secondary authenticators and cloud backup
+
+Independent secondary authenticators are permitted by D43 but are not yet implemented as separately revocable
+Workspace factors. Copying the same TOTP secret to several devices is not independent enrollment. Cloud backup is
+permitted only with an ICT-approved provider, organizational account and device-control profile. A restored copied
+secret may still exist on a lost device, so loss or suspected compromise requires the replacement/recovery steps above.
+
+The policy basis is the [D43 directive](../policies/2026-09-21-authenticator-lifecycle-recovery-directive.md). The
+design is informed by [OWASP MFA lifecycle guidance](https://cheatsheetseries.owasp.org/cheatsheets/Multifactor_Authentication_Cheat_Sheet.html)
+and [NIST authenticator lifecycle guidance](https://pages.nist.gov/800-63-4/sp800-63b.html); this does not assert formal
+compliance certification.

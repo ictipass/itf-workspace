@@ -71,13 +71,18 @@ Plain-language scenarios and the information needed to answer every question are
 
 ## D43 — Authenticator loss, replacement and recovery
 
-Status: **Open**. Accountable owners: ITF ICT service desk/security and super administrator.
+Status: **Approved (interim)**. Approving authority: super administrator. Effective date: **2026-09-21**. Reference:
+project architecture directive.
 
-Required: identity-proofing evidence, reset approvers/segregation of duties, voluntary migration requirements,
-recovery-code/backup permissions, response to stolen factors, notification/audit rules and a sole-administrator
-recovery route. D05 remains unchanged. The request for support documentation is not approval of a factor-reset policy.
-The app currently has no supported TOTP reset or recovery-code workflow. See the
-[authenticator runbook](runbooks/authenticator-loss-and-replacement.md).
+Option A is approved: working-factor replacement requires password plus fresh old TOTP and verification of the new
+secret; saved single-use recovery codes are permitted; assisted recovery requires in-person HR verification and a
+different executor. Privileged recovery additionally requires a distinct ICT Security approver. The sole-administrator
+route uses an appointed ICT Recovery Operator after joint HR and ICT Security authorization. Every recovery terminates
+Workspace and connected-child sessions, invalidates the old factor/codes, forces new TOTP enrollment, notifies the
+official email and is audited. Approved cloud backup is conditional and does not replace loss/compromise containment.
+Independent secondary authenticators are permitted but remain a separate implementation increment. D05 is unchanged.
+See the [directive](policies/2026-09-21-authenticator-lifecycle-recovery-directive.md) and
+[operator runbook](runbooks/authenticator-loss-and-replacement.md).
 
 ## Decision procedure
 

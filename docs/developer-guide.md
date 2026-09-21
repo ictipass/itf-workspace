@@ -196,8 +196,10 @@ See [Vercel deployment environments](vercel-deployment-environments.md).
 W42/Flow S23E add a temporary stage/pin/UTC-expiry-gated acceptance profile, not a new general-purpose production API.
 The [diagnostic procedure](acceptance/A01-staging-diagnostic-operations.md) describes fixed receiver endpoints,
 redacted evidence, filtered queue claims and cleanup. No schema migration is required.
-MFA recovery remains gated by D43; no reset is implied by the
-[authenticator support documentation](runbooks/authenticator-loss-and-replacement.md).
+D43 recovery is implemented through hashed single-use recovery codes, verified server-side replacement and a
+database-backed separation-of-duties workflow. Recovery clears the old factor, forces re-enrollment and uses the same
+durable child-session revocation outbox as central logout. See the
+[authenticator lifecycle runbook](runbooks/authenticator-loss-and-replacement.md) and do not add an alternate reset path.
 
 Consult the slice register for details. Major current gaps include login abuse/recovery policy, SSRF policy, security
 headers/deployment topology, full staff lifecycle, scalable access governance, generic connectors, continuous retry

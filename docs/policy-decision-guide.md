@@ -387,8 +387,12 @@ authorize removing that factor; a stolen phone's copied secret may also remain u
 migration and recovery codes/backups are permitted, how stolen factors and sessions are invalidated, notification/audit
 requirements and the independent route when the only administrator is locked out.
 
-**Recommended design, not approved policy:** password plus fresh old TOTP for voluntary replacement; independent
-identity proofing and separately authorized lost-factor recovery; verify a newly bound secret before replacing the old
-one; revoke old-factor use and affected sessions; notify and audit. Privileged users must not self-approve recovery.
-No reset is implemented until ITF approves these controls. See the
-[current support procedure and limitations](runbooks/authenticator-loss-and-replacement.md).
+**Approved interim outcome (2026-09-21):** Option A is approved. Voluntary replacement requires the current password,
+fresh old TOTP and successful verification of the new secret. Password plus a saved single-use recovery code is an
+approved self-service alternative. Lost-factor recovery uses in-person HR verification and a different executor;
+privileged accounts also require a distinct ICT Security approver. An appointed ICT Recovery Operator handles the
+sole-administrator route under the same joint approvals. Recovery invalidates the old factor/codes and all Workspace
+and connected-child sessions, forces new enrollment, notifies and audits. Independently enrolled secondary factors
+are approved for a later implementation; cloud backup is allowed only under an ICT-approved provider/account/device
+profile and never substitutes for replacement after loss or suspected compromise. See the
+[approved directive](policies/2026-09-21-authenticator-lifecycle-recovery-directive.md).

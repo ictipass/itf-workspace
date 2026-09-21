@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getCurrentSessionContext } from "@/lib/auth/current-user";
 import { TotpVerificationForm } from "../mfa-forms";
+import Link from "next/link";
 
 export default async function MfaVerificationPage({ searchParams }: { searchParams: Promise<{ returnTo?: string }> }) {
   const context = await getCurrentSessionContext();
@@ -15,6 +16,9 @@ export default async function MfaVerificationPage({ searchParams }: { searchPara
         <h1 className="text-2xl font-bold tracking-tight">Confirm sensitive access</h1>
         <p className="mt-2 text-sm text-muted-foreground">Enter a current code from your authenticator. Successful step-up remains valid for ten minutes.</p>
         <TotpVerificationForm returnTo={returnTo} />
+        <p className="mt-5 text-center text-sm text-muted-foreground">
+          Authenticator unavailable? <Link className="font-medium text-primary underline" href="/mfa/recover">Use a saved recovery code</Link> or contact support for in-person recovery.
+        </p>
       </div>
     </main>
   );

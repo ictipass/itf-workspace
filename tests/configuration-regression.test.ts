@@ -6,6 +6,7 @@ import {
   resolveItfFlowDirectorySyncConfiguration,
   resolveItfFlowSessionEventConfiguration,
   resolveWorkspaceEmailConfiguration,
+  resolveWorkspaceMfaRecoveryConfiguration,
   resolveWorkspaceServerActionAllowedOrigins,
   resolveWorkspaceSeedConfiguration,
   validateWorkspaceRuntimeEnvironment,
@@ -51,6 +52,11 @@ const validStagingEnvironment = {
 };
 
 describe("Workspace runtime configuration", () => {
+  test("uses bounded configurable MFA recovery throttling", () => {
+    assert.deepEqual(resolveWorkspaceMfaRecoveryConfiguration({}), { maxAttempts: 5, lockMinutes: 30 });
+    assert.deepEqual(resolveWorkspaceMfaRecoveryConfiguration({ WORKSPACE_MFA_RECOVERY_MAX_ATTEMPTS: "7", WORKSPACE_MFA_RECOVERY_LOCK_MINUTES: "60" }), { maxAttempts: 7, lockMinutes: 60 });
+    assert.throws(() => resolveWorkspaceMfaRecoveryConfiguration({ WORKSPACE_MFA_RECOVERY_MAX_ATTEMPTS: "2" }), /WORKSPACE_MFA_RECOVERY_MAX_ATTEMPTS/);
+  });
   test("accepts only exact additional Server Action origins", () => {
     assert.deepEqual(
       resolveWorkspaceServerActionAllowedOrigins({

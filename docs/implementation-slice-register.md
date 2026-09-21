@@ -66,7 +66,8 @@ result. Repository code, migrations and commits remain the final implementation 
 | ID | Slice | Status | Evidence / remaining gate |
 |---|---|---|---|
 | W41 | Authenticator and directory support | Implemented; deployment pending | Workspace `b3a9ab5`, Flow `c4cef48`; 100 Workspace regressions/full verification passed; expandable Admin Help procedures, recovery gap/D43 and directory-sync steps; A01-05 accepted 2026-09-17. See [slice](slices/W41-authenticator-and-directory-support.md) |
-| W42 | Controlled staging lifecycle diagnostic | Implemented; staging acceptance pending | Workspace `b3a9ab5`, Flow `c4cef48`; 100 Workspace/36 Flow regressions and both builds passed; Flow S23E; default-off stage/pin/24-hour window, exact duplicate delivery and filtered durable outage retry. Live A01-06/A01-07 pending. See [slice](slices/W42-controlled-staging-acceptance.md) |
+| W42 | Controlled staging lifecycle diagnostic | Implemented; finite staging acceptance passed | Workspace `b3a9ab5`, Flow `c4cef48`; A01-06 duplicate delivery and A01-07 outage/retry reported successful 2026-09-21. Continuous scheduling remains separate. See [slice](slices/W42-controlled-staging-acceptance.md) |
+| W43 | Governed authenticator lifecycle and recovery | Implemented locally; migration/deployment and staging acceptance pending | D43 Option A; password + old/new TOTP replacement, hashed single-use codes, forced re-enrollment, all-session/child revocation, separated HR/Security/executor workflow, sole-admin recovery operator, notification/audit and support UI/docs. Independent secondary factors remain a later increment. See [slice](slices/W43-governed-authenticator-recovery.md) |
 
 ## Phase 2 — scalable access governance
 
@@ -97,7 +98,7 @@ result. Repository code, migrations and commits remain the final implementation 
 
 | ID | Application slice | Status | Dependency |
 |---|---|---|---|
-| A01 | ITF Flow launch v2, provisioning and revocation integration | In progress | Code complete: Workspace `1a08a5b`, Flow `02b433d`; Flow staging configuration `f48b702` and pooled/direct database hardening `d0199ce`. Database credential rotation, staging boundary, sender configuration, registry, administrator/ordinary-staff provisioning and launch, replay, role change, assurance increase and central logout are accepted. Entitlement revocation is accepted on 2026-09-17; W42/Flow S23E diagnostics exist, but live duplicate-delivery/outage-retry acceptance and continuous scheduling remain. See [`slices/A01-itf-flow-integration-reassessment.md`](slices/A01-itf-flow-integration-reassessment.md) |
+| A01 | ITF Flow launch v2, provisioning and revocation integration | Implemented for integrated staging | Provisioning/launch, replay, role/assurance changes, central logout, entitlement revocation and W42 duplicate/outage recovery are accepted; A01-06/A01-07 passed 2026-09-21. Continuous scheduling remains a pilot/production gate. See [`slices/A01-itf-flow-integration-reassessment.md`](slices/A01-itf-flow-integration-reassessment.md) |
 | A02 | Client Reimbursement staff integration | Planned | A01 lessons plus W17/W21 onboarding contract |
 | A03 | SIWES staff-facing integration | Policy gate | A01; D32 separates staff and external SIWES identities |
 | A04 | PromoIntel staff integration | Planned | A01 lessons plus W17/W21 onboarding contract |
@@ -126,20 +127,20 @@ entitlement removal; Workspace disables launch; OFFICER regrant and synchronizat
 Implementation commits: Workspace `b3a9ab5`; Flow `c4cef48`. Both repositories are committed; paired metadata is
 recorded in this follow-up. Existing W37 expired-TOTP revocation recovery is not independently accepted by A01-05.
 
-1. Deploy both diagnostic implementations, configure the approved ordinary test identity/window, then execute A01-06
-   and A01-07 using the [operator procedure](acceptance/A01-staging-diagnostic-operations.md).
-2. Obtain D43 authenticator-recovery approval before implementing reset, replacement or sole-administrator recovery.
-3. Resolve D10 before temporary-credential reissue and durable onboarding-email delivery under W25.
-4. Establish continuous outbox retries and resolve W05, W06 and W09 before a controlled pilot.
-5. Resolve D15-D30 and implement W10-W18 before repeatable onboarding of additional apps.
+1. Apply and deploy W43, appoint three distinct recovery authority holders, and complete its staged ordinary,
+   privileged and sole-administrator acceptance checklist.
+2. Resolve D10 before temporary-credential reissue and durable onboarding-email delivery under W25.
+3. Establish continuous outbox retries and resolve W05, W06 and W09 before a controlled pilot.
+4. Resolve D15-D30 and implement W10-W18 before repeatable onboarding of additional apps.
 
-**Next best operational step:** execute and accept A01-06/A01-07; local diagnostics/tests do not close their live gates.
-**Next engineering outcome:** governed authenticator recovery after D43 approval, or generic per-app connectors and
-App Access synchronization under W17/W18 once their contracts and dependencies are approved. Do not hard-code more
-Flow-specific buttons to claim generic synchronization.
+**Next best operational step:** deploy/migrate W43 and complete its staging acceptance checklist. A01-06/A01-07 were
+reported successful on 2026-09-21; continuous retry scheduling remains an independent pilot gate.
+**Next engineering outcome:** W43 independent secondary authenticators/durable notification retry, or generic per-app
+connectors and App Access synchronization under W17/W18 once their contracts and dependencies are approved. Do not
+hard-code more Flow-specific buttons to claim generic synchronization.
 
-**Current child-app readiness:** Workspace and Flow are suitable for integrated staging. Gate A remains **Not met**
-until duplicate-delivery and outage/retry evidence is accepted. Continuous retry scheduling remains a pilot gate:
+**Current child-app readiness:** Workspace and Flow have met Gate A for integrated staging, including finite duplicate
+and outage/retry lifecycle tests. Continuous retry scheduling remains a pilot gate:
 Vercel Hobby daily cron is insufficient. Production additionally needs the approved KMS/HSM adapter and remaining
 security, governance and operational approval gates.
 

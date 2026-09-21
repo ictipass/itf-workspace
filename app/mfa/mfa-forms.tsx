@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useActionState } from "react";
 import {
   beginEnrollmentAction,
@@ -17,6 +18,10 @@ export function TotpEnrollmentForm({ returnTo }: { returnTo: string }) {
     confirmEnrollmentAction,
     initialState
   );
+
+  if (confirmation.recoveryCodes) {
+    return <RecoveryCodes codes={confirmation.recoveryCodes} returnTo={returnTo} />;
+  }
 
   if (!challenge.secret) {
     return (
@@ -71,6 +76,23 @@ export function TotpEnrollmentForm({ returnTo }: { returnTo: string }) {
           {confirming ? "Confirming..." : "Confirm enrollment"}
         </button>
       </form>
+    </div>
+  );
+}
+
+export function RecoveryCodes({ codes, returnTo }: { codes: string[]; returnTo: string }) {
+  return (
+    <div className="mt-6 space-y-4">
+      <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950">
+        <strong>Save these one-time recovery codes now.</strong> They will not be shown again. Store them outside
+        this device in an ICT-approved password manager or sealed secure record. Each code works once.
+      </div>
+      <pre className="grid gap-2 rounded-xl border bg-muted p-4 text-center font-mono text-sm sm:grid-cols-2">
+        {codes.map((code) => <span key={code}>{code}</span>)}
+      </pre>
+      <Link href={returnTo} className="block w-full rounded-lg bg-primary px-4 py-2 text-center text-sm font-semibold text-primary-foreground">
+        I have stored the codes securely
+      </Link>
     </div>
   );
 }

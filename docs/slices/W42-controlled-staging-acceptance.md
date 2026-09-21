@@ -1,6 +1,6 @@
 # W42 — Controlled staging acceptance
 
-Implemented 2026-09-17; **live A01-06/A01-07 acceptance pending**. Cross-repository dependency: Flow S23E.
+Implemented 2026-09-17; **live A01-06/A01-07 accepted 2026-09-21**. Cross-repository dependency: Flow S23E.
 
 ## Change and effect
 
@@ -26,8 +26,8 @@ actual staging evidence is separate and must not be inferred from local tests.
 UI effect: diagnostic page under `/dashboard/admin/integrations/acceptance`, linked from Admin Help; ordinary users
 cannot access it. Expired/disabled configuration shows instructions rather than enabling controls.
 
-Next: deploy both commits, explicitly configure the chosen ordinary test account/window, execute A01-06/A01-07 and
-retain acceptance evidence. Continuous outbox scheduling and other pilot/production gates remain unresolved.
+A01-06/A01-07 were reported successful by the super administrator on 2026-09-21. Keep diagnostics disabled outside an
+approved window. Continuous outbox scheduling and other pilot/production gates remain unresolved.
 
 ## Delivery evidence
 
@@ -36,4 +36,5 @@ Implementation commits: Workspace `b3a9ab5`, Flow `c4cef48`; all changes belong 
 Workspace `npm run verify`, supplementary final security/lint checks and documentation checks passed:
 100 regressions, 57 Markdown documents, successful production build and complete organization-workbook runtime traces.
 Flow has 36 passing security cases; paired full-build evidence is recorded in the implementation register on commit.
-No live diagnostic was executed: the test pin, window and operator consent have not been configured by ITF.
+The later live diagnostic acceptance is recorded above; no authentication secret or personal test evidence is retained
+in this repository.

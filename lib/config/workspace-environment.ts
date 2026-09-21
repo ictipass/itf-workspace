@@ -94,6 +94,11 @@ export type WorkspaceSessionPolicyConfiguration = {
   recoveryGrantSeconds: number;
 };
 
+export type WorkspaceMfaRecoveryConfiguration = {
+  maxAttempts: number;
+  lockMinutes: number;
+};
+
 export type WorkspaceServerActionOriginConfiguration = readonly string[];
 
 export type WorkspaceOrganizationImportConfiguration = {
@@ -584,6 +589,16 @@ export function resolveWorkspaceLaunchV2Configuration(
   };
 }
 
+export function resolveWorkspaceMfaRecoveryConfiguration(
+  environment: WorkspaceEnvironmentSource = process.env
+): WorkspaceMfaRecoveryConfiguration {
+  const issues: string[] = [];
+  const maxAttempts = readInteger(environment, "WORKSPACE_MFA_RECOVERY_MAX_ATTEMPTS", 5, 3, 10, issues);
+  const lockMinutes = readInteger(environment, "WORKSPACE_MFA_RECOVERY_LOCK_MINUTES", 30, 5, 1440, issues);
+  throwIfInvalid(issues);
+  return { maxAttempts, lockMinutes };
+}
+
 export function resolveWorkspaceDatabaseUrl(
   environment: WorkspaceEnvironmentSource = process.env
 ) {
@@ -880,6 +895,12 @@ export function validateWorkspaceRuntimeEnvironment(
     issues.push(
       "WORKSPACE_MFA_ENCRYPTION_KEY_BASE64 is required in staging and production."
     );
+  }
+  try {
+    resolveWorkspaceMfaRecoveryConfiguration(environment);
+  } catch (error) {
+    if (error instanceof WorkspaceConfigurationError) issues.push(...error.issues);
+    else throw error;
   }
   if (mfaEncryptionKey) {
     try {
