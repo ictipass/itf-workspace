@@ -67,7 +67,7 @@ result. Repository code, migrations and commits remain the final implementation 
 |---|---|---|---|
 | W41 | Authenticator and directory support | Implemented; deployment pending | Workspace `b3a9ab5`, Flow `c4cef48`; 100 Workspace regressions/full verification passed; expandable Admin Help procedures, recovery gap/D43 and directory-sync steps; A01-05 accepted 2026-09-17. See [slice](slices/W41-authenticator-and-directory-support.md) |
 | W42 | Controlled staging lifecycle diagnostic | Implemented; finite staging acceptance passed | Workspace `b3a9ab5`, Flow `c4cef48`; A01-06 duplicate delivery and A01-07 outage/retry reported successful 2026-09-21. Continuous scheduling remains separate. See [slice](slices/W42-controlled-staging-acceptance.md) |
-| W43 | Governed authenticator lifecycle and recovery | Implemented locally; migration/deployment and staging acceptance pending | D43 Option A; password + old/new TOTP replacement, hashed single-use codes, forced re-enrollment, all-session/child revocation, separated HR/Security/executor workflow, sole-admin recovery operator, notification/audit and support UI/docs. Independent secondary factors remain a later increment. See [slice](slices/W43-governed-authenticator-recovery.md) |
+| W43 | Governed authenticator lifecycle and recovery | Implemented and staging accepted | `7cd5a16`; D43 Option A recovery, session/child-app revocation, separated HR/Security/executor workflow and recovery support UI all passed staging acceptance on 2026-09-23. Independent secondary factors and durable notification retry remain later hardening increments. See [slice](slices/W43-governed-authenticator-recovery.md) |
 
 ## Phase 2 — scalable access governance
 
@@ -127,17 +127,19 @@ entitlement removal; Workspace disables launch; OFFICER regrant and synchronizat
 Implementation commits: Workspace `b3a9ab5`; Flow `c4cef48`. Both repositories are committed; paired metadata is
 recorded in this follow-up. Existing W37 expired-TOTP revocation recovery is not independently accepted by A01-05.
 
-1. Apply and deploy W43, appoint three distinct recovery authority holders, and complete its staged ordinary,
-   privileged and sole-administrator acceptance checklist.
-2. Resolve D10 before temporary-credential reissue and durable onboarding-email delivery under W25.
-3. Establish continuous outbox retries and resolve W05, W06 and W09 before a controlled pilot.
+1. Resolve D08-D11, then implement W05 login abuse protection and authentication security events.
+2. Resolve D12, D13 and D14, then implement W06 SSRF protection and W09 production browser/proxy controls.
+3. Resolve D10 and complete W25 credential lifecycle/durable onboarding delivery; establish continuous outbox retries
+   before a controlled pilot.
 4. Resolve D15-D30 and implement W10-W18 before repeatable onboarding of additional apps.
 
-**Next best operational step:** deploy/migrate W43 and complete its staging acceptance checklist. A01-06/A01-07 were
-reported successful on 2026-09-21; continuous retry scheduling remains an independent pilot gate.
-**Next engineering outcome:** W43 independent secondary authenticators/durable notification retry, or generic per-app
-connectors and App Access synchronization under W17/W18 once their contracts and dependencies are approved. Do not
-hard-code more Flow-specific buttons to claim generic synchronization.
+**Next best operational step:** approve D08-D11 so ITF can begin the login-abuse and security-alert controls required
+for a controlled pilot. A01-06/A01-07 and W43 are accepted; continuous retry scheduling remains an independent pilot
+gate.
+**Next engineering outcome:** W05 login abuse protection and authentication security events after D08-D11 approval.
+W43 independent secondary authenticators/durable notification retry remains a later hardening increment; generic
+per-app connectors remain governed by W17/W18 dependencies. Do not hard-code more Flow-specific buttons to claim
+generic synchronization.
 
 **Current child-app readiness:** Workspace and Flow have met Gate A for integrated staging, including finite duplicate
 and outage/retry lifecycle tests. Continuous retry scheduling remains a pilot gate:

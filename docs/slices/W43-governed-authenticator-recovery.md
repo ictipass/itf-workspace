@@ -1,6 +1,6 @@
 # W43 — Governed authenticator lifecycle and recovery
 
-Status: **Implemented locally; migration/deployment and staging acceptance pending**  
+Status: **Implemented and staging accepted on 2026-09-23**
 Policy: [D43 Option A directive](../policies/2026-09-21-authenticator-lifecycle-recovery-directive.md)
 
 ## Outcome
@@ -37,17 +37,21 @@ No new secret is required.
 
 ## Staging acceptance
 
-- [ ] Apply the migration and redeploy Workspace.
-- [ ] Existing enrolled user generates codes; only one display occurs and regeneration invalidates the old set.
-- [ ] Working-factor replacement rejects bad password/old/new code and succeeds only after all three checks.
-- [ ] Replacement ends all Workspace and Flow sessions, sends notice and allows sign-in with the new factor only.
-- [ ] Saved-code recovery consumes one code, enforces retry lock, ends all sessions and forces new enrollment.
-- [ ] Appoint three different authority holders and confirm self-assignment/multiple-role assignment is rejected.
-- [ ] Ordinary recovery works after HR verification plus different SYSTEM_ADMIN execution without security approval.
-- [ ] Privileged recovery cannot execute without a distinct ICT Security approval and distinct executor.
-- [ ] Sole-administrator rehearsal succeeds only through the appointed ICT Recovery Operator after both approvals.
-- [ ] Expired/rejected/completed requests cannot execute; audit contains actor IDs and non-secret references.
-- [ ] Notification failure does not restore an old factor/session and is visibly reported/audited.
+- [x] Apply the migration and redeploy Workspace.
+- [x] Existing enrolled user generates codes; only one display occurs and regeneration invalidates the old set.
+- [x] Working-factor replacement rejects bad password/old/new code and succeeds only after all three checks.
+- [x] Replacement ends all Workspace and Flow sessions, sends notice and allows sign-in with the new factor only.
+- [x] Saved-code recovery consumes one code, enforces retry lock, ends all sessions and forces new enrollment.
+- [x] Appoint three different authority holders and confirm self-assignment/multiple-role assignment is rejected.
+- [x] Ordinary recovery works after HR verification plus different SYSTEM_ADMIN execution without security approval.
+- [x] Privileged recovery cannot execute without a distinct ICT Security approval and distinct executor.
+- [x] Sole-administrator rehearsal succeeds only through the appointed ICT Recovery Operator after both approvals.
+- [x] Expired/rejected/completed requests cannot execute; audit contains actor IDs and non-secret references.
+- [x] Notification failure does not restore an old factor/session and is visibly reported/audited.
+
+Acceptance: **Passed in ITF staging on 2026-09-23.** This closes the finite W43 recovery acceptance scope. It does
+not add independently enrolled secondary factors or a durable notification-retry worker; those remain later hardening
+increments.
 
 Do not use production identities for these tests. Sanitized evidence must contain no password, TOTP, QR/setup secret or
 recovery code.

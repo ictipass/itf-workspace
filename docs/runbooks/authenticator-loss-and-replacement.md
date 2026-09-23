@@ -1,6 +1,6 @@
 # Authenticator loss, replacement and recovery
 
-Status: **D43 approved; W43 governed recovery implemented, staging acceptance pending**
+Status: **D43 approved; W43 governed recovery implemented and staging accepted 2026-09-23**
 
 Workspace stores an encrypted TOTP secret; the authenticator stores the matching secret. A new phone, SIM or app does
 not recreate it. Staff identity, organization placement and app grants remain intact when an authenticator changes.

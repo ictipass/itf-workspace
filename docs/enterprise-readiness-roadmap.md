@@ -4,24 +4,20 @@ Status: **Living roadmap — Workspace is in integrated ITF Flow staging, not pr
 
 ## Next practical outcome
 
-ITF confirmed A01-05 on 2026-09-17: both browser-profile Flow sessions reject protected pages after revocation,
-Workspace retains a disabled Flow entry, and OFFICER regrant plus synchronization restores launch.
+ITF has accepted A01's finite staging lifecycle checks, including duplicate delivery and outage/retry recovery, and
+has accepted W43 governed authenticator recovery on 2026-09-23. Workspace and ITF Flow have therefore met Gate A for
+integrated staging. A continuously scheduled worker is still required before pilot/production operation.
 
-The next practical step is deploying and executing W42/Flow S23E's controlled A01-06/A01-07 staging diagnostic.
-In practical terms, it gives ICT a
-safe way to prove that sending the same revocation twice has one effect and that a revocation is retained and retried
-after Flow temporarily becomes unavailable. It must be staging-bound, expose no credentials and avoid direct table
-editing. See the [configuration/checklist](acceptance/A01-staging-diagnostic-operations.md).
-These cases close Gate A's remaining finite lifecycle evidence; a continuously scheduled worker is still
-required before pilot/production operation.
+The next practical production outcome is W05: resist password spraying and repeated guessing while producing
+accountable authentication-security events. It needs ITF approval of D08-D11 before implementation can start.
 
 ## Remaining route to enterprise production
 
 | Stage | Practical outcome | Remaining slices/decisions |
 |---|---|---|
-| Close Flow staging | Prove access also fails and recovers safely, not only that login works | A01-06 duplicate delivery; A01-07 outage/retry; continuous outbox scheduler |
+| Close Flow staging | Prove access also fails and recovers safely, not only that login works | Accepted 2026-09-21; continuous outbox scheduler remains |
 | Secure controlled pilot | Resist password attacks, unsafe outbound URLs and browser/proxy abuse; establish accountable pilot operation | W05 with D08-D11; W06 with D12; W09 with D13-D14; G01, G02, G05 and G07 |
-| Complete staff lifecycle | Handle failed welcome delivery, authenticator/password recovery, corrections, transfers, suspension/exits and privileged-role administration | Finish W25; approve D10, D43 and the applicable HR/role ownership decisions |
+| Complete staff lifecycle | Handle failed welcome delivery, authenticator/password recovery, corrections, transfers, suspension/exits and privileged-role administration | W43 is accepted; finish W25 and approve D10 plus the applicable HR/role ownership decisions |
 | Scalable access governance | Replace one-off direct grants with governed roles, groups, rules, time limits, approvals, reviews and separation of duties | W10-W16 after D15-D30 |
 | Repeatable app integration | Configure each child connector and its retries/reconciliation from the registry instead of adding Flow-specific code | W17 configurable connectors; W18 generic outbox/reconciliation; conformance profile; A02-A05 |
 | Enterprise identity | Move from transitional Workspace passwords/custom handoff to an approved identity provider and standards-based app onboarding | W19-W24; D31; provider/procurement decision; OIDC/PKCE and SCIM or approved provisioning standard |
