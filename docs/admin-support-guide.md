@@ -11,7 +11,7 @@ behavior. Functions marked as incomplete must be escalated rather than improvise
 |---|---|
 | `STAFF` | Sign in, replace temporary password, view the complete app catalogue, launch entitled/classified apps and manage own sessions |
 | `APP_ADMIN` | Reserved privileged role; always requires TOTP, but a complete delegated app-administration workflow is not yet implemented |
-| `SYSTEM_ADMIN` | Organization setup, app registry, role classification, staff import, directory sync, app access, user state, sessions and audit logs |
+| `SYSTEM_ADMIN` | Organization setup, app registry, role classification, staff import, reporting-line correction, directory sync, app access, user state, sessions and audit logs |
 
 HR spreadsheets may create `STAFF` accounts only. Privileged Workspace roles require a separate approved workflow;
 that general workflow is not yet complete. Never change roles directly in the database as an operational shortcut.
@@ -135,6 +135,10 @@ from its hash. Escalate failed welcome delivery under W25/D10; do not re-import 
 
 Deactivating a user prevents authoritative Workspace access and queues applicable Flow session effects. Use the user
 directory controls, not direct database updates. Administrators can inspect a user's sessions and terminate one or all.
+
+For an existing user's Flow routing readiness, open **Users → Routing** to correct the HR-authoritative supervisor with
+a source reference and reason. Correct the Flow role separately through **App Access**, then run **Synchronize entitled
+staff to ITF Flow**. The reporting-line page rejects stale submissions, inactive/missing supervisors and cycles.
 
 At the two-session limit, the user receives a restricted recovery path to terminate an existing session. Idle and
 absolute session expiry are server-enforced. Child-app activity does not keep Workspace alive.

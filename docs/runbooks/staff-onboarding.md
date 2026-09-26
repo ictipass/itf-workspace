@@ -61,8 +61,8 @@ staffNumber,fullName,email,workspaceRole,officeCode,departmentCode,divisionCode,
 | `divisionCode` | Optional; if supplied, must belong to the selected department |
 | `unitCode` | Optional; if supplied, must belong to the selected division |
 | `positionCode` | Optional active Workspace reference |
-| `supervisorStaffNumber` | Optional; must already exist or appear in the same CSV, and cannot be self |
-| `itfFlowRole` | Optional; normalized to uppercase and must match an active classified Flow role |
+| `supervisorStaffNumber` | Optional to the generic importer, but required operationally when Flow action routing must follow a supervisor; must already exist or appear in the same CSV, and cannot be self |
+| `itfFlowRole` | Optional when no Flow access is requested; otherwise use the staff member's approved operational role, normalized to uppercase and matched to an active classified Flow role |
 
 Blank optional cells must remain present between commas. Use the downloaded template rather than recreating headers.
 
@@ -89,6 +89,10 @@ from the unchanged, reviewed file.
 5. Confirm the success count exactly matches the reviewed data rows.
 6. Review the user directory and audit log.
 7. Confirm welcome emails arrived through the approved support channel.
+
+Before Flow acceptance, verify managers were not all imported as `OFFICER` and every user who must route through a
+line has the correct supervisor. For an existing user, open **User Directory → Routing** to correct the supervisor and
+**App Access** to correct the Flow role, then synchronize Flow. Do not re-import an existing identity.
 
 The database write is all-or-nothing. Welcome emails occur after database commit and do not yet have a durable,
 operator-visible retry queue; delivery failure therefore requires controlled support escalation and must not be
@@ -146,7 +150,7 @@ Accepted in staging:
 
 Not yet complete:
 
-- existing-user correction and HR reconciliation;
+- broad existing-user organization correction, transfers and HR reconciliation (narrow supervisor correction is W44);
 - transfers, suspension/exit reconciliation and rehire;
 - durable welcome-email delivery, retry and operator state;
 - temporary-password expiry, governed reissue and general recovery;

@@ -157,6 +157,20 @@ export const ADMIN_HELP_TOPICS: readonly AdminHelpTopic[] = [
         escalation: "If creation committed but email failed, do not add the user again. Escalate delivery/reissue under W25/D10.",
       },
       {
+        title: "Correct an existing user's Flow reporting line",
+        summary: "Supervisor correction, Flow role correction and Flow synchronization are separate governed steps.",
+        steps: [
+          "Open User Directory and select Routing for the affected staff member.",
+          "Enter the HR-authoritative supervisor staff number, source reference and correction reason.",
+          "Complete fresh TOTP when requested, review the form and submit it again.",
+          "Use App Access separately if the user's Flow role is wrong.",
+          "Run Synchronize entitled staff to ITF Flow, then test recipient search with a fresh page.",
+        ],
+        href: "/dashboard/admin/users",
+        linkLabel: "Open User Directory",
+        escalation: "Do not re-import the user or edit Workspace/Flow databases directly. Bulk transfers and wider HR reconciliation remain W25 work.",
+      },
+      {
         title: "The welcome email did not arrive",
         summary: "A completed import cannot be repeated because the user now exists.",
         steps: [

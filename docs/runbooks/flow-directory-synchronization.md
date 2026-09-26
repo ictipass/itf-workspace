@@ -12,8 +12,9 @@ Synchronization reconciles the approved directory; it does not grant access or b
 ## Operator steps
 
 1. Sign in as Workspace `SYSTEM_ADMIN`.
-2. Confirm the staff account is active, Flow access is granted, and the app and exact assigned child role have approved
-   classifications. For ordinary test staff, the approved baseline is `OFFICER = STANDARD`.
+2. Confirm the staff account is active, Flow access is granted, the exact assigned child role is correct and classified,
+   and the user's supervisor is correct in **User Directory → Routing**. `OFFICER = STANDARD` is only the ordinary
+   test baseline; do not assign managers as officers merely to make synchronization pass.
 3. Review pending revocations before restoring access. Do not regrant while an older revocation remains undelivered;
    escalate conflicting lifecycle operations instead of repeatedly synchronizing.
 4. Open **Administration → Users → Bulk Import Users**.
@@ -23,8 +24,8 @@ Synchronization reconciles the approved directory; it does not grant access or b
    applied; resolve the reported issue and rerun through the approved interface. The current UI is not a per-user
    partial-failure reconciliation dashboard. Do not edit Flow user IDs directly.
 7. Ask the staff member to make a new launch from the Workspace catalogue. A rejected handoff URL is not reusable.
-8. Repeat synchronization after new grants, approved role changes and regrants where directory reconciliation is
-   needed. Entitlement removal uses the separate durable revocation channel, not directory synchronization.
+8. Repeat synchronization after new grants, approved role changes, reporting-line corrections and regrants where
+   directory reconciliation is needed. Entitlement removal uses the separate durable revocation channel, not directory synchronization.
 
 Support evidence should contain only the environment, time, batch outcome and safe reference. Do not retain request
 bodies, tokens, staff lists or credentials in tickets or source control.

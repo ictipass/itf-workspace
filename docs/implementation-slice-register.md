@@ -68,6 +68,7 @@ result. Repository code, migrations and commits remain the final implementation 
 | W41 | Authenticator and directory support | Implemented; deployment pending | Workspace `b3a9ab5`, Flow `c4cef48`; 100 Workspace regressions/full verification passed; expandable Admin Help procedures, recovery gap/D43 and directory-sync steps; A01-05 accepted 2026-09-17. See [slice](slices/W41-authenticator-and-directory-support.md) |
 | W42 | Controlled staging lifecycle diagnostic | Implemented; finite staging acceptance passed | Workspace `b3a9ab5`, Flow `c4cef48`; A01-06 duplicate delivery and A01-07 outage/retry reported successful 2026-09-21. Continuous scheduling remains separate. See [slice](slices/W42-controlled-staging-acceptance.md) |
 | W43 | Governed authenticator lifecycle and recovery | Implemented and staging accepted | `7cd5a16`; D43 Option A recovery, session/child-app revocation, separated HR/Security/executor workflow and recovery support UI all passed staging acceptance on 2026-09-23. Independent secondary factors and durable notification retry remain later hardening increments. See [slice](slices/W43-governed-authenticator-recovery.md) |
+| W44 | Existing-user reporting-line reconciliation | Implemented locally | Fresh-MFA, HR-referenced, stale-safe and cycle-safe supervisor correction paired with Flow S27A; 109 regressions, documentation checks and full verification passed. See [slice](slices/W44-existing-user-reporting-line-reconciliation.md) |
 
 ## Phase 2 — scalable access governance
 

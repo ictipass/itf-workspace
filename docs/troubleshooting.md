@@ -27,6 +27,8 @@ URLs into tickets, chat or screenshots. Use timestamps, public routes, correlati
 | `Role classification required` | Active entitlement has no matching active role policy | Classify exact role in Manage Apps, synchronize and refresh |
 | Directory sync lists blocking roles | One or more active entitlements are unclassified | Obtain approvals and configure every listed role before retrying |
 | Flow launch rejects after import | Directory was not synchronized, role differs, receiver config is wrong or token validation failed | Sync, confirm exact role/URLs, then use redacted correlated logs |
+| Flow action-recipient search is empty | The user has no synchronized supervisor/direct reports, or managers were provisioned with the wrong Flow role | Correct the supervisor under **Users → Routing**, correct the role in **App Access**, synchronize Flow, then test a fresh search |
+| Flow copy-recipient search fails | Copy search is not hierarchy-restricted; a failure indicates synchronization, session or application/API trouble | Confirm active synchronized users, refresh once, then inspect safe Flow diagnostics rather than broadening permissions |
 
 ## Application launch and integration
 

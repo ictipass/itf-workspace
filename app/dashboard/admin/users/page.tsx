@@ -88,6 +88,7 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
       division: true,
       unit: true,
       position: true,
+      supervisor: { select: { fullName: true, staffNumber: true } },
       _count: {
         select: {
           appAccesses: true,
@@ -177,6 +178,7 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
                 <TableHead>Role</TableHead>
                 <TableHead>Office</TableHead>
                 <TableHead>Department</TableHead>
+                <TableHead>Supervisor</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Temp Password</TableHead>
                 <TableHead>Apps</TableHead>
@@ -187,7 +189,7 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
             <TableBody>
               {users.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={8} className="h-24 text-center">
+                  <TableCell colSpan={9} className="h-24 text-center">
                     No users found.
                   </TableCell>
                 </TableRow>
@@ -212,6 +214,8 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
 
                     <TableCell>{item.department?.name ?? "N/A"}</TableCell>
 
+                    <TableCell>{item.supervisor ? <><span>{item.supervisor.fullName}</span><span className="block text-xs text-muted-foreground">{item.supervisor.staffNumber ?? "No staff number"}</span></> : <Badge variant="destructive">Missing</Badge>}</TableCell>
+
                     <TableCell>
                       <Badge
                         variant={
@@ -234,6 +238,9 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
 
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
+                        <Button asChild type="button" size="sm" variant="outline">
+                          <Link href={`/dashboard/admin/users/${item.id}/organization`}>Routing</Link>
+                        </Button>
                         <Button asChild type="button" size="sm" variant="outline">
                           <Link href={`/dashboard/admin/users/${item.id}/sessions`}>Sessions</Link>
                         </Button>
