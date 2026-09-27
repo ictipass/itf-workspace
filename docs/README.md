@@ -30,9 +30,10 @@ maintained with the code; a guide never overrides the implementation register or
 
 1. [Policy decision register](policy-decision-register.md)
 2. [Plain-language policy decision guide](policy-decision-guide.md)
-3. [Implementation slice register](implementation-slice-register.md)
-4. [Child-app readiness gates](child-app-readiness-gates.md)
-5. [Approved policy documents](policies/)
+3. [Service subscription register](service-subscription-register.md)
+4. [Implementation slice register](implementation-slice-register.md)
+5. [Child-app readiness gates](child-app-readiness-gates.md)
+6. [Approved policy documents](policies/)
 
 ## Sources of truth
 
@@ -40,6 +41,7 @@ maintained with the code; a guide never overrides the implementation register or
 |---|---|
 | Implemented, planned and blocked work | [Implementation slice register](implementation-slice-register.md) |
 | Approved and unresolved organizational rules | [Policy decision register](policy-decision-register.md) |
+| Required and conditional external services | [Service subscription register](service-subscription-register.md) |
 | Whether another app may enter staging, pilot or production | [Child-app readiness gates](child-app-readiness-gates.md) |
 | Exact launch assertion and JWKS contract | [Launch-token contract](workspace-launch-token.md) |
 | Environment boundaries and Vercel deployment | [Deployment guide](vercel-deployment-environments.md) |

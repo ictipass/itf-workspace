@@ -27,6 +27,7 @@ Documentation is part of the implementation, not a retrospective task.
 | Admin workflow/UI | Admin/support guide, relevant runbook, visible UI effect in slice and acceptance steps |
 | Deployment/operations | Deployment guide, rollback, monitoring/diagnostic steps and readiness status |
 | Security control | Threat/policy linkage, server-side enforcement evidence, negative tests and incident implications |
+| External service/provider | Service subscription register, environment/deployment references, data-flow implications, affected slice and procurement/production gate |
 
 ## Status language
 
