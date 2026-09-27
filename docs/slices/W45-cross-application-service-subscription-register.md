@@ -1,7 +1,9 @@
 # W45 — Cross-application service subscription register
 
-Status: **Implemented locally**  
+Status: **Implemented**  
 Date: **2026-09-27**
+
+Implementation commit: `1183ee2`
 
 ## Outcome
 
