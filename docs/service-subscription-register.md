@@ -1,7 +1,7 @@
 # ITF Workspace and ITF Flow service subscription register
 
 Status: **Active cross-application register**  
-Last code audit: **2026-09-27**
+Last code audit: **2026-09-28**
 
 ## Purpose and interpretation
 
@@ -48,7 +48,10 @@ Secrets, account identifiers, tenant names and commercial quotations must not be
 ## Components that do not themselves require a subscription
 
 The following are not SaaS subscriptions in the current design: Next.js, React, Prisma ORM, ClamAV software,
-application cryptography libraries, QR libraries and PDF processing libraries. They may still require paid hosting,
+application cryptography libraries, QR libraries, PDF processing libraries, Flow’s governed visual-signature profile
+workflow and ITF memo-output renderer. Signature profile bytes use the existing Flow PostgreSQL database and generated
+memo PDFs use the configured document store; those consume existing paid capacity rather than introducing a new
+vendor subscription. These components may still require paid hosting,
 maintenance, security updates, staff time or commercial support. No current code requires Sentry, Twilio, Firebase,
 Redis/Upstash, Dropbox, Box, SharePoint or Google Drive; adding one is an architectural and procurement change, not a
 default assumption.
