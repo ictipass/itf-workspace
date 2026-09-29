@@ -40,7 +40,7 @@ Secrets, account identifiers, tenant names and commercial quotations must not be
 | OCR | Searchable text/extraction from scanned documents | Flow retains an OCR provider boundary but no production provider has been approved. Candidate services include [AWS Textract](https://aws.amazon.com/textract/pricing/), Azure AI Document Intelligence or Google Document AI. | Usage is normally billed per page/feature. Select only after data-residency, accuracy and retention review. |
 | Alternative private S3-compatible object storage | ITF selects AWS S3 or another approved object store instead of Vercel Blob | S3 is identified in Flow's roadmap, but the current runtime implements local development storage and private Vercel Blob only. Selecting S3 therefore requires an adapter, credentials/role design, region and lifecycle policy; setting an environment value alone is insufficient. | Conditional storage, request, transfer, replication and backup charges. |
 | EDMS integration and support | EDMS becomes the authoritative archive | The existing EDMS is outside these repositories. Flow's storage contract keeps this as a future provider/integration rather than silently treating Blob as permanent records management. | May use an existing licence, but redesign, hosting, support and integration work must be budgeted separately. |
-| Office document rendering/editing or conversion | Rich in-browser DOCX/Office editing is approved | No provider is integrated. The PDF-first annotation slice does not require an Office SaaS. DOCX annotation should follow only after choosing a controlled renderer/editor such as an approved OnlyOffice/Collabora deployment or commercial document SDK. | Conditional licence and/or hosting cost. Do not send confidential files to an unapproved conversion service. |
+| Office-to-PDF document conversion | `DOCUMENT_CONVERTER_PROVIDER=GOTENBERG` is enabled so DOCX/XLSX can join the annotatable memo packet | Flow now implements the [Gotenberg LibreOffice conversion route](https://gotenberg.dev/docs/convert-with-libreoffice/convert-to-pdf). Gotenberg is self-hostable; ITF must operate it on approved private compute/networking or procure an approved managed offering. When disabled or unavailable, the original Office file remains separately visible and is never silently discarded. Rich in-browser Office editing remains a separate future decision. | Conditional infrastructure/support or managed-service cost. Size CPU, memory, concurrency, fonts, monitoring and availability; do not send confidential files to a public/unapproved converter. |
 | Certificate-backed digital signatures and trusted timestamps | Policy requires signatures verifiable outside ITF Flow | Current application approval signatures are authenticated, revision-bound application assertions; they are not public-key document certificates. Visual signature images also do not provide certificate trust. | A certificate authority, signing service/HSM and possibly a timestamp authority will be required if ITF adopts PAdES or another regulated signature standard. |
 | PWA push-notification delivery | Push notifications move beyond basic standards-based Web Push | Browser Web Push can be implemented without a paid messaging vendor, but reliable high-volume delivery, device analytics or native-app channels may justify a managed service. | Conditional. Select a provider only after notification consent, payload privacy and retention policy are approved. |
 | Independent assurance services | Production security/accessibility/performance acceptance | Penetration testing, accessibility review and load/resilience exercises require independent evidence even when the software tools are open source. | Budget as one-off or recurring professional services; not necessarily a software subscription. |
@@ -65,8 +65,9 @@ default assumption.
 3. Before searchable scanned archives: OCR provider and retention/data-residency approval.
 4. Before declaring records archival complete: EDMS contract, retention schedule, transfer/reconciliation and audit
    retrieval acceptance.
-5. Before rich Office editing or externally verifiable digital signatures: approved document-rendering and
-   PKI/timestamp architecture respectively.
+5. Before accepting Office files as unified memo-packet pages: deploy and approve the private Gotenberg conversion
+   service, fonts, monitoring and data-handling policy. Rich Office editing remains separate.
+6. Before externally verifiable digital signatures: approve PKI/timestamp architecture.
 
 ## Capacity and quotation inputs
 
@@ -77,6 +78,7 @@ Procurement cannot produce a reliable monthly total until ITF records, at minimu
 - document count, average/max file size, download traffic and retention period;
 - inbound/outbound email and synchronized mailbox volumes;
 - malware-scan and OCR pages per month;
+- DOCX/XLSX conversions per month, average pages, peak concurrency and conversion timeout;
 - worker frequency, maximum acceptable delay and retry volume;
 - log/audit ingestion volume and retention period;
 - production/staging environments, recovery-time objective and recovery-point objective.
