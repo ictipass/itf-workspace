@@ -19,12 +19,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { activateUserAction, deactivateUserAction } from "./actions";
 import { Input } from "@/components/ui/input";
 import {
   NativeSelect,
   NativeSelectOption,
 } from "@/components/ui/native-select";
+import { UserActionsMenu } from "./user-actions-menu";
 
 type UsersPageProps = {
   searchParams: Promise<{
@@ -237,24 +237,11 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
                     <TableCell>{item._count.appAccesses}</TableCell>
 
                     <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        <Button asChild type="button" size="sm" variant="outline">
-                          <Link href={`/dashboard/admin/users/${item.id}/organization`}>Routing</Link>
-                        </Button>
-                        <Button asChild type="button" size="sm" variant="outline">
-                          <Link href={`/dashboard/admin/users/${item.id}/sessions`}>Sessions</Link>
-                        </Button>
-                        {item.status === UserStatus.ACTIVE ? (
-                          <form action={deactivateUserAction}>
-                            <input type="hidden" name="id" value={item.id} />
-                            <Button type="submit" size="sm" variant="destructive">Deactivate</Button>
-                          </form>
-                        ) : (
-                          <form action={activateUserAction}>
-                            <input type="hidden" name="id" value={item.id} />
-                            <Button type="submit" size="sm" variant="outline">Activate</Button>
-                          </form>
-                        )}
+                      <div className="flex justify-end">
+                        <UserActionsMenu
+                          userId={item.id}
+                          active={item.status === UserStatus.ACTIVE}
+                        />
                       </div>
                     </TableCell>
                   </TableRow>

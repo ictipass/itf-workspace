@@ -9,15 +9,15 @@ has accepted W43 governed authenticator recovery on 2026-09-23. Workspace and IT
 integrated staging. A continuously scheduled worker is still required before pilot/production operation.
 
 The next practical production outcome is W05: resist password spraying and repeated guessing while producing
-accountable authentication-security events. It needs ITF approval of D08-D11 before implementation can start.
+accountable authentication-security events. D08-D11 are approved as interim policy; W05 implementation can start.
 
 ## Remaining route to enterprise production
 
 | Stage | Practical outcome | Remaining slices/decisions |
 |---|---|---|
 | Close Flow staging | Prove access also fails and recovers safely, not only that login works | Accepted 2026-09-21; continuous outbox scheduler remains |
-| Secure controlled pilot | Resist password attacks, unsafe outbound URLs and browser/proxy abuse; establish accountable pilot operation | W05 with D08-D11; W06 with D12; W09 with D13-D14; G01, G02, G05 and G07 |
-| Complete staff lifecycle | Handle failed welcome delivery, authenticator/password recovery, corrections, transfers, suspension/exits and privileged-role administration | W43 is accepted; finish W25 and approve D10 plus the applicable HR/role ownership decisions |
+| Secure controlled pilot | Resist password attacks, unsafe outbound URLs and browser/proxy abuse; establish accountable pilot operation | Implement W05; W06 with D12; W09 with D13-D14; G01, G02, G05 and G07 |
+| Complete staff lifecycle | Handle failed welcome delivery, authenticator/password recovery, corrections, transfers, suspension/exits and privileged-role administration | W43 is accepted; finish W25 using approved D10 and resolve the applicable HR/role ownership decisions |
 | Scalable access governance | Replace one-off direct grants with governed roles, groups, rules, time limits, approvals, reviews and separation of duties | W10-W16 after D15-D30 |
 | Repeatable app integration | Configure each child connector and its retries/reconciliation from the registry instead of adding Flow-specific code | W17 configurable connectors; W18 generic outbox/reconciliation; conformance profile; A02-A05 |
 | Enterprise identity | Move from transitional Workspace passwords/custom handoff to an approved identity provider and standards-based app onboarding | W19-W24; D31; provider/procurement decision; OIDC/PKCE and SCIM or approved provisioning standard |

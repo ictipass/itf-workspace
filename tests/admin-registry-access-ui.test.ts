@@ -51,4 +51,37 @@ describe("application administration usability", () => {
     assert.match(accessActions, /requireFreshMfaContextOrRedirect\(returnTo\)/);
     assert.match(accessPage, /select Revoke again/);
   });
+
+  test("provides a mobile dashboard navigation trigger instead of hiding all signed-in navigation", async () => {
+    const [layout, mobileNavigation] = await Promise.all([
+      source("app/dashboard/layout.tsx"),
+      source("components/dashboard-mobile-navigation.tsx"),
+    ]);
+
+    assert.match(layout, /DashboardMobileNavigation/);
+    assert.match(mobileNavigation, /aria-label="Open navigation menu"/);
+    assert.match(mobileNavigation, /SheetContent side="left"/);
+    assert.match(mobileNavigation, /className="lg:hidden"/);
+    assert.match(mobileNavigation, /signOutWorkspaceAndAppsAction/);
+  });
+
+  test("keeps compact user actions and guards organizational corrections", async () => {
+    const [usersPage, actionsMenu, organizationAction, organizationPolicy, organizationPage] = await Promise.all([
+      source("app/dashboard/admin/users/page.tsx"),
+      source("app/dashboard/admin/users/user-actions-menu.tsx"),
+      source("app/dashboard/admin/users/[id]/organization/actions.ts"),
+      source("lib/policies/user-organization-update.ts"),
+      source("app/dashboard/admin/users/[id]/organization/page.tsx"),
+    ]);
+
+    assert.match(usersPage, /UserActionsMenu/);
+    assert.match(actionsMenu, /EllipsisVertical/);
+    assert.match(actionsMenu, /Edit organisation/);
+    assert.match(actionsMenu, /Manage sessions/);
+    assert.match(organizationAction, /requireFreshMfaContextOrRedirect/);
+    assert.match(organizationAction, /reportingLineCreatesCycle/);
+    assert.match(organizationAction, /ORGANIZATION_DETAILS_CORRECTED/);
+    assert.match(organizationPolicy, /Workspace roles and child-app roles intentionally do not appear here/);
+    assert.match(organizationPage, /Correct app role in App Access/);
+  });
 });

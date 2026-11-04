@@ -18,12 +18,12 @@ test("reporting-line correction rejects self supervision and indirect cycles", (
   assert.equal(reportingLineCreatesCycle({ targetUserId: "c", proposedSupervisorId: null, supervisorByUserId: links }), false);
 });
 
-test("reporting-line mutation is privileged, fresh-MFA protected, stale-safe and audited", async () => {
+test("organizational user mutation is privileged, fresh-MFA protected, stale-safe and audited", async () => {
   const action = await readFile(new URL("../app/dashboard/admin/users/[id]/organization/actions.ts", import.meta.url), "utf8");
   assert.match(action, /WorkspaceRole\.SYSTEM_ADMIN/);
   assert.match(action, /requireFreshMfaContextOrRedirect/);
   assert.match(action, /expectedSupervisorId/);
   assert.match(action, /reportingLineCreatesCycle/);
-  assert.match(action, /REPORTING_LINE_CORRECTED/);
+  assert.match(action, /ORGANIZATION_DETAILS_CORRECTED/);
   assert.match(action, /flowDirectorySynchronizationRequired: true/);
 });

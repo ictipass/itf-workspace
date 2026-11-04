@@ -17,6 +17,7 @@ import {
   canExecuteRecovery,
   initialRecoveryStatus,
 } from "../lib/auth/mfa-recovery-policy";
+import { userOrganizationUpdateSchema } from "../lib/policies/user-organization-update";
 
 const activeUser = {
   id: "user-1",
@@ -104,6 +105,37 @@ describe("authoritative current-user policy", () => {
         workspaceRole
       );
     }
+  });
+});
+
+describe("organizational user correction policy", () => {
+  test("does not accept role or application-access fields in an organizational correction", () => {
+    const baseline = {
+      userId: "user-1",
+      expectedOfficeId: "office-1",
+      expectedDepartmentId: "NONE",
+      expectedDivisionId: "NONE",
+      expectedUnitId: "NONE",
+      expectedPositionId: "NONE",
+      expectedSupervisorId: "NONE",
+      officeId: "office-1",
+      departmentId: "",
+      divisionId: "",
+      unitId: "",
+      positionId: "",
+      supervisorStaffNumber: "",
+      sourceReference: "HR-2026-001",
+      reason: "Correct an approved organizational assignment.",
+    };
+    assert.equal(userOrganizationUpdateSchema.safeParse(baseline).success, true);
+    assert.equal(
+      userOrganizationUpdateSchema.safeParse({ ...baseline, workspaceRole: "SYSTEM_ADMIN" }).success,
+      false
+    );
+    assert.equal(
+      userOrganizationUpdateSchema.safeParse({ ...baseline, appRole: "SYSTEM_ADMIN" }).success,
+      false
+    );
   });
 });
 

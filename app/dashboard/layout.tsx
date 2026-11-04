@@ -21,6 +21,7 @@ import { resolveWorkspaceSessionPolicy } from "@/lib/config/workspace-environmen
 import { SessionActivityMonitor } from "@/components/session-activity-monitor";
 import { signOutWorkspaceAndAppsAction } from "@/app/logout/actions";
 import { prisma } from "@/lib/prisma";
+import { DashboardMobileNavigation } from "@/components/dashboard-mobile-navigation";
 
 export default async function DashboardLayout({
   children,
@@ -176,9 +177,17 @@ export default async function DashboardLayout({
       <div className="lg:pl-72">
         <header className="sticky top-0 z-20 border-b bg-background/90 backdrop-blur">
           <div className="flex h-16 items-center justify-between px-4 lg:px-8">
-            <div>
+            <div className="flex min-w-0 items-center gap-2">
+              <DashboardMobileNavigation
+                userName={user.name ?? "Workspace user"}
+                workspaceRole={user.workspaceRole}
+                hasRecoveryAuthority={hasRecoveryAuthority}
+                isSystemAdmin={isSystemAdmin}
+              />
+              <div className="min-w-0">
               <p className="text-sm font-medium">Welcome back</p>
-              <p className="text-xs text-muted-foreground">{user.name}</p>
+              <p className="truncate text-xs text-muted-foreground">{user.name}</p>
+              </div>
             </div>
           </div>
         </header>

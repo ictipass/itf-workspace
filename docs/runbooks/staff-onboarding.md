@@ -150,7 +150,7 @@ Accepted in staging:
 
 Not yet complete:
 
-- broad existing-user organization correction, transfers and HR reconciliation (narrow supervisor correction is W44);
+- transfers and wider HR reconciliation; approved existing-user organization correction is available through the User Directory, but it is not a bulk transfer/reconciliation workflow;
 - transfers, suspension/exit reconciliation and rehire;
 - durable welcome-email delivery, retry and operator state;
 - temporary-password expiry, governed reissue and general recovery;

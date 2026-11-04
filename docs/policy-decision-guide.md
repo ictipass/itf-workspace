@@ -88,6 +88,11 @@ limits can consider account, IP, device and network, but overly broad limits can
 **Please provide:** Thresholds/time windows, dimensions to measure, treatment of trusted ITF networks, and response to
 distributed attempts.
 
+**Approved interim outcome (2026-11-04):** Use durable database-backed controls and generic browser failures. Apply a
+60-second account-and-source delay after five failures in 15 minutes; apply a source throttle after 100 failures in 15
+minutes; aggregate account failures across sources; and do not bypass controls for trusted networks. See the
+[authentication abuse and alerting policy](policies/2026-11-04-authentication-abuse-and-alerting-policy.md).
+
 ### D09 — Account lockout
 
 **Use case:** Repeated failures may indicate attack or a staff member mistyping a password. Permanent lockout can enable
@@ -95,6 +100,11 @@ denial of service, while no lockout increases guessing risk.
 
 **Please provide:** Failure threshold, lock duration, automatic recovery behavior, unlock authority and audit/alert
 requirements.
+
+**Approved interim outcome (2026-11-04):** Lock an account for 15 minutes after ten failures across sources in 30
+minutes. Automatically release the lock; reset the failure sequence after successful authentication; permit early
+SYSTEM_ADMIN release only after HR/ICT verification; audit every lock/unlock; and keep the anonymous browser response
+generic.
 
 ### D10 — Password recovery and identity proofing
 
@@ -110,12 +120,23 @@ only while `isTemporaryPassword` is true, whether it must issue a new random cre
 and all sessions, who may approve/perform it, credential expiry, resend rate limits, required identity/manager
 verification, durable email retry behavior and audit/notification requirements.
 
+**Approved interim outcome (2026-11-04):** HR verifies identity in person. A different authorized SYSTEM_ADMIN issues
+a new cryptographically random temporary password to the official email, valid for 24 hours and requiring immediate
+replacement. The old credential and every Workspace/child-app session are invalidated. The original password is never
+retrieved or resent. Privileged recovery additionally requires ICT Security approval. This is implemented as part of
+W25, not by the current login page.
+
 ### D11 — Authentication alerts and escalation
 
 **Use case:** Repeated failed logins, an administrator login from an unusual location, or mass lockouts may require SOC
 attention. Undefined thresholds either create alert fatigue or leave incidents unnoticed.
 
 **Please provide:** Alert events, severity thresholds, recipients, escalation times, after-hours process and retention.
+
+**Approved interim outcome (2026-11-04):** Record every authentication attempt. Alert the ICT Security
+distribution/on-call process for account lock, recovery/reissue, privileged failure/lock, ten locked accounts in 15
+minutes, or 100 failures from one source in 15 minutes. Acknowledge within 15 minutes during business hours or one
+hour after hours. SIEM/retention is deferred to D33.
 
 ## Network and deployment
 

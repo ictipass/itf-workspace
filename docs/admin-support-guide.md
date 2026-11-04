@@ -136,9 +136,15 @@ from its hash. Escalate failed welcome delivery under W25/D10; do not re-import 
 Deactivating a user prevents authoritative Workspace access and queues applicable Flow session effects. Use the user
 directory controls, not direct database updates. Administrators can inspect a user's sessions and terminate one or all.
 
-For an existing user's Flow routing readiness, open **Users → Routing** to correct the HR-authoritative supervisor with
-a source reference and reason. Correct the Flow role separately through **App Access**, then run **Synchronize entitled
-staff to ITF Flow**. The reporting-line page rejects stale submissions, inactive/missing supervisors and cycles.
+For an existing user's Flow routing readiness, open **Users → the three-dot action menu → Edit organisation** to correct
+the HR-authoritative office, department, division, unit, position and supervisor with a source reference and reason.
+Fresh TOTP is required. The editor rejects stale submissions, inactive references, invalid hierarchy combinations,
+inactive/missing supervisors and reporting-line cycles. Correct the Flow role separately through **App Access**, then run
+**Synchronize entitled staff to ITF Flow**. Workspace privileged roles are deliberately not editable from this screen;
+they remain subject to the separately approved super-administrator process.
+
+On a mobile or tablet, use the menu button in the signed-in header to open the complete Workspace navigation. The menu
+also includes the normal global **Sign out** control.
 
 At the two-session limit, the user receives a restricted recovery path to terminate an existing session. Idle and
 absolute session expiry are server-enforced. Child-app activity does not keep Workspace alive.
