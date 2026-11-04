@@ -3,13 +3,16 @@ import Link from "next/link";
 import {
   ArrowRight,
   ClipboardCheck,
+  ExternalLink,
   Fingerprint,
+  LifeBuoy,
   LockKeyhole,
   ShieldCheck,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ICT_HELPDESK_URL } from "@/lib/support/ict-helpdesk";
 
 const workspaceControls = [
   {
@@ -66,6 +69,12 @@ export default function Home() {
 
             <div className="flex items-center gap-2">
               <Button asChild variant="ghost" className="hidden sm:inline-flex">
+                <a href={ICT_HELPDESK_URL} target="_blank" rel="noopener noreferrer">
+                  ICT support
+                  <ExternalLink className="h-4 w-4" />
+                </a>
+              </Button>
+              <Button asChild variant="ghost" className="hidden sm:inline-flex">
                 <Link href="/dashboard">Dashboard</Link>
               </Button>
               <Button asChild>
@@ -103,6 +112,26 @@ export default function Home() {
                   <Link href="/dashboard/apps">Open App Launcher</Link>
                 </Button>
               </div>
+
+              <a
+                href={ICT_HELPDESK_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-6 flex max-w-2xl items-start gap-3 rounded-2xl border border-primary/20 bg-primary/5 p-4 text-left transition-colors hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                  <LifeBuoy className="size-5" />
+                </span>
+                <span className="min-w-0">
+                  <span className="flex items-center gap-2 font-semibold">
+                    Need ICT support?
+                    <ExternalLink className="size-4" aria-hidden="true" />
+                  </span>
+                  <span className="mt-1 block text-sm leading-6 text-muted-foreground">
+                    Lodge an ICT support issue, including difficulty accessing Workspace. Helpdesk opens in a new tab.
+                  </span>
+                </span>
+              </a>
 
               <div className="mt-10 grid max-w-2xl gap-3 sm:grid-cols-2">
                 {operatingSignals.map((signal) => (

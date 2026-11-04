@@ -180,6 +180,13 @@ to the authorized ICT/security owner; do not create an informal bypass.
 - Other Workspace sessions on separate devices remain active unless explicitly terminated.
 - Use the app waffle to move between entitled apps without signing out.
 
+## ICT Helpdesk outside Workspace access
+
+The public Workspace landing page provides **ICT support** and **Need ICT support?** links to the external ITF ICT
+Helpdesk. Use these links when a staff member cannot sign in, cannot complete MFA enrollment, or needs to lodge an
+ICT-related issue. The Helpdesk deliberately is not a Workspace registry application and does not require an existing
+Workspace session; it opens in a separate browser tab so the staff member retains their Workspace page.
+
 ## Audit and evidence
 
 Use **Audit Logs** to search by actor, action and date. Retain only redacted operational references in tickets or
